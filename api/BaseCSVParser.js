@@ -23,18 +23,15 @@ class BaseCSVParser {
     }
 
     toUTC(datetime) {
-
-        // function convertToUTC(dateString, timezone) {
-        //     return 
-        // }
         
-        if (this.timezone === undefined) {
+        if (! this.timezone ) {
             throw new Error("this.timezone is undefined and must be implemented in the parser.");
         }
-        // const tz = this.timezone
-        // const yourDate = "2023-03-15T12:00:00"; // Example date
-        // const timezone = "Australia/Sydney"; // AEST timezone
-        // const utcDate = convertToUTC(datetime, timezone);
+
+        if (! moment.tz.zone(this.timezone)) {
+            throw new Error("this.timezone specifies a strange and unknown timezone.");
+        }
+        
         return moment.tz(datetime, this.timezone).utc().format();
     }
 

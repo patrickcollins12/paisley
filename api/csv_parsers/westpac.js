@@ -1,6 +1,7 @@
 const BaseCSVParser = require('../BaseCSVParser');
 
 class WestpacCSVParser extends BaseCSVParser {
+
     constructor() {
         super();
         this.identifier = 'westpac';
@@ -14,14 +15,8 @@ class WestpacCSVParser extends BaseCSVParser {
 
     matchesSecondLine(firstDataLine) {
         // Logic to determine if this parser should handle the file based on the first data line
-        return firstDataLine.includes('732002671776');
+        return firstDataLine.includes('732002');
     }
-
-    // async parse(filePath) {
-    //     // You can override the parse method if Type 1 CSV files require special parsing
-    //     // Otherwise, you can just use the base class's parse method
-    //     return await super.parse(filePath);
-    // }
 
     // csvline: {
     //     'Bank Account': '732002671776',
