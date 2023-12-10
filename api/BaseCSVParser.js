@@ -31,7 +31,7 @@ class BaseCSVParser {
         if (! moment.tz.zone(this.timezone)) {
             throw new Error("this.timezone specifies a strange and unknown timezone.");
         }
-        
+
         return moment.tz(datetime, this.timezone).utc().format();
     }
 
@@ -49,8 +49,22 @@ class BaseCSVParser {
     //     PRIMARY KEY("id" AUTOINCREMENT)
     // );
     saveTransaction(processedLine) {
-        // console.log("Ready to save: ", processedLine)
+        console.log("Ready to save: ", processedLine)
     }
+
+    // SELECT * 
+    // FROM data_table
+    // WHERE 
+    //     json_extract(json_data, '$.key1') = 'expected_value1' AND
+    //     json_extract(json_data, '$.key2') = 'expected_value2' AND
+    //     json_extract(json_data, '$.key3') = 'expected_value3' AND
+    //     json_extract(json_data, '$.key4') = 'expected_value4';
+
+    isAlreadyInserted(processedLine) {
+        uc = this.uniqueColumns
+        // TODO
+    }
+
 
     processLine(line) {
         throw new Error('processLine() must be implemented in subclass');
@@ -64,6 +78,7 @@ class BaseCSVParser {
         // Logic to determine if this parser should handle the file based on the file name
         throw new Error('matchesFileName() must be implemented in subclass');
     }
+
 
 }
 

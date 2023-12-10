@@ -4,8 +4,11 @@ class WestpacCSVParser extends BaseCSVParser {
 
     constructor() {
         super();
-        this.identifier = 'westpac';
+        this.identifier = 'westpac'
         this.timezone = 'Australia/Sydney'
+
+        // what columns from the incoming csv file define a unique record
+        this.uniqueColumns = ['Date', 'Bank Account', 'Narrative', 'Balance' ]
     }
 
     matchesFileName(fileName) {
@@ -18,7 +21,7 @@ class WestpacCSVParser extends BaseCSVParser {
         return firstDataLine.includes('732002');
     }
 
-    // csvline: {
+    // csvline: {   
     //     'Bank Account': '732002671776',
     //     Date: '06/10/2023',
     //     Narrative: 'EFTPOS DEBIT 0464015 MANOOSH PIZZERIA\\             06/10',
@@ -48,9 +51,7 @@ class WestpacCSVParser extends BaseCSVParser {
 
         return l
     }
-    whatMakesUnique() { 
-        return(['Date','Bank Account', 'Narrative', 'Balance' ])
-    }   
+
 }
 
 module.exports = WestpacCSVParser;
