@@ -1,4 +1,5 @@
 const BaseCSVParser = require('../BaseCSVParser');
+const moment = require('moment-timezone');
 
 class WestpacCSVParser extends BaseCSVParser {
 
@@ -6,6 +7,7 @@ class WestpacCSVParser extends BaseCSVParser {
         super();
         this.identifier = 'westpac'
         this.timezone = 'Australia/Sydney'
+        this.dateFormat = 'DD/MM/YYYY'
 
         // what columns from the incoming csv file define a unique record
         this.uniqueColumns = ['Date', 'Bank Account', 'Narrative', 'Balance' ]
@@ -41,15 +43,17 @@ class WestpacCSVParser extends BaseCSVParser {
     //     PRIMARY KEY("id" AUTOINCREMENT)
     // );
     processLine(l) {
-        l.datetime = l['Date']
-        l.account = l['Bank Account']
-        l.description = l['Narrative']
-        l.amount = l['Debit Amount'] || - l['Credit Amount']
-        l.balance = l['Balance']
-        l.type = l['Categories']
+        let processed = {}
+        
+        processed.datetime = this.toUTC(l['Date'],this.dateFormat); // requires date format defined above.
+        processed.account = l['Bank Account']
+        processed.description = l['Narrative']
+        processed.amount = - l['Debit Amount'] || l['Credit Amount']
+        processed.balance = l['Balance']
+        processed.type = l['Categories']
         // console.log("csvline:",l)
 
-        return l
+        return processed
     }
 
 }
