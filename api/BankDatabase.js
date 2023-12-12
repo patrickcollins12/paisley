@@ -2,7 +2,8 @@ const Database = require('better-sqlite3');
 
 class BankDatabase {
     constructor(dbfile) {
-        this.dbfile = dbfile || './transactions.db';
+        this.dbfile = dbfile;
+        console.log("dbfile:", dbfile)
 
         try {
             // this.db = new Database(this.dbfile, { verbose: console.log });

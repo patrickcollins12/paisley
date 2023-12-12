@@ -1,15 +1,16 @@
 const chokidar = require('chokidar');
+const path = require('path');
 
 class FileWatcher {
   constructor(dir, pattern) {
-      this.dir = dir || "/Users/patrick/Downloads/bank_statements";
-      this.pattern = pattern || "*.csv";
-      this.files = `${this.dir}/${this.pattern}`;
+      this.dir = dir
+      this.pattern = pattern;
+      this.files = path.join(this.dir,this.pattern);
       this.watcher = null;
   }
 
   startWatching(callfunc) {
-      this.watcher = chokidar.watch(this.files, { awaitWriteFinish: true });
+      this.watcher = chokidar.watch (this.files, { awaitWriteFinish: true });
 
       this.watcher.on('all', (event, path) => {
         //   console.log("Calling ", callfunc, " with ", event, path);

@@ -6,20 +6,20 @@ const CSVParserFactory = require('./CSVParserFactory'); // Adjust the path accor
 const csvpf = new CSVParserFactory()
 const BankDatabase = require('./BankDatabase');
 const ConfigManager = require('./ConfigManager.js');
-
+const os = require('os');
+const path = require('path');
 
 app.use(cors());
 app.use(bodyParser.json());
 
-
 // Using default template configuration
 const configManager = new ConfigManager('pfm');
-const userConfig = configManager.readConfig();
-console.log('Configuration:', userConfig);
+const config = configManager.readConfig();
+console.log('Configuration:', config);
 
 
 // open the DB
-bankdb = new BankDatabase()
+bankdb = new BankDatabase( config.database )
 
 async function processCSVFile(filePath) {
   const parser = await csvpf.getParser(filePath);
@@ -36,7 +36,7 @@ async function processCSVFile(filePath) {
 
 // Setup the filewatcher.
 const FileWatcher = require('./FileWatcher'); // Adjust the path according to your file structure
-const watchDir = process.env.WATCHDIR || "/Users/patrick/Downloads/bank_statements";
+const watchDir = config.csv_watch || path.join(os.homedir(),"Downloads/bank_statements");
 const fileWatcher = new FileWatcher(watchDir, "*.csv");
 fileWatcher.startWatching(processCSVFile);
 

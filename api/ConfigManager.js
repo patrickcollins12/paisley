@@ -9,19 +9,21 @@ class ConfigManager {
         
         // Default template configuration
         this.defaultTemplateConfig = {
-            setting1: 'defaultValue1',
-            setting2: 'defaultValue2',
-            // ... other default settings ...
-        };
-
+            csv_watch: "$HOME/Downloads/bank_statements",
+            csv_processed: "$HOME/Downloads/bank_statements/processed",
+            database: "$HOME/.pfm/transactions.db"
+          }
+          
         // Use provided templateConfig or default
         this.templateConfig = templateConfig || this.defaultTemplateConfig;
     }
 
     readConfig() {
         if (fs.existsSync(this.configFilePath)) {
-            const rawConfig = fs.readFileSync(this.configFilePath);
+            let rawConfig = fs.readFileSync(this.configFilePath,'utf8');
+            rawConfig = rawConfig.replace(/\$HOME/g,os.homedir())
             let configJson = JSON.parse(rawConfig);
+            // console.log("Read config:", configJson)
             return configJson;
         } else {
             // Use the template config if the file doesn't exist
