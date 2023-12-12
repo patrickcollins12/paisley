@@ -13,19 +13,9 @@ app.use(bodyParser.json());
 
 
 // Using default template configuration
-const configManager = new ConfigManager('.pfm');
+const configManager = new ConfigManager('pfm');
 const userConfig = configManager.readConfig();
 console.log('Configuration:', userConfig);
-
-// Modify the configuration as needed
-// userConfig.newSetting = 'newValue';
-
-// Write the updated config back to the file
-// configManager.writeConfig(userConfig);
-// console.log('Configuration updated.');
-
-cm = new ConfigManager('pfm');
-const config = cm.readConfig();
 
 
 // open the DB
