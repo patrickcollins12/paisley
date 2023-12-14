@@ -22,6 +22,18 @@ class CSVParserFactory {
         });
     }
 
+    async processCSVFile(filePath) {
+        const parser = await this.getParser(filePath);
+        if (parser) {
+          console.log(`Using ${parser.identifier} parser for file ${filePath}`);
+          parser.setDB(bankdb);
+          parser.parse(filePath)  
+        }
+        else {
+          console.log(`Couldn't find parser for file ${filePath}`);
+        }
+      }
+      
     async getParser(filePath) {
         const fileName = path.basename(filePath);
         let selectedParser = null;

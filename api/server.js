@@ -17,28 +17,15 @@ const configManager = new ConfigManager('pfm');
 const config = configManager.readConfig();
 console.log('Configuration:', config);
 
-
 // open the DB
 bankdb = new BankDatabase( config.database )
 
-async function processCSVFile(filePath) {
-  const parser = await csvpf.getParser(filePath);
-  if (parser) {
-    console.log(`Using ${parser.identifier} parser for file ${filePath}`);
-    parser.setDB(bankdb);
-    parser.parse(filePath)  
-  }
-  else {
-    console.log(`Couldn't find parser for file ${filePath}`);
-  }
-}
-
-
-// Setup the filewatcher.
+// Setup the filewatcher and start watching for transaction.
 const FileWatcher = require('./FileWatcher'); // Adjust the path according to your file structure
 const watchDir = config.csv_watch || path.join(os.homedir(),"Downloads/bank_statements");
 const fileWatcher = new FileWatcher(watchDir, "*.csv");
-fileWatcher.startWatching(processCSVFile);
+
+fileWatcher.startWatching( (filePath) => csvpf.processCSVFile(filePath) );
 
 // server cats
 app.get('/data', async (req, res) => {
@@ -69,41 +56,10 @@ app.get('/data', async (req, res) => {
       res.status(400).json({ "error": err.message });
   }
 
-  // bankdb.db.all(query, [], (err, rows) => {
-  //   if (err) {
-  //     res.status(400).json({ "error": err.message });
-  //     return;
-  //   }
-
-  //   for (const row of rows) {
-  //     const cats = row.categories || "" 
-  //     row["categories"] = cats.split(";").filter(Boolean);
-  //   }
-
-  //   res.json( rows )
-  // });
 });
 
-// app.get('/endpoint', (req, res) => {
-//   const query = 'YOUR_SQL_QUERY_HERE'; // Replace with your actual query
-
-//   try {
-//       const stmt = db.prepare(query);
-//       const rows = stmt.all();
-
-//       for (const row of rows) {
-//           const cats = row.categories || ""; 
-//           row["categories"] = cats.split(";").filter(Boolean);
-//       }
-
-//       res.json(rows);
-//   } catch (err) {
-//       res.status(400).json({ "error": err.message });
-//   }
-// });
-
+//temporarily disable the webserver
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-

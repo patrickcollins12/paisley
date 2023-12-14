@@ -10,12 +10,13 @@ class FileWatcher {
   }
 
   startWatching(callfunc) {
-      this.watcher = chokidar.watch (this.files, { awaitWriteFinish: true });
+    console.log(callfunc);
+    this.watcher = chokidar.watch (this.files, { awaitWriteFinish: true });
 
-      this.watcher.on('all', (event, path) => {
-        //   console.log("Calling ", callfunc, " with ", event, path);
-          callfunc(path);
-      });
+    this.watcher.on('all', (event, path) => {
+      //   console.log("Calling ", callfunc, " with ", event, path);
+        callfunc(path);
+    });
   }
 }
 

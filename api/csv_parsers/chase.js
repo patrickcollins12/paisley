@@ -16,6 +16,8 @@ class ChaseCSVParser extends BaseCSVParser {
 
     matchesFileName(fileName) {
         // Logic to determine if this parser should handle the file based on the file name
+        // "fileNameexpanAccountMatch": "/Chase(\\d+)\\b/",
+        var matches = 
         return fileName.toLowerCase().includes('chase');
     }
 
