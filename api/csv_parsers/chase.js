@@ -1,11 +1,11 @@
 const BaseCSVParser = require('../BaseCSVParser');
-const moment = require('moment-timezone');
-
+// const moment = require('moment-timezone');
 
 class ChaseCSVParser extends BaseCSVParser {
 
-    constructor() {
-        super();
+    constructor(options) {
+        super(options);
+        
         this.identifier = 'chase'
         this.timezone = 'America/Los_Angeles' 
         this.dateFormat = 'MM/DD/YYYY'
@@ -14,17 +14,12 @@ class ChaseCSVParser extends BaseCSVParser {
         this.uniqueColumns = ['Posting Date', 'Description', 'Amount', 'Balance' ]
     }
 
+
     matchesFileName(fileName) {
         // Logic to determine if this parser should handle the file based on the file name
-        // "fileNameexpanAccountMatch": "/Chase(\\d+)\\b/",
-        var matches = 
         return fileName.toLowerCase().includes('chase');
     }
 
-    matchesSecondLine(firstDataLine) {
-        // Logic to determine if this parser should handle the file based on the first data line
-        // return firstDataLine.includes('732002');
-    }
 
     // Details,Posting Date,Description,Amount,Type,Balance,Check or Slip #
     // DEBIT,11/07/2023,"TRANSFER TO SAV XXXXX7316 11/07",-5.00,ACCT_XFER,3153.40,,
@@ -47,7 +42,7 @@ class ChaseCSVParser extends BaseCSVParser {
         let processed = {}
         
         processed.datetime = this.toUTC(l['Posting Date'],this.dateFormat); // requires date format defined above.
-        processed.account = '123456'
+        processed.account = this.accountid
         processed.description = l['Description']
         processed.amount = (l['Details'] === "DEBIT") ? -l['Amount'] : l['Amount']
         processed.type = l['Type']

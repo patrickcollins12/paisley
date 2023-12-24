@@ -1,10 +1,11 @@
 const BaseCSVParser = require('../BaseCSVParser');
-const moment = require('moment-timezone');
+// const moment = require('moment-timezone');
 
 class BankwestCSVParser extends BaseCSVParser {
 
-    constructor() {
-        super();
+    constructor(options) {
+        super(options);
+
         this.identifier = 'bankwest'
         this.timezone = 'Australia/Sydney' 
         this.dateFormat = 'DD/MM/YYYY'
@@ -18,10 +19,6 @@ class BankwestCSVParser extends BaseCSVParser {
         return fileName.toLowerCase().includes('bankwest');
     }
 
-    matchesSecondLine(firstDataLine) {
-        // Logic to determine if this parser should handle the file based on the first data line
-        return firstDataLine.includes('302-985,1360851');
-    }
 
     // BSB Number,Account Number,Transaction Date,Narration,Cheque,Debit,Credit,Balance,Transaction Type
     // 302-985,1360851,02/10/2023,"AUTHORISATION ONLY - EFTPOS PURCHASE AT WOOLWORTHS      1002  CHATSWOOD EASNS AU","",127.72,,145701.29,DAU
@@ -47,7 +44,8 @@ class BankwestCSVParser extends BaseCSVParser {
         let processed = {}
         
         processed.datetime = this.toUTC(l['Transaction Date'],this.dateFormat); // requires date format defined above.
-        processed.account = l['BSB Number'] + " " + l['Account Number']
+        // processed.account = l['BSB Number'] + " " + l['Account Number']
+        processed.account = this.accountid
         processed.description = l['Narration']
         processed.amount = - l['Debit'] || l['Credit']
         processed.type = l['Transaction Type']

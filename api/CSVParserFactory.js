@@ -1,91 +1,142 @@
-const fs = require('fs');
+// const fs = require('fs');
+const fs = require('fs').promises;
 const path = require('path');
 const readline = require('readline');
-const { createReadStream } = require('fs');
+// const { createReadStream } = require('fs');
 
 class CSVParserFactory {
-    constructor() {
+    constructor(config,db) {
         this.parsers = {};
-        this.loadParsers();
+        this.config = config;
+        this.bankdb = db;
     }
 
-    loadParsers() {
-        const parsersPath = path.join(__dirname, 'csv_parsers'); // Adjust 'parsers' to your directory name
-        fs.readdirSync(parsersPath).forEach(file => {
-            if (file.endsWith('.js')) {
-                const Parser = require(path.join(parsersPath, file));
-                const instance = new Parser();
-                if (instance.identifier) {
-                    this.parsers[instance.identifier] = instance;
-                }
+    // loadParsersOLD() {
+    //     const parsersPath = path.join(__dirname, 'csv_parsers'); // Adjust 'parsers' to your directory name
+    //     fs.readdirSync(parsersPath).forEach(file => {
+    //         if (file.endsWith('.js')) {
+    //             const Parser = require(path.join(parsersPath, file));
+    //             this.parsers[ Parser.name ] = Parser;
+    //             try {
+    //                 Parser.config = this.config[ Parser.name ];                  
+    //             } catch { }
+                
+    //         }
+    //     });
+    // }
+
+    async loadParsers() {
+        try {
+            let parserDir = this.config.parsers;
+            if (parserDir.startsWith("./")) {
+                console.log(`${parserDir} starts with ./`)
+                parserDir = path.join(__dirname, parserDir)
             }
-        });
-    }
+            const files = await fs.readdir(parserDir);
+            await Promise.all(files.map(async (file) => {
+                let dirFile = path.join(parserDir, file)
+                if (! file.endsWith('.js')) throw new Error(`Parser class must end in js: ${dirFile}`);
+                const Parser = require(dirFile);
+                this.parsers[Parser.name] = Parser;
 
-    async processCSVFile(filePath) {
-        const parser = await this.getParser(filePath);
+                try {
+                    Parser.config = this.config[ Parser.name ];                  
+                } catch { }
+
+                console.log(`Loaded parser: ${file}`);
+                // await processFile(filePath); // Replace this with actual processing logic
+            }));
+            return true;
+        } catch (error) {
+            console.error('Error processing classes:', error);
+            throw error;
+        }
+    }
+    
+    async processCSVFile(file) {
+        const parser = await this.chooseParser(file);
         if (parser) {
-          console.log(`Using ${parser.identifier} parser for file ${filePath}`);
-          parser.setDB(bankdb);
-          parser.parse(filePath)  
+            //   var accountid = parser.extractAccountFromFileName(filePath);
+            //   var accountid = parser.extractAccountFromFileName(filePath);
+          console.log(`Using ${parser.identifier} parser for file ${file}`);
+        //   parser.setDB(bankdb);
+          parser.bankdb = this.bankdb;
+          parser.fileName = file;
+          parser.parse(file)  
         }
         else {
-          console.log(`Couldn't find parser for file ${filePath}`);
+          console.log(`Couldn't find parser for file ${file}`);
         }
       }
       
-    async getParser(filePath) {
-        const fileName = path.basename(filePath);
-        let selectedParser = null;
+    async chooseParser(file) {
+        const fileName = path.basename(file);
+        let selectedParser = false;
 
-        // First, try to select parser based on file name
-        for (let key in this.parsers) {
-            if (this.parsers[key].matchesFileName(fileName)) {
-                selectedParser = this.parsers[key];
-                break;
+        // loop through each Parser to find one to use
+        for (const [parserName, Parser] of Object.entries(this.parsers)) {
+            var cfg = this.config[ Parser.name ]
+            let options = {
+                'fileName':file, 
+                'config':cfg, 
+                'bankdb':this.bankdb
             }
-        }
+            let parser = new Parser(options);
 
-        // If no parser found by file name, read the first line
-        if (!selectedParser) {
-            selectedParser = await this.selectParserBySecondLine(filePath);
-        }
-
-        return selectedParser;
-    }
-
-    async selectParserBySecondLine(filePath) {
-        return new Promise((resolve, reject) => {
-            const rl = readline.createInterface({
-                input: createReadStream(filePath),
-                crlfDelay: Infinity
-            });
-
-            let lineCount = 0;
-            rl.on('line', (line) => {
-                lineCount++;
-                if (lineCount === 1) return; // Skip the first line
-
-                if (lineCount === 2) {
-                    for (let key in this.parsers) {
-                        if (this.parsers[key].matchesSecondLine(line)) {
-                            resolve(this.parsers[key]);
-                            rl.close();
-                            return;
+            ////////////
+            // First, try to select parser based on config entries
+            // "ChaseCSVParser": {
+            //     "accountExpands": {
+            //         "0378": "322271627 3162960378",
+            //         "7316": "322271627 5656297316"
+            //     }
+            // },
+            if (!selectedParser) {
+                try {
+                    for (const [pattern, accountid] of Object.entries(cfg.accountExpands)) {
+                        if (fileName.includes(pattern)) {
+                            // console.log(`setting accountid: ${accountid}`)
+                            console.log(`${parserName} for ${fileName} with accountid ${accountid}`)
+                            selectedParser = true;
+                            parser.accountid = accountid
+                            break
+                            // return true
                         }
-                    }
-                    // reject(new Error("No parser matches the second line"));
-                    resolve(null);
-                    rl.close();
+                    }    
+                } catch {}
+            }
+
+            ////////////
+            // Second, try to select parser based on file name
+            // static matchesFileName(fileName) {
+            //     // Logic to determine if this parser should handle the file based on the file name
+            //     return fileName.toLowerCase().includes('chase');
+            // }
+            if (!selectedParser) {
+                if (parser.matchesFileName(fileName)) {
+                    selectedParser = true;
+                    // extractAccountFromFileName
+                    break;
                 }
-            }).on('close', () => {
-                if (lineCount<2) {
-                    // If the second line was not processed, it means the file has only one line
-                    resolve(null);
-                }
-            }).on('error', reject);
-        });
+            }
+
+            ////////////
+            // Third, if no parser found by file name, try finding the parser by reading the first line
+            if (!selectedParser) {
+                let accountid = await parser.extractAccountBySecondLine();
+                
+                if (accountid) selectedParser = true
+            }
+
+            if (selectedParser) {
+                return parser;    
+            }
+
+        }
+
+        return null;
     }
+
 }
 
 module.exports = CSVParserFactory;

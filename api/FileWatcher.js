@@ -10,7 +10,7 @@ class FileWatcher {
   }
 
   startWatching(callfunc) {
-    console.log(callfunc);
+    // console.log(callfunc);
     this.watcher = chokidar.watch (this.files, { awaitWriteFinish: true });
 
     this.watcher.on('all', (event, path) => {

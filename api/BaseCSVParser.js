@@ -1,8 +1,16 @@
 const csv = require('csv-parser');
 const fs = require('fs');
 const moment = require('moment-timezone');
+const readline = require('readline');
 
 class BaseCSVParser {
+
+    constructor(options) {
+        if(options) {
+            this.fileName = options.fileName || "";
+            this.config = options.config || {};
+        }
+    }
 
     async parse(filePath) {
         const stream = fs.createReadStream(filePath).pipe(csv());
@@ -39,9 +47,6 @@ class BaseCSVParser {
         return moment.tz(datetime, dateFormat, this.timezone).utc().format();
     }
 
-    setDB(bankdb) {
-        this.bankdb = bankdb
-    }
     // CREATE TABLE "transaction" (
     //     "id"	INTEGER NOT NULL UNIQUE,
     //     "account"	TEXT,
@@ -100,7 +105,7 @@ class BaseCSVParser {
         query += ucs.join(' AND ')
 
         try {
-            // console.log('query:',query)
+            // console.log('bankdb:',this.bankdb)
             const stmt = this.bankdb.db.prepare(query);
             const result = stmt.all(); // get() for a single row, all() for multiple rows
             const rowCount = result ? result.length : 0;
@@ -126,13 +131,83 @@ class BaseCSVParser {
         throw new Error('processLine() must be implemented in subclass');
     }
 
-    matchesSecondLine(file) {
-        throw new Error('matchesSecondLine() must be implemented in subclass');
-    }
+    // matchesSecondLine(firstDataLine) {
+    //     try {
+    //         for (const [pattern, accountid] of Object.entries(this.config.firstLinePatterns)) {
+    //             if (firstDataLine.includes(pattern)) {
+    //                 this.accountid = accountid
+    //                 console.log(`setting accountid: ${accountid}`)
+    //                 return true
+    //             }
+    //         }
+    //     } catch {}
+
+    //     return false;
+    // }
 
     matchesFileName(fileName) {
         // Logic to determine if this parser should handle the file based on the file name
         throw new Error('matchesFileName() must be implemented in subclass');
+    }
+
+    extractAccountFromFileName(fileName) {
+        try {
+            // this.config = {
+            //    "accountExpands": {
+            //        "0378": "3222716XX 3162960YYY",
+            //        "7316": "3222716XX 5656297YYY"
+            //    }
+            // }
+            var matches = fileName.match(/Chase(\d+)/ );
+            if (matches) {
+                var shortAccountName = matches[1];
+                var longAccountName = this.config.accountExpands[shortAccountName]
+                this.accountName = longAccountName;
+            }
+        } catch {}
+    }
+
+
+    async extractAccountBySecondLine() {
+
+        // console.log(this);
+        return new Promise((resolve, reject) => {
+            const rl = readline.createInterface({
+                input: fs.createReadStream(this.fileName),
+                crlfDelay: Infinity
+            });
+
+            let lineCount = 0;
+            rl.on('line', (line) => {
+                lineCount++;
+                if (lineCount === 1) return; // Skip the first line
+
+                if (lineCount === 2) {
+                    try {
+                        // var parserConfig = this.config[ Parser.name ]
+                        for (const [pattern, accountid] of Object.entries(this.config.firstLinePatterns)) {
+                            if (line.includes(pattern)) {
+                                this.accountid = accountid
+                                // console.log(`setting accountid: ${accountid}`)
+                                resolve(true);
+                                rl.close();
+                                return
+                            }
+                        }
+                    } catch {}
+        
+
+                    // reject(new Error("No parser matches the second line"));
+                    resolve(null);
+                    rl.close();
+                }
+            }).on('close', () => {
+                if (lineCount<2) {
+                    // If the second line was not processed, it means the file has only one line
+                    resolve(null);
+                }
+            }).on('error', reject);
+        });
     }
 
 
