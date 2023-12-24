@@ -47,8 +47,14 @@ class WestpacCSVParser extends BaseCSVParser {
         let processed = {}
         
         processed.datetime = this.toUTC(l['Date'],this.dateFormat); // requires date format defined above.
-        // processed.account = l['Bank Account']
-        processed.account = this.accountid
+        
+        let acc = l['Bank Account']
+        try {
+            acc = this.config.firstLinePatterns[acc];
+        } catch {}
+
+        processed.account = acc || l['Bank Account']
+
         processed.description = l['Narrative']
         processed.amount = - l['Debit Amount'] || l['Credit Amount']
         processed.balance = l['Balance']

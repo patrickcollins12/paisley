@@ -1,2 +1,5 @@
-732002 is not matching
 add insertion summary
+move processed files to processed/
+run the scrapers, collect additonal info from bankwest
+find my old transactions
+write the categorisers

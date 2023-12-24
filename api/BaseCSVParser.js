@@ -14,7 +14,7 @@ class BaseCSVParser {
 
     async parse(filePath) {
 
-        this.findAccountNumber();
+        // this.findAccountNumber();
 
         const stream = fs.createReadStream(filePath).pipe(csv());
         try {
@@ -40,12 +40,12 @@ class BaseCSVParser {
         
     }
 
-    async findAccountNumber() {
-        if (!this.accountid){
-            // this.extractAccountFromFileName();
-            await this.extractAccountBySecondLine();
-        }
-    }
+    // async findAccountNumber() {
+    //     if (!this.accountid){
+    //         // this.extractAccountFromFileName();
+    //         await this.extractAccountBySecondLine();
+    //     }
+    // }
 
 
     toUTC(datetime,dateFormat) {
