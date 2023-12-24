@@ -24,8 +24,10 @@ async function setup() {
 
   // Setup the filewatcher and start watching for transaction.
   const FileWatcher = require('./FileWatcher'); // Adjust the path according to your file structure
-  const watchDir = config.csv_watch || path.join(os.homedir(),"Downloads/bank_statements");
-  const fileWatcher = new FileWatcher(watchDir, "*.csv");
+  const watchDir     = config.csv_watch     || path.join(os.homedir(),"Downloads/bank_statements");
+  const processedDir = config.csv_processed || path.join(os.homedir(),"Downloads/bank_statements/processed");
+
+  const fileWatcher = new FileWatcher(watchDir,processedDir);
 
   fileWatcher.startWatching( (filePath) => csvpf.processCSVFile(filePath) );
 

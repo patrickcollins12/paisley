@@ -29,7 +29,7 @@ class CSVParserFactory {
         try {
             let parserDir = this.config.parsers;
             if (parserDir.startsWith("./")) {
-                console.log(`${parserDir} starts with ./`)
+                // console.log(`${parserDir} starts with ./`)
                 parserDir = path.join(__dirname, parserDir)
             }
             const files = await fs.readdir(parserDir);
@@ -72,23 +72,26 @@ class CSVParserFactory {
     async chooseParser(file) {
         const fileName = path.basename(file);
         let selectedParser = false;
+        let parser = null;
 
         // loop through each Parser to find one to use
         for (const [parserName, Parser] of Object.entries(this.parsers)) {
+            if (selectedParser) break;
+
             var cfg = this.config[ Parser.name ]
             let options = {
                 'fileName':file, 
                 'config':cfg, 
                 'bankdb':this.bankdb
             }
-            let parser = new Parser(options);
+            parser = new Parser(options);
 
             ////////////
             // First, try to select parser based on config entries
             // "ChaseCSVParser": {
             //     "accountExpands": {
-            //         "0378": "322271627 3162960378",
-            //         "7316": "322271627 5656297316"
+            //         "Chase0378": "322271627 3162960378",
+            //         "Chase7316": "322271627 5656297316"
             //     }
             // },
             if (!selectedParser) {
@@ -99,7 +102,7 @@ class CSVParserFactory {
                             console.log(`${parserName} for ${fileName} with accountid ${accountid}`)
                             selectedParser = true;
                             parser.accountid = accountid
-                            break
+                            break;
                             // return true
                         }
                     }    
@@ -125,16 +128,17 @@ class CSVParserFactory {
             if (!selectedParser) {
                 let accountid = await parser.extractAccountBySecondLine();
                 
-                if (accountid) selectedParser = true
+                if (accountid) {
+                    selectedParser = true
+                    break;
+                }
             }
 
-            if (selectedParser) {
-                return parser;    
-            }
 
         }
 
-        return null;
+        return parser;    
+        
     }
 
 }

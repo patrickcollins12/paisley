@@ -13,22 +13,40 @@ class BaseCSVParser {
     }
 
     async parse(filePath) {
-        const stream = fs.createReadStream(filePath).pipe(csv());
 
-        for await (const originalLine of stream) {
-            try {
-                const processedLine = this.processLine(originalLine);
-                const isAlreadyInserted = this.isAlreadyInserted(originalLine,processedLine);
-                // console.log("Isalreadyinserted:",isAlreadyInserted)
-                if (! isAlreadyInserted) {
-                    this.saveTransaction(originalLine,processedLine);
+        this.findAccountNumber();
+
+        const stream = fs.createReadStream(filePath).pipe(csv());
+        try {
+            for await (const originalLine of stream) {
+                try {
+                    const processedLine = this.processLine(originalLine);
+                    const isAlreadyInserted = this.isAlreadyInserted(originalLine,processedLine);
+                    // console.log("Isalreadyinserted:",isAlreadyInserted)
+                    if (! isAlreadyInserted) {
+                        this.saveTransaction(originalLine,processedLine);
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    // Handle the error appropriately
                 }
-            } catch (error) {
-                console.error("Error:", error);
-                // Handle the error appropriately
             }
+        } finally {
+            // Close the stream
+            stream.destroy();
+        }
+    
+
+        
+    }
+
+    async findAccountNumber() {
+        if (!this.accountid){
+            // this.extractAccountFromFileName();
+            await this.extractAccountBySecondLine();
         }
     }
+
 
     toUTC(datetime,dateFormat) {
         
@@ -150,15 +168,15 @@ class BaseCSVParser {
         throw new Error('matchesFileName() must be implemented in subclass');
     }
 
-    extractAccountFromFileName(fileName) {
+    extractAccountFromFileName() {
         try {
             // this.config = {
             //    "accountExpands": {
-            //        "0378": "3222716XX 3162960YYY",
-            //        "7316": "3222716XX 5656297YYY"
+            //        "Chase0378": "3222716XX 3162960YYY",
+            //        "Chase7316": "3222716XX 5656297YYY"
             //    }
             // }
-            var matches = fileName.match(/Chase(\d+)/ );
+            var matches = this.fileName.match(/Chase(\d+)/ );
             if (matches) {
                 var shortAccountName = matches[1];
                 var longAccountName = this.config.accountExpands[shortAccountName]
@@ -166,7 +184,6 @@ class BaseCSVParser {
             }
         } catch {}
     }
-
 
     async extractAccountBySecondLine() {
 

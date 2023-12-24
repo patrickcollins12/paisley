@@ -45,7 +45,8 @@ class BankwestCSVParser extends BaseCSVParser {
         
         processed.datetime = this.toUTC(l['Transaction Date'],this.dateFormat); // requires date format defined above.
         // processed.account = l['BSB Number'] + " " + l['Account Number']
-        processed.account = this.accountid
+        let bsb = l['BSB Number'].replace("-","")
+        processed.account = bsb+" "+l['Account Number']
         processed.description = l['Narration']
         processed.amount = - l['Debit'] || l['Credit']
         processed.type = l['Transaction Type']
