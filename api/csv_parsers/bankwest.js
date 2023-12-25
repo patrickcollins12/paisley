@@ -45,17 +45,13 @@ class BankwestCSVParser extends BaseCSVParser {
         
         processed.datetime = this.convertToLocalTime(l['Transaction Date']);
 
-        // processed.account = l['BSB Number'] + " " + l['Account Number']
         let bsb = l['BSB Number'].replace("-","")
         processed.account = bsb+" "+l['Account Number']
         processed.description = l['Narration']
-        // processed.amount = - l['Debit'] || l['Credit']
         processed.debit =  Math.abs(l['Debit']) || ""
         processed.credit = Math.abs(l['Credit']) || ""
-
         processed.type = l['Transaction Type']
         processed.balance = l['Balance']
-        // console.log("csvline:",l)
 
         return processed
     }

@@ -1,0 +1,6 @@
+- [x] add summary after parseFile
+- [ ] add a summary to the database? or write the filename?
+- [x] move processed files to processed/
+- [ ] run the scrapers, collect additonal info from bankwest
+- [x] find my old transactions
+- [ ] write the categorisers

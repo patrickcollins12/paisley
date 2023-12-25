@@ -11,20 +11,6 @@ class CSVParserFactory {
         this.bankdb = db;
     }
 
-    // loadParsersOLD() {
-    //     const parsersPath = path.join(__dirname, 'csv_parsers'); // Adjust 'parsers' to your directory name
-    //     fs.readdirSync(parsersPath).forEach(file => {
-    //         if (file.endsWith('.js')) {
-    //             const Parser = require(path.join(parsersPath, file));
-    //             this.parsers[ Parser.name ] = Parser;
-    //             try {
-    //                 Parser.config = this.config[ Parser.name ];                  
-    //             } catch { }
-                
-    //         }
-    //     });
-    // }
-
     async loadParsers() {
         try {
             let parserDir = this.config.parsers;
@@ -62,7 +48,7 @@ class CSVParserFactory {
         //   parser.setDB(bankdb);
           parser.bankdb = this.bankdb;
           parser.fileName = file;
-          parser.parse(file)  
+          await parser.parse(file)  
         }
         else {
           console.log(`Couldn't find parser for file ${file}`);

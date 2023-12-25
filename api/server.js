@@ -30,6 +30,7 @@ async function setup() {
   const fileWatcher = new FileWatcher(watchDir,processedDir);
 
   fileWatcher.startWatching( (filePath) => csvpf.processCSVFile(filePath) );
+  console.log("Watching for files")
 
 }
 

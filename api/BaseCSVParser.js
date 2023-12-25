@@ -2,6 +2,8 @@ const CSVParser = require('csv-parser');
 const fs = require('fs');
 const moment = require('moment-timezone');
 const readline = require('readline');
+const path = require('path');
+const ParseResults = require('./ParseResults.js');
 
 class BaseCSVParser {
 
@@ -10,6 +12,7 @@ class BaseCSVParser {
             this.fileName = options.fileName || "";
             this.config = options.config || {};
             this.headers = []; // csv headers, override if needed.
+            this.results = new ParseResults();
         }
     }
 
@@ -26,13 +29,24 @@ class BaseCSVParser {
         const stream = fs.createReadStream(filePath).pipe(csv);
         try {
             for await (const originalLine of stream) {
+                this.results.lines++;
                 try {
                     const processedLine = this.processLine(originalLine);
+
+                    this.results.setMinMaxDate("in_file",processedLine['datetime'])
+
                     const isAlreadyInserted = this.isAlreadyInserted(originalLine,processedLine);
                     // console.log("Isalreadyinserted:",isAlreadyInserted)
+
                     if (! isAlreadyInserted) {
                         this.saveTransaction(originalLine,processedLine);
+                        this.results.inserted++;
+                        this.results.setMinMaxDate("inserts",processedLine['datetime'])
+                    } else {
+                        this.results.skipped++;
+                        this.results.setMinMaxDate("skipped",processedLine['datetime'])
                     }
+
                 } catch (error) {
                     console.error("Error:", error);
                     // Handle the error appropriately
@@ -42,9 +56,11 @@ class BaseCSVParser {
             // Close the stream
             stream.destroy();
         }
-    
-
         
+        this.results['file'] = path.basename(this.fileName);
+        this.results['account'] = this.accountid
+        this.results['parser'] = this.constructor.name
+        console.log(this.results)
     }
 
     // async findAccountNumber() {
@@ -83,8 +99,8 @@ class BaseCSVParser {
     //     PRIMARY KEY("id" AUTOINCREMENT)
     // );
     saveTransaction(originalLine, processedLine) {
-        // console.log("Ready to save: ", processedLine)
-        // const columns = Object.keys(processedLine).join(', ');
+        
+        originalLine['file'] = path.basename(this.fileName);
         processedLine['jsondata'] = JSON.stringify(originalLine);
         const columns = Object.keys(processedLine).map(key => `"${key}"`).join(', ');
 
@@ -123,6 +139,7 @@ class BaseCSVParser {
         }
         
         if (countEmptyColumnVal > 2) {
+            this.results.faulty++;
             throw new Error("In the given transaction, 3 or more columns are undefined");
             return;
         }

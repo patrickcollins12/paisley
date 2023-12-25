@@ -41,7 +41,9 @@ class ChaseCSVParser extends BaseCSVParser {
     processLine(l) {
         let processed = {}
         
-        processed.datetime = this.toUTC(l['Posting Date'],this.dateFormat); // requires date format defined above.
+        // processed.datetime = this.toUTC(l['Posting Date'],this.dateFormat); // requires date format defined above.
+        processed.datetime = this.convertToLocalTime(l['Posting Date']);
+
         processed.account = this.accountid
         processed.description = l['Description']
         // processed.amount =  (l['Details'] === "DEBIT") ? -l['Amount'] : l['Amount']
