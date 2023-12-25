@@ -44,7 +44,10 @@ class ChaseCSVParser extends BaseCSVParser {
         processed.datetime = this.toUTC(l['Posting Date'],this.dateFormat); // requires date format defined above.
         processed.account = this.accountid
         processed.description = l['Description']
-        processed.amount = (l['Details'] === "DEBIT") ? -l['Amount'] : l['Amount']
+        // processed.amount =  (l['Details'] === "DEBIT") ? -l['Amount'] : l['Amount']
+        processed.debit  =  (l['Details'] === "DEBIT")  ? -l['Amount'] : "";
+        processed.credit =  (l['Details'] === "CREDIT") ? l['Amount'] : "";
+
         processed.type = l['Type']
         processed.balance = l['Balance']
         // console.log("csvline:",l)

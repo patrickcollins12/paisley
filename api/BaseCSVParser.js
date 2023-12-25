@@ -1,4 +1,4 @@
-const csv = require('csv-parser');
+const CSVParser = require('csv-parser');
 const fs = require('fs');
 const moment = require('moment-timezone');
 const readline = require('readline');
@@ -9,14 +9,21 @@ class BaseCSVParser {
         if(options) {
             this.fileName = options.fileName || "";
             this.config = options.config || {};
+            this.headers = []; // csv headers, override if needed.
         }
     }
 
     async parse(filePath) {
 
-        // this.findAccountNumber();
+        // this.findAccountNumber()
+        let csv
+        if (this.headers && this.headers.length > 0) {
+            csv = CSVParser(this.headers)
+        } else {
+            csv = CSVParser()
+        }
 
-        const stream = fs.createReadStream(filePath).pipe(csv());
+        const stream = fs.createReadStream(filePath).pipe(csv);
         try {
             for await (const originalLine of stream) {
                 try {
@@ -226,7 +233,12 @@ class BaseCSVParser {
             }).on('error', reject);
         });
     }
-
+ 
+    // uses the dateFormat and timezone specified in the parser 
+    // to return an ISO time in that timezone
+    convertToLocalTime( datetime){
+        return moment.tz(datetime, this.dateFormat, this.timezone).format();
+    }
 
 }
 

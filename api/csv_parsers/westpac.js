@@ -46,8 +46,8 @@ class WestpacCSVParser extends BaseCSVParser {
     processLine(l) {
         let processed = {}
         
-        processed.datetime = this.toUTC(l['Date'],this.dateFormat); // requires date format defined above.
-        
+        processed.datetime = this.convertToLocalTime(l['Date']);
+
         let acc = l['Bank Account']
         try {
             acc = this.config.firstLinePatterns[acc];
@@ -56,7 +56,9 @@ class WestpacCSVParser extends BaseCSVParser {
         processed.account = acc || l['Bank Account']
 
         processed.description = l['Narrative']
-        processed.amount = - l['Debit Amount'] || l['Credit Amount']
+        // processed.amount = - l['Debit Amount'] || l['Credit Amount']
+        processed.debit = l['Debit Amount']
+        processed.credit = l['Credit Amount']
         processed.balance = l['Balance']
         processed.type = l['Categories']
         // console.log("csvline:",l)

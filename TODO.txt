@@ -1,5 +1,21 @@
-add insertion summary
+add summary after parseFile
+add a summary to the database? or write the filename?
 move processed files to processed/
 run the scrapers, collect additonal info from bankwest
 find my old transactions
 write the categorisers
+
+
+BUG:
+When moving a csv file:
+
+node:internal/process/promises:289
+            triggerUncaughtException(err, true /* fromPromise */);
+            ^
+
+[Error: ENOENT: no such file or directory, open '/Users/patrick/Downloads/bank_statements/CSVData(1).csv'] {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/Users/patrick/Downloads/bank_statements/CSVData(1).csv'
+}
