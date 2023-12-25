@@ -38,13 +38,24 @@ class BaseCSVParser {
                     const isAlreadyInserted = this.isAlreadyInserted(originalLine,processedLine);
                     // console.log("Isalreadyinserted:",isAlreadyInserted)
 
-                    if (! isAlreadyInserted) {
-                        this.saveTransaction(originalLine,processedLine);
-                        this.results.inserted++;
-                        this.results.setMinMaxDate("inserts",processedLine['datetime'])
-                    } else {
-                        this.results.skipped++;
-                        this.results.setMinMaxDate("skipped",processedLine['datetime'])
+                    let isValid = true;
+                    try {
+                        this.isRecordValid(processedLine);
+
+                        if (! isAlreadyInserted) {
+                            this.saveTransaction(originalLine,processedLine);
+                            this.results.inserted++;
+                            this.results.setMinMaxDate("inserts",processedLine['datetime'])
+                        } else {
+                            this.results.skipped++;
+                            this.results.setMinMaxDate("skipped",processedLine['datetime'])
+                        }
+                    }
+                    catch (error) {
+                        // Handle the invalid record case
+                        console.log('Invalid record encountered:', error);
+                        this.results.invalid++; // Assuming you're tracking invalid records
+                        // Other error handling logic here
                     }
 
                 } catch (error) {
@@ -139,7 +150,7 @@ class BaseCSVParser {
         }
         
         if (countEmptyColumnVal > 2) {
-            this.results.faulty++;
+            this.results.invalid++;
             throw new Error("In the given transaction, 3 or more columns are undefined");
             return;
         }
@@ -168,6 +179,23 @@ class BaseCSVParser {
 
     }
 
+    isRecordValid(line) {
+        // this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+
+        if (this.mustExistBeforeSaving) {
+            for (const column of this.mustExistBeforeSaving) {
+                if (column == "debit or credit") {
+                    if (line['debit'] == null && line['credit'] == null) {
+                        throw new Error(`${column} must be set on row ${this.results.lines}`)
+                    }
+                }
+                else if (line[column] == null) {
+                    throw new Error(`${column} must be set on row ${this.results.lines}`)
+                }
+            }
+        }
+        return true;
+    }
 
     processLine(line) {
         throw new Error('processLine() must be implemented in subclass');

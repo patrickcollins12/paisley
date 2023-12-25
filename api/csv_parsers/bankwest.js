@@ -53,6 +53,8 @@ class BankwestCSVParser extends BaseCSVParser {
         processed.type = l['Transaction Type']
         processed.balance = l['Balance']
 
+        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+
         return processed
     }
 

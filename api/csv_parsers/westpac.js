@@ -10,6 +10,8 @@ class WestpacCSVParser extends BaseCSVParser {
         this.timezone = 'Australia/Sydney'
         this.dateFormat = 'DD/MM/YYYY'
 
+        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+
         // what columns from the incoming csv file define a unique record
         this.uniqueColumns = ['Date', 'Bank Account', 'Narrative', 'Balance' ]
     }
@@ -63,6 +65,8 @@ class WestpacCSVParser extends BaseCSVParser {
         processed.type = l['Categories']
         // console.log("csvline:",l)
 
+        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+        
         return processed
     }
 

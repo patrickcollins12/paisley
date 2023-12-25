@@ -12,6 +12,9 @@ class ChaseCSVParser extends BaseCSVParser {
 
         // what columns from the incoming csv file define a unique record
         this.uniqueColumns = ['Posting Date', 'Description', 'Amount', 'Balance' ]
+
+        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+    
     }
 
 

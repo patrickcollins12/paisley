@@ -60,6 +60,9 @@ class CBACSVParser extends BaseCSVParser {
 
         processed.balance = l['Balance']
 
+        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+
+        
         return processed
     }
 

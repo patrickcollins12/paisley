@@ -9,7 +9,7 @@ class ParseResults {
         this.lines = 0;
         this.inserted = 0;
         this.skipped = 0;
-        this.faulty = 0;
+        this.invalid = 0;
         this.dates = {}
     }
 

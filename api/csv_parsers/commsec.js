@@ -10,9 +10,8 @@ class CommsecCSVParser extends BaseCSVParser {
         this.timezone = 'Australia/Sydney'
         this.dateFormat = 'DD/MM/YYYY'
 
-        // if headers is defined, then csv-parser will 
-        // assume there is no header record in the file
-        // this.headers = ['Date','Reference','Balance($)','Balance']
+
+        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
 
         // what columns from the incoming csv file define a unique record
         this.uniqueColumns = ['Date', 'Reference', 'Balance($)' ]
@@ -40,6 +39,8 @@ class CommsecCSVParser extends BaseCSVParser {
         processed.credit = l['Credit($)']
         processed.balance = l['Balance($)']
 
+        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+        
         return processed
     }
 
