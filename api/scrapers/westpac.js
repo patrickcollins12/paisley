@@ -26,7 +26,7 @@ test('test', async ({ page }) => {
   await page.getByRole('button', { name: 'Export' }).click();
   const download = await downloadPromise;
 
-  const fileName = [bank_config['csv_prepend'], process.pid, download.suggestedFilename()].join('_')
+  const fileName = [bank_config['identifier'], process.pid, download.suggestedFilename()].join('_')
   let csv_location = path.join( config['csv_watch'], fileName );
   await download.saveAs(csv_location);
   console.log(`Saved to ${csv_location}`)

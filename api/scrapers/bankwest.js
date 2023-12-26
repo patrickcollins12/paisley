@@ -20,7 +20,7 @@ test('test', async ({ page }) => {
   const download = await downloadPromise;
 
   // Wait for the download process to complete and save the downloaded file somewhere.
-  const fileName = [bank_config['csv_prepend'], process.pid, download.suggestedFilename()].join('_')
+  const fileName = [bank_config['identifier'], process.pid, download.suggestedFilename()].join('_')
   let csv_location = path.join( config['csv_watch'], fileName );
   await download.saveAs(csv_location);
   console.log(`Saved to ${csv_location}`)

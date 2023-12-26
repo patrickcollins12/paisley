@@ -5,7 +5,7 @@ const path = require('path');
 class ConfigManager {
     constructor(appName, templateConfig) {
         this.appName = appName;
-        this.configFilePath = path.join(os.homedir(), `.${appName}`, 'config.json');
+        this.configFilePath = path.join(os.homedir(), `${appName}`, 'config.json');
         
         // Default template configuration
         this.defaultTemplateConfig = {
