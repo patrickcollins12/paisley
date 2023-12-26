@@ -4,7 +4,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const CSVParserFactory = require('./CSVParserFactory'); // Adjust the path according to your file structure
 const BankDatabase = require('./BankDatabase');
-const ConfigManager = require('./ConfigManager.js');
 const os = require('os');
 const path = require('path');
 
@@ -12,9 +11,8 @@ app.use(cors());
 app.use(bodyParser.json());
 
 async function setup() {
-  // Using default template configuration
-  const configManager = new ConfigManager('pfm');
-  const config = configManager.readConfig();
+
+  const config = require('./ConfigLoader');
 
   // open the DB
   const bankdb = new BankDatabase( config.database )

@@ -1,9 +1,7 @@
 import { test } from '@playwright/test';
 const path = require('path');
 
-const ConfigManager = require('../ConfigManager.js');
-const configManager = new ConfigManager('pfm');
-const config = configManager.readConfig();
+const config = require('../ConfigLoader');
 const bank_config = config['BankwestScraper'];
 
 test('test', async ({ page }) => {

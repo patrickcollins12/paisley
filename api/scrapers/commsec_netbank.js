@@ -2,8 +2,9 @@ import { test, expect } from '@playwright/test';
 const os = require('os');
 const path = require('path');
 
-const config = require(os.homedir() + '/pfm/config.js');
+const config = require('../ConfigLoader');
 const bank_config = config['CBAScraper'];
+
 
 test('test', async ({ page }) => {
     await page.goto('https://www2.commsec.com.au/secure/login?LoginResult=LoginRequired&r=https%3a%2f%2fwww2.commsec.com.au%2f');

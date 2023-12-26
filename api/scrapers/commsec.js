@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 const os = require('os');
 const path = require('path');
 
-const config = require(os.homedir() + '/pfm/config.js');
+const config = require('../ConfigLoader');
 const bank_config = config['CommsecScraper'];
 
 test('test', async ({ page }) => {

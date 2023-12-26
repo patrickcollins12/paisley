@@ -1,9 +1,3 @@
-// const fs = require('fs');
-// const fs = require('fs').promises;
-// const path = require('path');
-// const readline = require('readline');
-// const { createReadStream } = require('fs');
-
 class ParseResults {
     constructor(config,db) {
         this.lines = 0;
