@@ -5,6 +5,8 @@ const config = require('../ConfigLoader');
 const bank_config = config['BankwestScraper'];
 
 test('test', async ({ page }) => {
+  test.slow();
+
   await page.goto('https://ibs.bankwest.com.au/Session/PersonalLogin');
   await page.getByRole('textbox', { name: 'Personal Access Number (PAN)' }).fill(bank_config['pan']);
   await page.getByRole('textbox', { name: 'Password' }).fill(bank_config['password']);
