@@ -4,6 +4,11 @@ const path = require('path');
 const config = require('../ConfigLoader');
 const bank_config = config['BankwestScraper'];
 
+// $30,450.00 --> 30450.00
+function cleanPrice(price) {
+  return content.replace(/[^0-9.]/g, "");
+}
+
 //////////////
 // transactionDetails[heading] = content;
 // modifyRowContent(transactionDetails,heading);
@@ -22,9 +27,8 @@ function modifyRowContent(obj, heading) {
   }
 
   // Debit amount or Credit amount
-  // $30,450.00 --> 30450.00
   else if (heading && /amount/i.test(heading)) {
-      obj[heading] = content.replace(/[^0-9.]/g, "");
+      obj[heading] = cleanPrice(content);
   }
 
   /*
@@ -114,8 +118,21 @@ async function extractTable(page,id) {
   return data;
 }
 
+function createFullURLfromPath(pageUrl,url){
+
+  if (!url.startsWith('http')) {
+    const u = new URL(pageUrl);
+ 
+    u.pathname = url;
+    url = u.toString();
+  }
+
+  return url;
+}
+
 test('test', async ({ page }) => {
-  
+  return;
+
   test.setTimeout(300000);
 
   await page.goto('https://ibs.bankwest.com.au/Session/PersonalLogin');
@@ -123,93 +140,92 @@ test('test', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Password' }).fill(bank_config['password']);
   await page.getByRole('button', { name: 'Login' }).click();
 
-  // await page.getByRole('link', { name: '302-985 1358636' }).click();
-
-  // const frame = page.frameLocator('#appObject'); // Locate the iframe
-  // const textHtml = await frame.locator('.account-info-details').innerText(); // Get the innerText of the element within the iframe
-  // console.log(textHtml);
-
   await expect(page.getByText('Accounts as at')).toBeVisible();
 
-  // find TransactionList items
-  const urlPattern = /TransactionList\.aspx/;
-  const matchingHrefs = await page.$$eval('a', (anchors, urlPattern) => {
-    // Filter anchors that match the regex pattern
-    return anchors
-      .map(anchor => anchor.href)
-      .filter(href => urlPattern.test(href));
-  }, urlPattern);
-
-
-  console.log(matchingHrefs);
+  let accounts = await extractTable(page,'#_ctl0_ContentMain_grdBalances')
 
   /////
   // foreach account
-  for (const url of matchingHrefs) {
-    await page.goto(url);
-    await expect(page.getByText('Transaction Listing')).toBeVisible();
+  for (const account of accounts) {
+    let url = account['url'];
+ 
+    // console.log(origUrl,url);
+    let fullUrl = createFullURLfromPath(page.url(), url)
+    console.log(url)
+    console.log(fullUrl)
+    await page.goto(fullUrl);
 
-    // find each url
-    const urlPattern = /aspx/;
-    const matchingHrefs2 = await page.$$eval('#_ctl0_ContentMain_grdTransactionList a', (anchors, urlPattern) => {
-      // Filter anchors that match the regex pattern
-      return anchors
-        .map(anchor => anchor.href)
-        .filter(href => urlPattern.test(href));
-    }, urlPattern);
+    await expect(page.getByText('Transaction Listing')).toBeVisible();
+    let transactions = await extractTable(page,'#_ctl0_ContentMain_grdTransactionList')
+
+    console.log(transactions)
+  }
+    
+
+    // await page.goto(url);
+    // await expect(page.getByText('Transaction Listing')).toBeVisible();
+
+    // // find each url
+    // const urlPattern = /aspx/;
+    // const matchingHrefs2 = await page.$$eval('#_ctl0_ContentMain_grdTransactionList a', (anchors, urlPattern) => {
+    //   // Filter anchors that match the regex pattern
+    //   return anchors
+    //     .map(anchor => anchor.href)
+    //     .filter(href => urlPattern.test(href));
+    // }, urlPattern);
 
     
 
-    //////
-    // foreach transaction
-    console.log(matchingHrefs2);
-    for (const url of matchingHrefs2) {
-      await page.goto(url);
-      // const frame = page.frameLocator('#appObject'); // Locate the iframe
-      // Get frame using the frame's name attribute
-      const frame = await page.frameLocator('#appObject');
-      // const textHtml = await frame.locator('.account-info-details').innerText(); // Get the innerText of the element within the iframe
+    // //////
+    // // foreach transaction
+    // console.log(matchingHrefs2);
+    // for (const url of matchingHrefs2) {
+    //   await page.goto(url);
+    //   // const frame = page.frameLocator('#appObject'); // Locate the iframe
+    //   // Get frame using the frame's name attribute
+    //   const frame = await page.frameLocator('#appObject');
+    //   // const textHtml = await frame.locator('.account-info-details').innerText(); // Get the innerText of the element within the iframe
 
-      //////
-      // get the Details or Transaction Details header from the transaction page
-      await expect(frame.locator('h1').getByText('Details')).toBeVisible();
+    //   //////
+    //   // get the Details or Transaction Details header from the transaction page
+    //   await expect(frame.locator('h1').getByText('Details')).toBeVisible();
 
-      /*
-        transaction-details
-          transaction-details-row
-            transaction-details-heading Key
-            transaction-details-content Val
-      */
-      const rowsLocator = frame.locator('.transaction-details .transaction-details-row');
-      const rowCount = await rowsLocator.count();
+    //   /*
+    //     transaction-details
+    //       transaction-details-row
+    //         transaction-details-heading Key
+    //         transaction-details-content Val
+    //   */
+    //   const rowsLocator = frame.locator('.transaction-details .transaction-details-row');
+    //   const rowCount = await rowsLocator.count();
       
 
-      let transactionDetails = {};
-      for (let i = 0; i < rowCount; i++) {
-          const headingLocator = rowsLocator.nth(i).locator('.transaction-details-heading');
-          const contentLocator = rowsLocator.nth(i).locator('.transaction-details-content');
+    //   let transactionDetails = {};
+    //   for (let i = 0; i < rowCount; i++) {
+    //       const headingLocator = rowsLocator.nth(i).locator('.transaction-details-heading');
+    //       const contentLocator = rowsLocator.nth(i).locator('.transaction-details-content');
       
-          let heading = await headingLocator.textContent();
-          // const content = await contentLocator.textContent();
+    //       let heading = await headingLocator.textContent();
+    //       // const content = await contentLocator.textContent();
       
-          let content = await contentLocator.evaluate(node => {
-              return Array.from(node.querySelectorAll('b')).map(b => b.textContent.trim()).join('\n');
-          });
+    //       let content = await contentLocator.evaluate(node => {
+    //           return Array.from(node.querySelectorAll('b')).map(b => b.textContent.trim()).join('\n');
+    //       });
       
-          heading = heading.trim();
+    //       heading = heading.trim();
           
-          transactionDetails[heading] = content;
-          modifyRowContent(transactionDetails,heading);
+    //       transactionDetails[heading] = content;
+    //       modifyRowContent(transactionDetails,heading);
 
 
-      }
+    //   }
 
-      console.log(transactionDetails);
+    //   console.log(transactionDetails);
 
 
-    }
+    // }
 
-  }
+  // }
 
 });
 

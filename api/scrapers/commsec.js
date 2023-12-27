@@ -1,7 +1,5 @@
 import { test, expect } from '@playwright/test';
-const os = require('os');
-const path = require('path');
-
+const util = require('../ScraperUtil');
 const config = require('../ConfigLoader');
 const bank_config = config['CommsecScraper'];
 
@@ -20,9 +18,8 @@ test('test', async ({ page }) => {
   await page.getByRole('button', { name: 'Download CSV CSV' }).click();
   const download = await downloadPromise;
 
-  const fileName = [bank_config['identifier'], process.pid, download.suggestedFilename()].join('_')
-  let csv_location = path.join( config['csv_watch'], fileName );
-  await download.saveAs(csv_location);
-  console.log(`Saved to ${csv_location}`)
+  // Wait for the download process to complete and save the downloaded file somewhere.
+  await util.saveCSVFromPromise(bank_config, config['csv_watch'], download)
+
 
 });

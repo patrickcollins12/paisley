@@ -50,13 +50,32 @@ async function extractTable(page,id) {
 }
 
 test('test', async ({ page }) => {
-  await page.goto('http://localhost:8080/Bankwest%20Online%20Banking%202.html');
+  return;
 
-  await expect(page.getByText('Transaction listing')).toBeVisible();
+  
+  await page.goto('http://localhost:8080/Bankwest%20Online%20Banking.html');
 
-  let data = await extractTable(page,'#_ctl0_ContentMain_grdTransactionList')
-  console.log(data);
+  await expect(page.getByText('Accounts as at')).toBeVisible();
 
+  // let data = await extractTable(page,'#_ctl0_ContentMain_grdTransactionList')
+  // let data = await extractTable(page,'#_ctl0_ContentMain_grdBalances')
+  // console.log(data);
 
+  function createFullURLfromPath(pageUrl,url){
 
+    if (!url.startsWith('http')) {
+      const u = new URL(pageUrl);
+      // console.log(u)
+  
+      u.pathname = origUrl;
+      url = u.toString();
+    }
+
+    return url;
+  }
+
+  let origUrl = "/CMWeb/AccountManage/AccountManage.aspx?q=lhk6admO%2fDKMp%2femSB%2b8s0ElAVCAIblL9oR753VECqRQwnbaawFipUDaMR5%2b8B%2bncChP1773slj1Ou%2bgpftJGgoWF3sw7Y0O0l1OZbaJPVY%3d";
+  console.log(createFullURLfromPath(page.url(), origUrl));
+
+  
 });

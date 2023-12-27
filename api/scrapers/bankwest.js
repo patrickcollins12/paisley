@@ -1,6 +1,5 @@
 import { test } from '@playwright/test';
-const path = require('path');
-
+const util = require('../ScraperUtil');
 const config = require('../ConfigLoader');
 const bank_config = config['BankwestScraper'];
 
@@ -20,9 +19,6 @@ test('test', async ({ page }) => {
   const download = await downloadPromise;
 
   // Wait for the download process to complete and save the downloaded file somewhere.
-  const fileName = [bank_config['identifier'], process.pid, download.suggestedFilename()].join('_')
-  let csv_location = path.join( config['csv_watch'], fileName );
-  await download.saveAs(csv_location);
-  console.log(`Saved to ${csv_location}`)
+  await util.saveCSVFromPromise(bank_config, config['csv_watch'], download)
 
 });
