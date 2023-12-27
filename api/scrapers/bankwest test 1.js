@@ -69,6 +69,51 @@ function modifyRowContent(obj, heading) {
 }
 
 
+async function extractTable(page,id) {
+  /////////
+  // Extract the table:
+  //    <table id=#_ctl0_ContentMain_grdTransactionList
+  //      thead > th > td td td
+  //              th > td td td
+  //      tbody > tr > td td td
+  //              tr > td td td
+  let headers = [];
+  let data = []
+  let table = page.locator(id);
+
+  // get the headers
+  for (const th of await (table.locator('thead th').all())) {
+    const td = (await th.innerText()).trim();
+    headers.push(td);
+  }
+
+  // foreach tr row
+  for (const row of await table.locator('tbody tr').all()) {
+
+    // foreach td column
+    let resultRow = {}
+    let j = 0
+    for (const col of await row.locator('td').all()) {
+
+      // extract the url and store it
+      const link = col.locator('a');
+      if (await link.count() > 0) {
+        const url = await link.getAttribute('href');
+        if (url) resultRow['url'] = url
+      }
+
+      // store the val
+      const colText = (await col.innerText()).trim();
+      if (colText) {
+        resultRow[headers[j++]] = colText;
+      }
+    }
+    data.push(resultRow);
+  }
+
+  return data;
+}
+
 test('test', async ({ page }) => {
   
   test.setTimeout(300000);
@@ -104,6 +149,7 @@ test('test', async ({ page }) => {
     await page.goto(url);
     await expect(page.getByText('Transaction Listing')).toBeVisible();
 
+    // find each url
     const urlPattern = /aspx/;
     const matchingHrefs2 = await page.$$eval('#_ctl0_ContentMain_grdTransactionList a', (anchors, urlPattern) => {
       // Filter anchors that match the regex pattern
@@ -111,6 +157,8 @@ test('test', async ({ page }) => {
         .map(anchor => anchor.href)
         .filter(href => urlPattern.test(href));
     }, urlPattern);
+
+    
 
     //////
     // foreach transaction
