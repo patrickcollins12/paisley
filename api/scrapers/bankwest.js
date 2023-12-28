@@ -18,7 +18,6 @@ test('test', async ({ page }) => {
   await page.getByRole('link', { name: 'Export' }).click();
   const download = await downloadPromise;
 
-  // Wait for the download process to complete and save the downloaded file somewhere.
   await util.saveCSVFromPromise(bank_config, config['csv_watch'], download)
 
 });

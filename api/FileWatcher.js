@@ -19,7 +19,7 @@ class FileWatcher {
           console.error(`Error occurred while moving the file: ${sourcePath} `, err);
           return;
         }
-        console.log(`Moved \"${fileName}\" to ${destinationDir}`);
+        console.log(`Moved \"${fileName}\" to ${destinationDir}\n\n`);
     });
   }
 
@@ -34,8 +34,9 @@ class FileWatcher {
       //   console.log("Calling ", callfunc, " with ", event, path);
       let re = /\.csv$/i;
       if (event == "add" && re.test(path)) {
-        await callfunc(path);
-        this.moveFile(path,this.processed)
+        if (await callfunc(path)){
+          this.moveFile(path,this.processed)
+        }
       }
 
     });
