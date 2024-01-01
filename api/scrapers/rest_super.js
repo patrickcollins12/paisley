@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
 const util = require('../ScraperUtil');
+
 const config = require('../ConfigLoader');
 const bank_config = config['RestSuperScraper'];
 const path = require('path');
-const moment = require('moment');
-
+// const moment = require('moment');
+const { DateTime } = require("luxon");
 
 // console.log (outCSVFile);
 
@@ -48,20 +49,26 @@ test('test', async ({ page }) => {
     let cleanBalance = util.cleanPrice(rawBalance);
 
     // setup the csv filename
-    const dated = moment(new Date()).format('YYYY_MM_DD');
+    // const dated = moment(new Date()).format('YYYY_MM_DD');
+    const dated = DateTime.now().setZone("Australia/Sydney").toISODate();
+    // DateTime.local().setZone()
+
     let fn = `${bank_config['identifier']}_balance_${dated}.csv`
     let outCSVFile = path.join(config['csv_watch'], fn);
 
     // setup the csv data
     let data = [
         {
-            'date': new Date().toISOString(),
-            'balance': cleanBalance
+            'datetime': DateTime.now().setZone("Australia/Sydney"),
+            'account': bank_config['account'],
+            'description': "Balance check",
+            'balance': cleanBalance,
+            'type': "BAL"
         }
     ]
 
     // console.log(data)
-    // console.log(outCSVFile)
+    console.log(outCSVFile)
 
     await util.saveDataToCSV(outCSVFile, data);
     // await util.saveCSVFromPromise(bank_config, downloadPromise)

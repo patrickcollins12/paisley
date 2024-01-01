@@ -20,7 +20,7 @@ class CBACSVParser extends BaseCSVParser {
 
     matchesFileName(fileName) {
         // Logic to determine if this parser should handle the file based on the file name
-        return fileName.includes('CSVData');
+        return this.matchFileExpands(fileName);
     }
 
     // static matchesSecondLine(firstDataLine) {
@@ -41,10 +41,11 @@ class CBACSVParser extends BaseCSVParser {
         
         processed.datetime = this.convertToLocalTime(l['Date']);
         
-        processed.account = "cba account"
-        try {
-            processed.account = this.config.accountExpands['CSVData'];
-        } catch {}
+        processed.account = this.accountid
+
+        // try {
+        //     processed.account = this.config.accountExpands['CSVData'];
+        // } catch {}
 
         processed.description = l['Description']
         // processed.amount = l['Amount']

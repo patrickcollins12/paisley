@@ -11,7 +11,7 @@ class ConfigLoader {
         try {
             config = require(this.configFilePath);
         } catch (error) {
-            console.log(`config file not found: ${this.configFilePath}`)
+            console.log(`config file couldn't be loaded: ${this.configFilePath}`,error)
             process.exit(1);
         }
 

@@ -43,6 +43,14 @@ class BankwestCSVParser extends BaseCSVParser {
     processLine(l) {
         let processed = {}
         
+        let narration = l['Narration']
+        let str = ""
+        str.toLower
+        if (narration.toLowerCase().startsWith("authorisation only")) {
+            // console.log(`Skipping ${narration}`)
+            return null;
+        }
+
         processed.datetime = this.convertToLocalTime(l['Transaction Date']);
 
         let bsb = l['BSB Number'].replace("-","")

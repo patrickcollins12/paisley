@@ -17,14 +17,13 @@ class ChaseCSVParser extends BaseCSVParser {
     
     }
 
-
     matchesFileName(fileName) {
-        // Logic to determine if this parser should handle the file based on the file name
-        return fileName.toLowerCase().includes('chase');
+        return this.matchFileExpands(fileName)
     }
 
-
+    // Transaction Date, Post Date, Description,Category, Type, Amount, Memo
     // Details,Posting Date,Description,Amount,Type,Balance,Check or Slip #
+
     // DEBIT,11/07/2023,"TRANSFER TO SAV XXXXX7316 11/07",-5.00,ACCT_XFER,3153.40,,
     // DEBIT,11/06/2023,"VENMO            PAYMENT    1030380922540   WEB ID: 3264681992",-86.00,ACH_DEBIT,3158.40,,
     // CREDIT,11/06/2023,"VENMO            CASHOUT                    PPD ID: 5264681992",44.00,ACH_CREDIT,3244.40,,

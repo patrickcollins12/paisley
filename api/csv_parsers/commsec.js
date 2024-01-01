@@ -19,13 +19,12 @@ class CommsecCSVParser extends BaseCSVParser {
 
     matchesFileName(fileName) {
         // Logic to determine if this parser should handle the file based on the file name
-        return fileName.includes('Transactions_');
+        return this.matchFileExpands(fileName);
     }
 
     // Date	        Reference	Details	    Debit($)	Credit($)	Balance($)
     // 20/12/2023	P31642730	Direct Transfer - Payee MR PATRICK DEWAR COLLINS	14450.05		0.00
     // 18/12/2023	C148177126	S 400 IZZ @ 36.200000		14450.05	-14450.05
-
     processLine(l) {
         let processed = {}
         

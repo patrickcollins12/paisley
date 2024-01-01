@@ -8,7 +8,7 @@ const ParseResults = require('./ParseResults.js');
 class BaseCSVParser {
 
     constructor(options) {
-        if(options) {
+        if (options) {
             this.fileName = options.fileName || "";
             this.config = options.config || {};
             this.headers = []; // csv headers, override if needed.
@@ -33,22 +33,27 @@ class BaseCSVParser {
                 try {
                     const processedLine = this.processLine(originalLine);
 
-                    this.results.setMinMaxDate("in_file",processedLine['datetime'])
+                    if (!processedLine) {
+                        this.results.skipped++;
+                        continue
+                    }
 
-                    const isAlreadyInserted = this.isAlreadyInserted(originalLine,processedLine);
+                    this.results.setMinMaxDate("in_file", processedLine['datetime'])
+
+                    const isAlreadyInserted = this.isAlreadyInserted(originalLine, processedLine);
                     // console.log("Isalreadyinserted:",isAlreadyInserted)
 
                     let isValid = true;
                     try {
                         this.isRecordValid(processedLine);
 
-                        if (! isAlreadyInserted) {
-                            this.saveTransaction(originalLine,processedLine);
+                        if (!isAlreadyInserted) {
+                            this.saveTransaction(originalLine, processedLine);
                             this.results.inserted++;
-                            this.results.setMinMaxDate("inserts",processedLine['datetime'])
+                            this.results.setMinMaxDate("inserts", processedLine['datetime'])
                         } else {
                             this.results.skipped++;
-                            this.results.setMinMaxDate("skipped",processedLine['datetime'])
+                            this.results.setMinMaxDate("skipped", processedLine['datetime'])
                         }
                     }
                     catch (error) {
@@ -67,7 +72,7 @@ class BaseCSVParser {
             // Close the stream
             stream.destroy();
         }
-        
+
         this.results['file'] = path.basename(this.fileName);
         this.results['account'] = this.accountid
         this.results['parser'] = this.constructor.name
@@ -82,17 +87,17 @@ class BaseCSVParser {
     // }
 
 
-    toUTC(datetime,dateFormat) {
-        
-        if (! this.timezone ) {
+    toUTC(datetime, dateFormat) {
+
+        if (!this.timezone) {
             throw new Error("this.timezone is undefined and must be implemented in the parser.");
         }
 
-        if (! this.dateFormat ) {
+        if (!this.dateFormat) {
             throw new Error("this.dateFormat is undefined and must be implemented in the parser.");
         }
 
-        if (! moment.tz.zone(this.timezone)) {
+        if (!moment.tz.zone(this.timezone)) {
             throw new Error("this.timezone specifies a strange and unknown timezone.");
         }
 
@@ -110,9 +115,9 @@ class BaseCSVParser {
     //     PRIMARY KEY("id" AUTOINCREMENT)
     // );
     saveTransaction(originalLine, processedLine) {
-        
         originalLine['file'] = path.basename(this.fileName);
         processedLine['jsondata'] = JSON.stringify(originalLine);
+
         const columns = Object.keys(processedLine).map(key => `"${key}"`).join(', ');
 
         const placeholders = Object.keys(processedLine).map(() => '?').join(', ');
@@ -141,20 +146,20 @@ class BaseCSVParser {
         for (const uc of this.uniqueColumns) {
             let newVal = originalLine[uc] || '';
             if (!newVal) countEmptyColumnVal++;
-        
+
             // Escape single quotes for SQL by replacing them with two single quotes
             let safeUc = uc.replace(/"/g, '""');
             let safeNewVal = newVal.replace(/'/g, "''");
-        
+
             ucs.push(`json_extract(jsondata, '$."${safeUc}"') = '${safeNewVal}'`);
         }
-        
+
         if (countEmptyColumnVal > 2) {
             this.results.invalid++;
             throw new Error("In the given transaction, 3 or more columns are undefined");
             return;
         }
-        
+
         query += ucs.join(' AND ')
 
         try {
@@ -165,12 +170,12 @@ class BaseCSVParser {
 
             // console.log(`result: ${result}, resultCount: ${rowCount}` )
 
-            if (rowCount>1) {
+            if (rowCount > 1) {
                 throw new Error(`Multiple matching rows already exist (${rowCount}) for `, originalLine)
             }
-    
-            return rowCount; 
-    
+
+            return rowCount;
+
         } catch (err) {
             console.error("Database error:", err.message);
             throw err; // Rethrowing the error is optional, depends on how you want to handle it
@@ -220,70 +225,87 @@ class BaseCSVParser {
         throw new Error('matchesFileName() must be implemented in subclass');
     }
 
-    extractAccountFromFileName() {
+    matchFileExpands(fileName) {
+        let found = false;
         try {
-            // this.config = {
-            //    "accountExpands": {
-            //        "Chase0378": "3222716XX 3162960YYY",
-            //        "Chase7316": "3222716XX 5656297YYY"
-            //    }
-            // }
-            var matches = this.fileName.match(/Chase(\d+)/ );
-            if (matches) {
-                var shortAccountName = matches[1];
-                var longAccountName = this.config.accountExpands[shortAccountName]
-                this.accountName = longAccountName;
+            for (const [pattern, accountid] of Object.entries(this.config.fileExpands)) {
+                if (fileName.includes(pattern)) {
+                    console.log(`setting accountid: ${accountid}`)
+                    this.accountid = accountid
+                    found = true; break;
+                }
             }
-        } catch {}
+        }
+        catch (error) {
+            console.log('error:', error)
+        }
+        return found;
     }
+
+    // extractAccountFromFileName() {
+    //     try {
+    //         // this.config = {
+    //         //    "accountExpands": {
+    //         //        "Chase0378": "3222716XX 3162960YYY",
+    //         //        "Chase7316": "3222716XX 5656297YYY"
+    //         //    }
+    //         // }
+    //         var matches = this.fileName.match(/Chase(\d+)/ );
+    //         if (matches) {
+    //             var shortAccountName = matches[1];
+    //             var longAccountName = this.config.accountExpands[shortAccountName]
+    //             this.accountName = longAccountName;
+    //         }
+    //     } catch {}
+    // }
 
     async extractAccountBySecondLine() {
 
-        // console.log(this);
-        return new Promise((resolve, reject) => {
-            const rl = readline.createInterface({
-                input: fs.createReadStream(this.fileName),
-                crlfDelay: Infinity
-            });
-
-            let lineCount = 0;
-            rl.on('line', (line) => {
-                lineCount++;
-                if (lineCount === 1) return; // Skip the first line
-
-                if (lineCount === 2) {
-                    try {
-                        // var parserConfig = this.config[ Parser.name ]
-                        for (const [pattern, accountid] of Object.entries(this.config.firstLinePatterns)) {
-                            if (line.includes(pattern)) {
-                                this.accountid = accountid
-                                // console.log(`setting accountid: ${accountid}`)
-                                resolve(true);
-                                rl.close();
-                                return
-                            }
-                        }
-                    } catch {}
-        
-
-                    // reject(new Error("No parser matches the second line"));
-                    resolve(null);
-                    rl.close();
-                }
-            }).on('close', () => {
-                if (lineCount<2) {
-                    // If the second line was not processed, it means the file has only one line
-                    resolve(null);
-                }
-            }).on('error', reject);
+    // console.log(this);
+    return new Promise((resolve, reject) => {
+        const rl = readline.createInterface({
+            input: fs.createReadStream(this.fileName),
+            crlfDelay: Infinity
         });
-    }
- 
-    // uses the dateFormat and timezone specified in the parser 
-    // to return an ISO time in that timezone
-    convertToLocalTime( datetime){
-        return moment.tz(datetime, this.dateFormat, this.timezone).format();
-    }
+
+        let lineCount = 0;
+        rl.on('line', (line) => {
+            lineCount++;
+            if (lineCount === 1) return; // Skip the first line
+
+            if (lineCount === 2) {
+                try {
+                    // var parserConfig = this.config[ Parser.name ]
+                    for (const [pattern, accountid] of Object.entries(this.config.firstLinePatterns)) {
+                        if (line.includes(pattern)) {
+                            this.accountid = accountid
+                            console.log(`setting accountid: ${accountid}`)
+                            resolve(true);
+                            rl.close();
+                            return
+                        }
+                    }
+                } catch { }
+
+
+                // reject(new Error("No parser matches the second line"));
+                resolve(null);
+                rl.close();
+            }
+        }).on('close', () => {
+            if (lineCount < 2) {
+                // If the second line was not processed, it means the file has only one line
+                resolve(null);
+            }
+        }).on('error', reject);
+    });
+}
+
+// uses the dateFormat and timezone specified in the parser 
+// to return an ISO time in that timezone
+convertToLocalTime(datetime){
+    return moment.tz(datetime, this.dateFormat, this.timezone).format();
+}
 
 }
 

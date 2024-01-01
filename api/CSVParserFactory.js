@@ -79,20 +79,20 @@ class CSVParserFactory {
             //         "Chase7316": "322271627 5656297316"
             //     }
             // },
-            if (!selectedParser) {
-                try {
-                    for (const [pattern, accountid] of Object.entries(cfg.accountExpands)) {
-                        if (fileName.includes(pattern)) {
-                            // console.log(`setting accountid: ${accountid}`)
-                            console.log(`${parserName} for ${fileName} with accountid ${accountid}`)
-                            selectedParser = true;
-                            parser.accountid = accountid
-                            break;
-                            // return true
-                        }
-                    }
-                } catch { }
-            }
+            // if (!selectedParser) {
+            //     try {
+            //         for (const [pattern, accountid] of Object.entries(cfg.accountExpands)) {
+            //             if (fileName.includes(pattern)) {
+            //                 console.log(`setting accountid: ${accountid}`)
+            //                 console.log(`${parserName} for ${fileName} with accountid ${accountid}`)
+            //                 selectedParser = true;
+            //                 parser.accountid = accountid
+            //                 break;
+            //                 // return true
+            //             }
+            //         }
+            //     } catch { }
+            // }
 
             ////////////
             // Second, try to select parser based on file name
@@ -102,6 +102,7 @@ class CSVParserFactory {
             // }
             if (!selectedParser) {
                 if (parser.matchesFileName(fileName)) {
+                    console.log(`${parserName} for ${fileName} with accountid ${parser.accountid}`)
                     selectedParser = true;
                     // extractAccountFromFileName
                     break;
@@ -111,14 +112,11 @@ class CSVParserFactory {
             ////////////
             // Third, if no parser found by file name, try finding the parser by reading the first line
             if (!selectedParser) {
-                let accountid = await parser.extractAccountBySecondLine();
-
-                if (accountid) {
+                if (await parser.extractAccountBySecondLine()) {
                     selectedParser = true
                     break;
                 }
             }
-
 
         }
         if (selectedParser)
