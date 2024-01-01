@@ -31,7 +31,7 @@ class UbankCSVParser extends BaseCSVParser {
 
         processed.debit =  Math.abs(util.cleanPrice(l['Debit'])) || ""
         processed.credit = Math.abs(util.cleanPrice(l['Credit'])) || ""
-        processed.balance = l['Balance']
+        processed.balance = util.cleanPrice(l['Balance']) || ""
 
         this.uniqueColumns = ['Date', 'Description', 'Balance' ]
         this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
