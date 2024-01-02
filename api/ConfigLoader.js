@@ -3,7 +3,7 @@ const os = require('os');
 
 class ConfigLoader {
     constructor() {
-        this.appName = "plaid";
+        this.appName = "paisley";
         this.configFilePath = path.join(os.homedir(), `${this.appName}`, 'config.js');
 
         // load the config.js file

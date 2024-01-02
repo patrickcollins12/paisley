@@ -6,7 +6,7 @@ const path = require('path');
 describe('config file', () => {
     const homedir = os.homedir()
 
-    const config = require(`${homedir}/plaid/config.js`);
+    const config = require(`${homedir}/paisley/config.js`);
 
     // console.log(config)
 
@@ -15,8 +15,8 @@ describe('config file', () => {
     });
 
     test('basic settings working correctly', () => {
-        expect(config['app_name']).toBe("plaid");
-        expect(config['app_dir']).toBe(path.join(homedir, "plaid"));
+        expect(config['app_name']).toBe("paisley");
+        expect(config['app_dir']).toBe(path.join(homedir, "paisley"));
     });
 
 

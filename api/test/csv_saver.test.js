@@ -7,7 +7,7 @@ const { unlink, readFile} = require('fs').promises;
 describe('csv saver', () => {
     const homedir = os.homedir()
 
-    const config = require(`${homedir}/plaid/config.js`);
+    const config = require(`${homedir}/paisley/config.js`);
 
     test('should be instantiated correctly', () => {
         expect(config).toBeDefined();
