@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 const path = require('path');
 
-const config = require('../ConfigLoader');
+const config = require('../Config');
 const bank_config = config['BankwestScraper'];
 
 // $30,450.00 --> 30450.00

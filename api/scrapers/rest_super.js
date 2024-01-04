@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 const util = require('../ScraperUtil');
 
-const config = require('../ConfigLoader');
+const config = require('../Config');
 const bank_config = config['RestSuperScraper'];
 const path = require('path');
 // const moment = require('moment');

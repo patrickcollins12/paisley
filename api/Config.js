@@ -1,7 +1,7 @@
 const path = require('path');
 const os = require('os');
 
-class ConfigLoader {
+class Config  {
     constructor() {
         this.appName = "paisley";
         this.configFilePath = path.join(os.homedir(), `${this.appName}`, 'config.js');
@@ -30,8 +30,5 @@ class ConfigLoader {
 
 }
 
-const singletonInstance = new ConfigLoader();
+const singletonInstance = new Config();
 module.exports = singletonInstance;
-
-// module.exports = ConfigLoader;
-

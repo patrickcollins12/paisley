@@ -4,16 +4,21 @@ const moment = require('moment-timezone');
 const readline = require('readline');
 const path = require('path');
 const ParseResults = require('./ParseResults.js');
+const config = require('./Config');
+const BankDatabase = require('./BankDatabase');
 
 class BaseCSVParser {
 
-    constructor(options) {
-        if (options) {
-            this.fileName = options.fileName || "";
-            this.config = options.config || {};
+    constructor(fileName) {
+        // if (options) {
+            this.fileName = fileName || "";
+            // this.config = config;
+            this.bankconfig = config[this.constructor.name];
             this.headers = []; // csv headers, override if needed.
             this.results = new ParseResults();
-        }
+            this.db = new BankDatabase();
+
+        // }
     }
 
     async parse(filePath) {
@@ -76,7 +81,9 @@ class BaseCSVParser {
         this.results['file'] = path.basename(this.fileName);
         this.results['account'] = this.accountid
         this.results['parser'] = this.constructor.name
-        console.log(this.results)
+        // console.log(this.results)
+
+        return this.results
     }
 
     // async findAccountNumber() {
@@ -124,7 +131,7 @@ class BaseCSVParser {
         const sql = `INSERT INTO 'transaction' (${columns}) VALUES (${placeholders})`;
         // console.log('sql:', sql, processedLine)
         // Prepare and run the query with the data values
-        const stmt = this.bankdb.db.prepare(sql);
+        const stmt = this.db.db.prepare(sql);
         stmt.run(Object.values(processedLine));
     }
 
@@ -164,7 +171,7 @@ class BaseCSVParser {
 
         try {
             // console.log('bankdb:',this.bankdb)
-            const stmt = this.bankdb.db.prepare(query);
+            const stmt = this.db.db.prepare(query);
             const result = stmt.all(); // get() for a single row, all() for multiple rows
             const rowCount = result ? result.length : 0;
 
@@ -208,7 +215,7 @@ class BaseCSVParser {
 
     // matchesSecondLine(firstDataLine) {
     //     try {
-    //         for (const [pattern, accountid] of Object.entries(this.config.firstLinePatterns)) {
+    //         for (const [pattern, accountid] of Object.entries(config.firstLinePatterns)) {
     //             if (firstDataLine.includes(pattern)) {
     //                 this.accountid = accountid
     //                 console.log(`setting accountid: ${accountid}`)
@@ -228,7 +235,7 @@ class BaseCSVParser {
     matchFileExpands(fileName) {
         let found = false;
         try {
-            for (const [pattern, accountid] of Object.entries(this.config.fileExpands)) {
+            for (const [pattern, accountid] of Object.entries(this.bankconfig.fileExpands)) {
                 if (fileName.includes(pattern)) {
                     console.log(`setting accountid: ${accountid}`)
                     this.accountid = accountid
@@ -244,7 +251,7 @@ class BaseCSVParser {
 
     // extractAccountFromFileName() {
     //     try {
-    //         // this.config = {
+    //         // config = {
     //         //    "accountExpands": {
     //         //        "Chase0378": "3222716XX 3162960YYY",
     //         //        "Chase7316": "3222716XX 5656297YYY"
@@ -253,7 +260,7 @@ class BaseCSVParser {
     //         var matches = this.fileName.match(/Chase(\d+)/ );
     //         if (matches) {
     //             var shortAccountName = matches[1];
-    //             var longAccountName = this.config.accountExpands[shortAccountName]
+    //             var longAccountName = config.accountExpands[shortAccountName]
     //             this.accountName = longAccountName;
     //         }
     //     } catch {}
@@ -275,8 +282,8 @@ class BaseCSVParser {
 
             if (lineCount === 2) {
                 try {
-                    // var parserConfig = this.config[ Parser.name ]
-                    for (const [pattern, accountid] of Object.entries(this.config.firstLinePatterns)) {
+                    // var parserConfig = config[ Parser.name ]
+                    for (const [pattern, accountid] of Object.entries(this.bankconfig.firstLinePatterns)) {
                         if (line.includes(pattern)) {
                             this.accountid = accountid
                             console.log(`setting accountid: ${accountid}`)

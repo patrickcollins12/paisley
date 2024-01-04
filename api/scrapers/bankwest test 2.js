@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 const path = require('path');
 
-const config = require('../ConfigLoader');
+const config = require('../Config');
 const bank_config = config['BankwestScraper'];
 
 async function extractTable(page,id) {

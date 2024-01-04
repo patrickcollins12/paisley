@@ -1,28 +1,36 @@
 const Database = require('better-sqlite3');
+const config = require('./Config');
+const fs = require('fs');
 
 class BankDatabase {
-    constructor(dbfile) {
-        this.dbfile = dbfile;
-        console.log("dbfile:", dbfile)
 
+    // if no dbPath if provided, it will load from the config and return a singleton.
+    // if you provide a dbPath, it will give you a new BankDatabase Object.
+    constructor(dbPath = null) {
+        if (!dbPath && BankDatabase.singletonInstance) {
+            return BankDatabase.singletonInstance;
+        }
+
+        const path = dbPath || config.database;
         try {
-            // this.db = new Database(this.dbfile, { verbose: console.log });
-            this.db = new Database(this.dbfile);
-            console.log('Connected to the SQLite database.');
+
+            if (!fs.existsSync(path)) {
+                // TODO, replace this with a default new empty paisley database
+                throw new Error(`Database file not found at path: ${path}`);
+            }
+
+            this.db = new Database(path);
+            console.log(`Connected to SQLite database: ${path}`);
         } catch (err) {
             console.error("Connect error: ", err.message);
         }
+
+        if (!dbPath) {
+            BankDatabase.singletonInstance = this;
+        }
     }
-
-    // // Add your methods for interacting with the database here
-    // // Example:
-    // getAllTransactions() {
-    //     const stmt = this.db.prepare('SELECT * FROM transactions');
-    //     return stmt.all();
-    // }
-
-    // Add other methods as needed
+    
 }
 
-
+// Singleton instance is not created until the first call without a path
 module.exports = BankDatabase;

@@ -1,17 +1,23 @@
 const fs = require('fs').promises;
 const path = require('path');
 const readline = require('readline');
+const config = require('./Config');
 
 class CSVParserFactory {
-    constructor(config, db) {
+    // constructor(config, db) {
+    //     this.parsers = {};
+    //     this.bankdb = db;
+    // }
+
+    constructor() {
         this.parsers = {};
-        this.config = config;
-        this.bankdb = db;
     }
 
+    // call this immediately after creating the object.
+    // await csvParserFactory.loadParsers()
     async loadParsers() {
         try {
-            let parserDir = this.config.parsers;
+            let parserDir = config.parsers;
             if (parserDir.startsWith("./")) {
                 // console.log(`${parserDir} starts with ./`)
                 parserDir = path.join(__dirname, parserDir)
@@ -24,7 +30,7 @@ class CSVParserFactory {
                 this.parsers[Parser.name] = Parser;
 
                 try {
-                    Parser.config = this.config[Parser.name];
+                    Parser.config = config[Parser.name];
                 } catch { }
 
                 console.log(`Loaded parser: ${file}`);
@@ -37,23 +43,24 @@ class CSVParserFactory {
         }
     }
 
-    async processCSVFile(file) {
-        const parser = await this.chooseParser(file);
-        if (parser) {
-            //   var accountid = parser.extractAccountFromFileName(filePath);
-            //   var accountid = parser.extractAccountFromFileName(filePath);
-            console.log(`Using ${parser.identifier} parser for file ${file}`);
-            //   parser.setDB(bankdb);
-            parser.bankdb = this.bankdb;
-            parser.fileName = file;
-            await parser.parse(file)
-            return true;
-        }
-        else {
-            console.log(`Couldn't find parser for file ${file}`);
-            return false;
-        }
-    }
+    // moving this logic back up into the caller
+    // async processCSVFile(file) {
+    //     const parser = await this.chooseParser(file);
+    //     if (parser) {
+    //         //   var accountid = parser.extractAccountFromFileName(filePath);
+    //         //   var accountid = parser.extractAccountFromFileName(filePath);
+    //         console.log(`Using ${parser.identifier} parser for file ${file}`);
+    //         //   parser.setDB(bankdb);
+    //         parser.bankdb = this.bankdb;
+    //         parser.fileName = file;
+    //         await parser.parse(file)
+    //         return true;
+    //     }
+    //     else {
+    //         console.log(`Couldn't find parser for file ${file}`);
+    //         return false;
+    //     }
+    // }
 
     async chooseParser(file) {
         const fileName = path.basename(file);
@@ -64,12 +71,8 @@ class CSVParserFactory {
         for (const [parserName, Parser] of Object.entries(this.parsers)) {
             if (selectedParser) break;
 
-            var cfg = this.config[Parser.name]
-            parser = new Parser({
-                'fileName': file,
-                'config': cfg,
-                'bankdb': this.bankdb
-            });
+            // var cfg = config[Parser.name]
+            parser = new Parser(file);
 
             ////////////
             // First, try to select parser based on config entries
@@ -119,9 +122,11 @@ class CSVParserFactory {
             }
 
         }
-        if (selectedParser)
+        if (selectedParser){
             return parser;
-
+        } else {
+            throw Error(`Couldn't find parser for ${file}`)
+        }
     }
 
 }

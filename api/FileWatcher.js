@@ -1,6 +1,7 @@
 const chokidar = require('chokidar');
 const path = require('path');
-const fs = require('fs')
+// const fs = require('fs')
+const fs = require('fs').promises;
 
 class FileWatcher {
   constructor(dir,processed) {
@@ -34,10 +35,7 @@ class FileWatcher {
       //   console.log("Calling ", callfunc, " with ", event, path);
       let re = /\.csv$/i;
       if (event == "add" && re.test(path)) {
-        if (await callfunc(path)) {
-          console.log("Finished processing HERE")
-          this.moveFile(path,this.processed)
-        }
+        await callfunc(path)
       }
 
     });

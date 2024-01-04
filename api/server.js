@@ -1,47 +1,68 @@
+// system imports
 const express = require('express');
 const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const CSVParserFactory = require('./CSVParserFactory'); // Adjust the path according to your file structure
-const BankDatabase = require('./BankDatabase');
 const os = require('os');
 const path = require('path');
+
+// local imports
+const config = require('./Config');
+const CSVParserFactory = require('./CSVParserFactory'); 
+const FileWatcher = require('./FileWatcher'); 
+const FileMover = require('./FileMover');
 
 app.use(cors());
 app.use(bodyParser.json());
 
-async function setup() {
-
-  const config = require('./ConfigLoader');
-
-  // open the DB
-  const bankdb = new BankDatabase( config.database )
-
-  const csvpf = new CSVParserFactory(config, bankdb)
-  await csvpf.loadParsers();
-
-  // Setup the filewatcher and start watching for transaction.
-  const FileWatcher = require('./FileWatcher'); // Adjust the path according to your file structure
-  const watchDir     = config.csv_watch     || path.join(os.homedir(),"Downloads/bank_statements");
-  const processedDir = config.csv_processed || path.join(os.homedir(),"Downloads/bank_statements/processed");
-
-  const fileWatcher = new FileWatcher(watchDir,processedDir);
-
-  fileWatcher.startWatching( async (filePath) => {
-    await csvpf.processCSVFile(filePath) 
-    console.log("Finished")
-  } );
-  console.log("Watching for files")
-
+async function initializeCsvParserFactory() {
+  const csvParserFactory = new CSVParserFactory();
+  await csvParserFactory.loadParsers();
+  return csvParserFactory;
 }
 
-setup()
+async function processFile(csvParserFactory, watchDir, processedDir, file) {
+  try {
+    const csvParser = await csvParserFactory.chooseParser(file);
+    let parseResults = await csvParser.parse(file);
+
+    if (parseResults.isSuccess()) {
+      console.log(parseResults); // prints all the findings
+      await FileMover.moveFile(watchDir, file, processedDir);
+    }
+
+    // Additional processing...
+    console.log("Finished processing:", file);
+  } catch (error) {
+    console.error("Error processing file:", error);
+  }
+}
+
+async function setupParsersAndStartWatching() {
+  const csvParserFactory = await initializeCsvParserFactory();
+  const watchDir = config.csv_watch || path.join(os.homedir(), "Downloads/bank_statements");
+  const processedDir = config.csv_processed || path.join(os.homedir(), "Downloads/bank_statements/processed");
+  const fileWatcher = new FileWatcher(watchDir, processedDir);
+
+  fileWatcher.startWatching(file => processFile(csvParserFactory, watchDir, processedDir, file));
+  console.log("Watching for files");
+}
+
+setupParsersAndStartWatching();
+
+
+
+
+
+
+
+
 
 // runServer();
 
 function runServer() {
   // server cats
-  app.get('/data', async (req, res) => {  
+  app.get('/data', async (req, res) => {
     query = `
         SELECT 
             t.*, 
@@ -54,19 +75,19 @@ function runServer() {
     try {
       console.log(query)
       const stmt = bankdb.db.prepare(query);
-      
+
       const rows = stmt.all();
 
       for (const row of rows) {
-          const cats = row.categories || ""; 
-          row["categories"] = cats.split(";").filter(Boolean);
-          // row['jsondata'] = ""
+        const cats = row.categories || "";
+        row["categories"] = cats.split(";").filter(Boolean);
+        // row['jsondata'] = ""
       }
 
       res.json(rows);
     } catch (err) {
-        console.log("error", err.message);
-        res.status(400).json({ "error": err.message });
+      console.log("error", err.message);
+      res.status(400).json({ "error": err.message });
     }
 
   });

@@ -7,6 +7,14 @@ class ParseResults {
         this.dates = {}
     }
 
+    hadInserts() {
+        return (this.inserted)?true:false;
+    }
+
+    isSuccess() {
+        return (this.invalid)?false:true;
+    }
+
     setMinMaxDate(rangeDescriptor, date) {
         const dateObj = new Date(date);
     
