@@ -8,8 +8,8 @@ const path = require('path');
 
 // local imports
 const config = require('./Config');
-const CSVParserFactory = require('./CSVParserFactory'); 
-const FileWatcher = require('./FileWatcher'); 
+const CSVParserFactory = require('./CSVParserFactory');
+const FileWatcher = require('./FileWatcher');
 const FileMover = require('./FileMover');
 
 app.use(cors());
@@ -31,8 +31,16 @@ async function processFile(csvParserFactory, watchDir, processedDir, file) {
       await FileMover.moveFile(watchDir, file, processedDir);
     }
 
-    // Additional processing...
+    if (parseResults.hadInserts()) {
+      // Run the classifier on the parsed data
+      console.log()
+      csvParser.account
+      // const classificationResult = await Classifier.classify(parseResult.data);
+      // console.log("Classification Done", classificationResult);
+    }
+
     console.log("Finished processing:", file);
+
   } catch (error) {
     console.error("Error processing file:", error);
   }
