@@ -33,11 +33,20 @@ async function processFile(csvParserFactory, watchDir, processedDir, file) {
 
     if (parseResults.hadInserts()) {
       // Run the classifier on the parsed data
-      console.log()
-      csvParser.account
+      // results should hold the ids of the entries just added, for classification.
+      console.log("ready to classify")
+      console.log(parseResults.inserted_ids)
+
+      classifier = new Classifier()
+      await classifier.loadRules()
+
+      // for (let id of parseResults.inserted_ids) {
+      //   const classificationResult = await classifier.classify(id);
+      // }
+
       // const classificationResult = await Classifier.classify(parseResult.data);
       // console.log("Classification Done", classificationResult);
-    }
+    // }
 
     console.log("Finished processing:", file);
 

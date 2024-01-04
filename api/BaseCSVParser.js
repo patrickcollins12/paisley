@@ -53,8 +53,9 @@ class BaseCSVParser {
                         this.isRecordValid(processedLine);
 
                         if (!isAlreadyInserted) {
-                            this.saveTransaction(originalLine, processedLine);
-                            this.results.inserted++;
+                            let newid = this.saveTransaction(originalLine, processedLine);
+                            this.results.insert(newid);
+                            
                             this.results.setMinMaxDate("inserts", processedLine['datetime'])
                         } else {
                             this.results.skipped++;
@@ -132,7 +133,8 @@ class BaseCSVParser {
         // console.log('sql:', sql, processedLine)
         // Prepare and run the query with the data values
         const stmt = this.db.db.prepare(sql);
-        stmt.run(Object.values(processedLine));
+        let result = stmt.run(Object.values(processedLine));
+        return result.lastInsertRowid;
     }
 
     // SELECT * 

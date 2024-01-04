@@ -1,10 +1,12 @@
 class ParseResults {
+
     constructor(config,db) {
         this.lines = 0;
         this.inserted = 0;
         this.skipped = 0;
         this.invalid = 0;
         this.dates = {}
+        this.inserted_ids = []
     }
 
     hadInserts() {
@@ -13,6 +15,11 @@ class ParseResults {
 
     isSuccess() {
         return (this.invalid)?false:true;
+    }
+
+    insert(newid) {
+        this.inserted++;
+        this.inserted_ids.push(newid)
     }
 
     setMinMaxDate(rangeDescriptor, date) {
