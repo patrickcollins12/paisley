@@ -1,4 +1,4 @@
-
+## Install
 ```
 $ cd api
 $ npm install
@@ -7,8 +7,14 @@ $ mkdir ~/paisley
 $ cp config.template.js ~/paisley
 ```
 
-Testing
+## Testing
 ```
 $ npm test
 $ npx playwright test
 ```
+
+## Back up the Schema occassionally:
+``` 
+$ sqlite3 ~/paisley/transactions.db .schema > schema.sql 
+```
+

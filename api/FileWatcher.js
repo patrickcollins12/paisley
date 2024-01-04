@@ -9,7 +9,7 @@ class FileWatcher {
       this.watcher = null;
   }
 
-    // Function to move a file
+  // Function to move a file
   moveFile(sourcePath, destinationDir) {
     const fileName = path.basename(sourcePath);
     const destinationPath = path.join(destinationDir, fileName);
@@ -34,7 +34,8 @@ class FileWatcher {
       //   console.log("Calling ", callfunc, " with ", event, path);
       let re = /\.csv$/i;
       if (event == "add" && re.test(path)) {
-        if (await callfunc(path)){
+        if (await callfunc(path)) {
+          console.log("Finished processing HERE")
           this.moveFile(path,this.processed)
         }
       }
