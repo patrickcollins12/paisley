@@ -13,9 +13,9 @@ class CBACSVParser extends BaseCSVParser {
         // if headers is defined, then the csv parser will 
         // assume there is no header record in the file
         this.headers = ['Date','Amount','Description','Balance']
-
+        this.uniqueColumns = ['datetime', 'description', 'debit', 'credit', 'balance' ]
         // what columns from the incoming csv file define a unique record
-        this.uniqueColumns = ['Date', 'Amount', 'Description', 'Balance' ]
+        // this.uniqueColumns = ['Date', 'Amount', 'Description', 'Balance' ]
     }
 
     matchesFileName(fileName) {

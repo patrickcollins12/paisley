@@ -11,7 +11,8 @@ class BankwestCSVParser extends BaseCSVParser {
         this.dateFormat = 'DD/MM/YYYY'
 
         // what columns from the incoming csv file define a unique record
-        this.uniqueColumns = ['Transaction Date', 'Narration', 'Balance' ]
+        // this.uniqueColumns = ['Transaction Date', 'Narration', 'Balance' ]
+        this.uniqueColumns = ['datetime', 'description', 'credit','debit' ]
     }
 
     matchesFileName(fileName) {

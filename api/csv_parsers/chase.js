@@ -5,16 +5,16 @@ class ChaseCSVParser extends BaseCSVParser {
 
     constructor(options) {
         super(options);
-        
+
         this.identifier = 'chase'
-        this.timezone = 'America/Los_Angeles' 
+        this.timezone = 'America/Los_Angeles'
         this.dateFormat = 'MM/DD/YYYY'
 
         // what columns from the incoming csv file define a unique record
-        this.uniqueColumns = ['Posting Date', 'Description', 'Amount', 'Balance' ]
+        // this.uniqueColumns = ['Posting Date', 'Description', 'Amount', 'Balance']
+        this.uniqueColumns = ['datetime', 'description', 'debit', 'credit', 'balance' ]
+        this.mustExistBeforeSaving = ['datetime', 'account', 'description', 'debit or credit', 'balance']
 
-        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
-    
     }
 
     matchesFileName(fileName) {
@@ -42,15 +42,15 @@ class ChaseCSVParser extends BaseCSVParser {
     // );
     processLine(l) {
         let processed = {}
-        
+
         // processed.datetime = this.toUTC(l['Posting Date'],this.dateFormat); // requires date format defined above.
         processed.datetime = this.convertToLocalTime(l['Posting Date']);
 
         processed.account = this.accountid
         processed.description = l['Description']
         // processed.amount =  (l['Details'] === "DEBIT") ? -l['Amount'] : l['Amount']
-        processed.debit  =  (l['Details'] === "DEBIT")  ? -l['Amount'] : "";
-        processed.credit =  (l['Details'] === "CREDIT") ? l['Amount'] : "";
+        processed.debit = (l['Details'] === "DEBIT") ? -l['Amount'] : "";
+        processed.credit = (l['Details'] === "CREDIT") ? l['Amount'] : "";
 
         processed.type = l['Type']
         processed.balance = l['Balance']

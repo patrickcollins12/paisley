@@ -13,7 +13,8 @@ class WestpacCSVParser extends BaseCSVParser {
         this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
 
         // what columns from the incoming csv file define a unique record
-        this.uniqueColumns = ['Date', 'Bank Account', 'Narrative', 'Balance' ]
+        // this.uniqueColumns = ['Date', 'Bank Account', 'Narrative', 'Balance' ]
+        this.uniqueColumns = ['datetime', 'account', 'description', 'balance' ]
     }
 
     matchesFileName(fileName) {
@@ -52,8 +53,10 @@ class WestpacCSVParser extends BaseCSVParser {
 
         let acc = l['Bank Account']
         try {
-            acc = this.config.firstLinePatterns[acc];
-        } catch {}
+            acc = this.bankconfig.firstLinePatterns[acc];
+        } catch {
+            console.error("this.bankconfig.firstLinePatterns is empty")
+        }
 
         processed.account = acc || l['Bank Account']
 

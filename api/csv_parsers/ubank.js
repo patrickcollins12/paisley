@@ -11,6 +11,9 @@ class UbankCSVParser extends BaseCSVParser {
         this.timezone = 'Australia/Sydney' 
         this.dateFormat = 'dd MMM yyyy'
 
+        this.uniqueColumns = ['datetime', 'description', 'balance' ]
+        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+
     }
 
     matchesFileName(fileName) {
@@ -33,8 +36,7 @@ class UbankCSVParser extends BaseCSVParser {
         processed.credit = Math.abs(util.cleanPrice(l['Credit'])) || ""
         processed.balance = util.cleanPrice(l['Balance']) || ""
 
-        this.uniqueColumns = ['Date', 'Description', 'Balance' ]
-        this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+        
 
         return processed
     }

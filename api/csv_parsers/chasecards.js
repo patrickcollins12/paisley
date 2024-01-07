@@ -11,8 +11,8 @@ class ChaseCardsCSVParser extends BaseCSVParser {
 
         // what columns from the incoming csv file define a unique record
             // Transaction Date,Post Date,Description,Category,Type,Amount,Memo
-        this.uniqueColumns = ['Transaction Date', 'Description', 'Amount' ]
-
+        // this.uniqueColumns = ['Transaction Date', 'Description', 'Amount' ]
+        this.uniqueColumns = ['datetime', 'description', 'credit','debit' ]
         this.mustExistBeforeSaving = ['datetime','account','description','debit or credit']
     }
 

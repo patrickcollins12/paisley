@@ -11,6 +11,7 @@ const config = require('./Config');
 const CSVParserFactory = require('./CSVParserFactory');
 const FileWatcher = require('./FileWatcher');
 const FileMover = require('./FileMover');
+const RulesClassifier = require('./RulesClassifier');
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -27,25 +28,24 @@ async function processFile(csvParserFactory, watchDir, processedDir, file) {
     let parseResults = await csvParser.parse(file);
 
     if (parseResults.isSuccess()) {
-      console.log(parseResults); // prints all the findings
+      // console.log(parseResults); // prints all the findings
       await FileMover.moveFile(watchDir, file, processedDir);
     }
 
-    if (parseResults.hadInserts()) {
+    // if (parseResults.hadInserts()) {
       // Run the classifier on the parsed data
       // results should hold the ids of the entries just added, for classification.
       console.log("ready to classify")
-      console.log(parseResults.inserted_ids)
+      // console.log(parseResults.inserted_ids)
 
-      classifier = new Classifier()
+      classifier = new RulesClassifier()
       await classifier.loadRules()
 
-      // for (let id of parseResults.inserted_ids) {
-      //   const classificationResult = await classifier.classify(id);
-      // }
+      for (let id of parseResults.inserted_ids) {
+        const classificationResult = await classifier.classifyId(id);
+        // console.log("Classification Done", classificationResult);
+      }
 
-      // const classificationResult = await Classifier.classify(parseResult.data);
-      // console.log("Classification Done", classificationResult);
     // }
 
     console.log("Finished processing:", file);

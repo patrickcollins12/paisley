@@ -6,6 +6,7 @@ const path = require('path');
 const ParseResults = require('./ParseResults.js');
 const config = require('./Config');
 const BankDatabase = require('./BankDatabase');
+const util = require('./Util');
 
 class BaseCSVParser {
 
@@ -45,7 +46,7 @@ class BaseCSVParser {
 
                     this.results.setMinMaxDate("in_file", processedLine['datetime'])
 
-                    const isAlreadyInserted = this.isAlreadyInserted(originalLine, processedLine);
+                    const isAlreadyInserted = this.isAlreadyInserted(processedLine);
                     // console.log("Isalreadyinserted:",isAlreadyInserted)
 
                     let isValid = true;
@@ -126,6 +127,8 @@ class BaseCSVParser {
         originalLine['file'] = path.basename(this.fileName);
         processedLine['jsondata'] = JSON.stringify(originalLine);
 
+        processedLine['id'] = util.generateSHAFromObject(processedLine, this.uniqueColumns)
+
         const columns = Object.keys(processedLine).map(key => `"${key}"`).join(', ');
 
         const placeholders = Object.keys(processedLine).map(() => '?').join(', ');
@@ -134,63 +137,17 @@ class BaseCSVParser {
         // Prepare and run the query with the data values
         const stmt = this.db.db.prepare(sql);
         let result = stmt.run(Object.values(processedLine));
-        return result.lastInsertRowid;
+        return processedLine['id'];
     }
 
-    // SELECT * 
-    // FROM data_table
-    // WHERE 
-    //     json_extract(json_data, '$.key1') = 'expected_value1' AND
-    //     json_extract(json_data, '$.key2') = 'expected_value2' AND
-    //     json_extract(json_data, '$.key3') = 'expected_value3' AND
-    //     json_extract(json_data, '$.key4') = 'expected_value4';
-    isAlreadyInserted(originalLine, processedLine) {
-        let query = 'SELECT id FROM "transaction" t WHERE '
 
-        // // what columns from the incoming csv file define a unique record
-        // this.uniqueColumns = ['Date', 'Bank Account', 'Narrative', 'Balance' ]
+    isAlreadyInserted(processedLine) {
 
-        let ucs = [];
-        let countEmptyColumnVal = 0;
-        for (const uc of this.uniqueColumns) {
-            let newVal = originalLine[uc] || '';
-            if (!newVal) countEmptyColumnVal++;
-
-            // Escape single quotes for SQL by replacing them with two single quotes
-            let safeUc = uc.replace(/"/g, '""');
-            let safeNewVal = newVal.replace(/'/g, "''");
-
-            ucs.push(`json_extract(jsondata, '$."${safeUc}"') = '${safeNewVal}'`);
-        }
-
-        if (countEmptyColumnVal > 2) {
-            this.results.invalid++;
-            throw new Error("In the given transaction, 3 or more columns are undefined");
-            return;
-        }
-
-        query += ucs.join(' AND ')
-
-        try {
-            // console.log('bankdb:',this.bankdb)
-            const stmt = this.db.db.prepare(query);
-            const result = stmt.all(); // get() for a single row, all() for multiple rows
-            const rowCount = result ? result.length : 0;
-
-            // console.log(`result: ${result}, resultCount: ${rowCount}` )
-
-            if (rowCount > 1) {
-                throw new Error(`Multiple matching rows already exist (${rowCount}) for `, originalLine)
-            }
-
-            return rowCount;
-
-        } catch (err) {
-            console.error("Database error:", err.message);
-            throw err; // Rethrowing the error is optional, depends on how you want to handle it
-        }
-
-
+        let sha = util.generateSHAFromObject(processedLine,this.uniqueColumns)
+        const stmt = this.db.db.prepare("select id from 'transaction' where id=?");
+        const r = stmt.all(sha); // get() for a single row, all() for multiple rows
+        if (r.length > 1) throw new Error('Error: Multiple records found.');
+        return r.length === 1;
     }
 
     isRecordValid(line) {

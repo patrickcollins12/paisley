@@ -12,9 +12,8 @@ class CommsecCSVParser extends BaseCSVParser {
 
 
         this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
+        this.uniqueColumns = ['datetime', 'description', 'balance' ]
 
-        // what columns from the incoming csv file define a unique record
-        this.uniqueColumns = ['Date', 'Reference', 'Balance($)' ]
     }
 
     matchesFileName(fileName) {

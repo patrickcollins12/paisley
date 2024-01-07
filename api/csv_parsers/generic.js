@@ -14,6 +14,8 @@ class GenericCSVParser extends BaseCSVParser {
 
         // what columns from the incoming csv file define a unique record
         this.uniqueColumns = ['datetime', 'account' ]
+
+
     }
 
     matchesFileName(fileName) {
