@@ -21,7 +21,7 @@ async function doit() {
     
     for (let record of result) {
         let id = record['id']
-        console.log("here>> ", id)
+        // console.log("here>> ", id)
         const classificationResult = await classifier.classifyId(id);
     }    
 }

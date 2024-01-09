@@ -53,9 +53,9 @@ class RulesClassifier {
         // if (tags.length > 0) {
             let t = { ...transaction }
             delete t.jsondata;
-            console.log(t)
-            console.log(`tags for ${t.id}:`, tags)
-            console.log("\n")
+            // console.log(t)
+            // console.log(`tags for ${t.id}:`, tags)
+            // console.log("\n")
         // }
         return tags
     }
