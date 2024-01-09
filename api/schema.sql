@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS "import_history" (
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 CREATE TABLE IF NOT EXISTS "transaction" (
-	"id"	INTEGER NOT NULL UNIQUE,
+	"id"	TEXT NOT NULL UNIQUE,
 	"datetime"	TEXT, 
 	"account"	TEXT,
 	"description"	TEXT,
@@ -20,8 +20,9 @@ CREATE TABLE IF NOT EXISTS "transaction" (
     "debit" INTEGER,
 	"balance"	INTEGER,
 	"type"	INTEGER,
-	jsondata JSON,
-	PRIMARY KEY("id" AUTOINCREMENT)
+	"tags" JSON,
+	jsondata JSON, 
+	PRIMARY KEY("id")
 );
 CREATE TABLE IF NOT EXISTS "account" (
 	"accountid"	TEXT NOT NULL UNIQUE,
@@ -81,3 +82,9 @@ LEFT JOIN
 ORDER BY 
     t.datetime DESC
 /* transaction_with_account(account,datetime,description,credit_formatted,debit,balance,currency,transaction_type,account_type,jsondata) */;
+CREATE TABLE IF NOT EXISTS "transaction_enriched" (
+	"id"	TEXT NOT NULL UNIQUE,
+	"tags"	JSON,
+	"description"	TEXT,
+	PRIMARY KEY("id")
+);
