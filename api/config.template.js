@@ -29,6 +29,17 @@ module.exports = {
         password: "MyBankPassword"
     },
 
+    /** ANZ Scraper **/
+    AnzCSVParser: {
+        identifier: "anz"
+    },
+
+    AnzScraper: {
+        identifier: "anz",
+        username: "<YOUR ANZ CRN>",
+        password: "<YOUR ANZ PASSWORD>"
+    },
+
     ///////////////
     GenericCSVParser: {
         identifier: "generic"
