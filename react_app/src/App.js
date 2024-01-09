@@ -1,30 +1,38 @@
-import './App.css';
+import React, { useEffect, useState } from 'react';
+import { ReactTabulator } from 'react-tabulator';
 import 'react-tabulator/lib/styles.css';
-import 'react-tabulator/lib/css/tabulator_semanticui.min.css'; // theme
-import { ReactTabulator } from 'react-tabulator'
+import 'react-tabulator/lib/css/tabulator.min.css';
 
-const columns = [
-  { title: "Name", field: "name", width: 150 },
-  { title: "Age", field: "age", hozAlign: "left", formatter: "progress" },
-  { title: "Favourite Color", field: "col" },
-  { title: "Date Of Birth", field: "dob", hozAlign: "center" },
-  { title: "Rating", field: "rating", hozAlign: "center", formatter: "star" },
-  { title: "Passed?", field: "passed", hozAlign: "center", formatter: "tickCross" }
-];
-
-var data = [
-  {id:1, name:"Oli Bob", age:"12", col:"red", dob:"",rating:1},
-  {id:2, name:"Mary May", age:"1", col:"blue", dob:"14/05/1982",rating:1},
-  {id:3, name:"Christine Lobowski", age:"42", col:"green", dob:"22/05/1982",rating:1},
-  {id:4, name:"Brendon Philips", age:"125", col:"orange", dob:"01/08/1980", rating:2},
-  {id:5, name:"Margret Marmajuke", age:"16", col:"yellow", dob:"31/01/1999","rating":5},
-];
- 
 function App() {
+  const [data, setData] = useState([]);
+
+  const columns = [
+  { title: "id", field: "id"},
+  { title: "Date", field: "date_time" },
+  { title: "description", field: "description" },
+  { title: "Institution", field: "institution" },
+  { title: "Account Name", field: "name" },
+  { title: "Account Number", field: "account number" },
+  { title: "Debit", field: "debit" },
+  { title: "Credit", field: "credit" },
+  { title: "Balance", field: "balance" },
+  { title: "Currency", field: "currency" },
+  { title: "Tags", field: "tags" },
+  { title: "Type", field: "transaction_type" },
+  { title: "Account Type", field: "account_type" }
+  ];
+
+  useEffect(() => {
+    fetch('http://localhost:4000/data')
+      .then(response => response.json())
+      .then(data => setData(data))
+      .catch(error => console.error('Error fetching data:', error));
+  }, []);
+
   return (
     <div className="App">
       <ReactTabulator
-        data={data}
+        data={data} // Data passed here after fetching
         columns={columns}
         layout={"fitData"}
       />
