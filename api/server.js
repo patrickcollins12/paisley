@@ -77,7 +77,7 @@ function runServer() {
 
   // server cats
   app.get('/data', async (req, res) => {
-    query = "select * from transaction_with_account"
+    let query = "select * from transaction_with_account"
 
     try {
       console.log(query)
@@ -91,6 +91,29 @@ function runServer() {
     }
 
   });
+
+  // server cats
+  app.get('/tags', async (req, res) => {
+    let query = `SELECT DISTINCT json_each.value
+    FROM 'transaction',
+         json_each('transaction'.tags)
+    WHERE json_valid('transaction'.tags)
+    ORDER BY json_each.value;`
+
+    try {
+      console.log(query)
+      const stmt = db.db.prepare(query);
+      const rows = stmt.all().map(obj => obj.value);
+      res.json(rows);
+    } catch (err) {
+      console.log("error: ", err.message);
+      res.status(400).json({ "error": err.message });
+    }
+
+  });
+
+
+
 
   //temporarily disable the webserver
   const PORT = process.env.PORT || 4000;

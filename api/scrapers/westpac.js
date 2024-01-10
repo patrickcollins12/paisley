@@ -12,8 +12,8 @@ test('test', async ({ page }) => {
   await page.getByLabel('Password').fill(bank_config['Password']);
   await page.locator('label').filter({ hasText: 'Remember customer ID Not recommended on public or shared devices' }).locator('span').nth(1).click();
   await page.getByRole('button', { name: 'Sign in' }).click();
-  await page.goto('https://banking.westpac.com.au/secure/banking/reportsandexports/home');
-  await page.getByRole('link', { name: 'Export Transactions' }).click();
+  await page.goto('https://banking.westpac.com.au/secure/banking/reportsandexports/exportparameters/2/');
+  // await page.getByRole('link', { name: 'Export Transactions' }).click();
   await page.getByRole('link', { name: 'a preset range' }).click();
   await page.getByRole('link', { name: 'Last 60 days' }).click();
 //   await page.getByPlaceholder(' Select accounts').click();

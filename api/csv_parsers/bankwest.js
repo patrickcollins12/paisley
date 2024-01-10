@@ -57,8 +57,8 @@ class BankwestCSVParser extends BaseCSVParser {
         let bsb = l['BSB Number'].replace("-","")
         processed.account = bsb+" "+l['Account Number']
         processed.description = l['Narration']
-        processed.debit =  Math.abs(l['Debit']) || ""
-        processed.credit = Math.abs(l['Credit']) || ""
+        processed.debit =  Math.abs(l['Debit']) || 0
+        processed.credit = Math.abs(l['Credit']) || 0
         processed.type = l['Transaction Type']
         processed.balance = l['Balance']
 
