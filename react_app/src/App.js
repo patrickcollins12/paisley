@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ReactTabulator } from 'react-tabulator';
 import 'react-tabulator/lib/styles.css';
 // import 'react-tabulator/lib/css/tabulator.min.css';
-import './patrick_tabulator.scss';
+import './paisley_tabulator.scss';
 
 function App() {
   const [data, setData] = useState([]);
+  let tabulatorRef = useRef(null);
+
 
   const columns = [
 
@@ -13,7 +15,7 @@ function App() {
 
 
     {
-      title: "Date", field: "datetime", frozen: true, resizable: true, width:200,
+      title: "Date", field: "datetime", frozen: true, resizable: true, width: 200,
       formatter: "date", formatterParams: {
         inputFormat: "iso",
         // outputFormat: "dd/MM/yyyy",
@@ -43,7 +45,7 @@ function App() {
     /// DEBIT
     {
       title: "Debit", field: "debit", sorter: "number",
-      hozAlign: "right", 
+      hozAlign: "right",
       formatter: "money", formatterParams: { thousand: ",", symbol: "$" },
       topCalc: "sum", topCalcFormatter: "money",
       topCalcFormatterParams: { thousand: ",", symbol: "$" }
@@ -63,7 +65,7 @@ function App() {
       mutator: function (value, data, type, params, component) {
         try {
           return JSON.parse(value)
-        } catch(error) {
+        } catch (error) {
           return []
         }
       },
@@ -91,17 +93,34 @@ function App() {
 
   let heighty = window.innerHeight - 70;
 
+  function clearFilter() {
+    const tabulatorInstance = this.ref.current && this.ref.current.table;
+    if (tabulatorInstance) {
+      tabulatorInstance.clearFilter();
+    } else {
+      alert('You clicked me!' , tabulatorRef);
+    }
+    
+  }
+
+
   return (
     <div className="App">
+      <button onClick={clearFilter}>Default</button> 
+
       <ReactTabulator
+        // ref={tabulatorRef}
+        onRef={(r) => (tabulatorRef = r)}
+        // onRef={(r) => (ref = r)}
         data={data} // Data passed here after fetching
         columns={columns}
         layout={"fitData"}
+
         options={{
           // resizableColumnFit:true,
           height: heighty,
-          pagination: "local",       //paginate the data
-          // paginationSize: 300,         //allow 7 rows per page of data
+          pagination: "local",
+          // paginationSize: 300,  
           movableColumns: true,
           persistence: {
             sort: true,

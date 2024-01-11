@@ -80,7 +80,7 @@ function runServer() {
     let query = "select * from transaction_with_account"
 
     try {
-      console.log(query)
+      // console.log(query)
       const stmt = db.db.prepare(query);
       const rows = stmt.all();
 
@@ -101,7 +101,7 @@ function runServer() {
     ORDER BY json_each.value;`
 
     try {
-      console.log(query)
+      // console.log(query)
       const stmt = db.db.prepare(query);
       const rows = stmt.all().map(obj => obj.value);
       res.json(rows);
