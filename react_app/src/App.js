@@ -103,6 +103,9 @@ function App() {
     
   }
 
+  function handleCellEdit(cell) {
+    console.log('cell edited', cell);
+  }
 
   return (
     <div className="App">
@@ -115,6 +118,11 @@ function App() {
         data={data} // Data passed here after fetching
         columns={columns}
         layout={"fitData"}
+
+        // attache event listeners
+        events={{
+          cellEdited: handleCellEdit
+        }}
 
         options={{
           // resizableColumnFit:true,
