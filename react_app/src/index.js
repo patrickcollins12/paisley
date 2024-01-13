@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import {DateTime} from 'luxon'
 window.DateTime = DateTime;
 
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
