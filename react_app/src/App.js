@@ -16,7 +16,7 @@ function App() {
 
     {
       title: "Date", field: "datetime", frozen: true, resizable: true, width: 200,
-      formatter: "date", formatterParams: {
+      formatter: "datetime", formatterParams: {
         inputFormat: "iso",
         // outputFormat: "dd/MM/yyyy",
         invalidPlaceholder: "(invalid date)",
@@ -70,9 +70,9 @@ function App() {
         }
       },
       editorParams: {
-        clearable: true,
-        autocomplete: true,
-        freetext: true,
+        // clearable: true,
+        autocomplete: false,
+        // freetext: true,
         multiselect: true,
         valuesURL: "http://localhost:4000/tags/"
       }
@@ -93,23 +93,26 @@ function App() {
 
   let heighty = window.innerHeight - 70;
 
-  function clearFilter() {
-    const tabulatorInstance = this.ref.current && this.ref.current.table;
-    if (tabulatorInstance) {
-      tabulatorInstance.clearFilter();
-    } else {
-      alert('You clicked me!' , tabulatorRef);
-    }
+  // function clearFilter() {
+  //   const tabulatorInstance = this.ref.current && this.ref.current.table;
+  //   if (tabulatorInstance) {
+  //     tabulatorInstance.clearFilter();
+  //   } else {
+  //     alert('You clicked me!' , tabulatorRef);
+  //   }
     
-  }
+  // }
 
   function handleCellEdit(cell) {
-    console.log('cell edited', cell);
+    const rowObj = cell.getRow().getData()
+    var columnField = cell.getColumn().getField();
+    const cellValue = cell.getValue()
+    console.log('cell edited', cell, cellValue&&cellValue.toString(), rowObj.id, columnField  );
   }
 
   return (
     <div className="App">
-      <button onClick={clearFilter}>Default</button> 
+      {/* <button onClick={clearFilter}>Default</button>  */}
 
       <ReactTabulator
         // ref={tabulatorRef}
@@ -119,9 +122,10 @@ function App() {
         columns={columns}
         layout={"fitData"}
 
-        // attache event listeners
+        // attach event listeners
         events={{
-          cellEdited: handleCellEdit
+          cellEdited: handleCellEdit,
+          cellEditing: handleCellEdit
         }}
 
         options={{
@@ -130,12 +134,12 @@ function App() {
           pagination: "local",
           // paginationSize: 300,  
           movableColumns: true,
-          persistence: {
-            sort: true,
-            filter: true,
-            columns: true,
-          },
-          persistenceID: "examplePerststance"
+            // persistence: {
+            //   sort: true,
+            //   filter: true,
+            //   columns: true,
+            // },
+            // persistenceID: "examplePerststance2"
         }}
 
       />

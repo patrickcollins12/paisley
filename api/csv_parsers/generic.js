@@ -1,6 +1,4 @@
 const BaseCSVParser = require('../BaseCSVParser');
-const { DateTime } = require("luxon");
-
 class GenericCSVParser extends BaseCSVParser {
 
     constructor(options) {
@@ -8,13 +6,16 @@ class GenericCSVParser extends BaseCSVParser {
 
         this.identifier = 'generic'
 
-        // generic insists that the timezone is on the created message
+        // this generic importer insists that the timezone is on the created message in the CSV
         // this.timezone = null
         // this.dateFormat = 'DD/MM/YYYY'
 
-        // what columns from the incoming csv file define a unique record
+        // what columns from the incoming csv file define a unique record?
+        // for generic it is assumed the datetime has milliseconds, so it should uniquely define the record
         this.uniqueColumns = ['datetime', 'account' ]
 
+        // every record has to have an account and an ISO timestamp with millieseconds
+        this.mustExistBeforeSaving = ['datetime','account']
 
     }
 
@@ -27,9 +28,6 @@ class GenericCSVParser extends BaseCSVParser {
         // don't bother processing anything, just pass it through
         // we assume the creator knows the DB format
         let processed = { ...l }
-
-        // but every record has to have an account and an ISO timestamp
-        this.mustExistBeforeSaving = ['datetime','account']
 
         return processed
     }

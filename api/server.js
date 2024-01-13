@@ -89,7 +89,6 @@ function runServer() {
       console.log("error: ", err.message);
       res.status(400).json({ "error": err.message });
     }
-
   });
 
   // server cats
