@@ -1,12 +1,39 @@
 const BankDatabase = require('./BankDatabase');
 const config = require('./Config');
+const chokidar = require('chokidar');
 
 class RulesClassifier {
 
     constructor() {
         this.db = new BankDatabase();
         this.ruleComponents = {}
-        this.transactionRules = require(config['rules']);
+        this.loadRules();
+        this.watchRulesFile();
+    }
+
+    async classifyAllTransactions() {
+        const query = 'SELECT id FROM "transaction"';
+        const result = this.db.db.prepare(query).all();
+        
+        for (const record of result) {
+            const id = record['id'];
+            // console.log("here>> ", id);
+            const classificationResult = await this.classifyId(id);
+        }
+    }
+
+    watchRulesFile() {
+        const watcher = chokidar.watch(config['rules'], {
+            // ignored: /(^|[\/\\])\../, // ignore dotfiles
+            awaitWriteFinish: true, 
+            persistent: true
+        });
+
+        watcher.on('change', path => {
+            console.log(`Rules file ${path} has been changed... reloading and reclassifying... `);
+            this.loadRules();
+            this.classifyAllTransactions();
+        });
     }
 
     fetchTransactionFromDatabase(id) {
@@ -63,12 +90,8 @@ class RulesClassifier {
     classifyId(id) {
         let transactionDoc = this.fetchTransactionFromDatabase(id)
         let tags = this.classify(transactionDoc)
-        // if (tags.length > 0) {
-        //     this.saveTagsToDatabase(id,uniqueTags)
-        // }
-        
-        const uniqueTags = arr => [...new Set(arr)];
-        const unique = uniqueTags(tags);
+
+        const unique = [...new Set(tags)];
         if (unique.length > 0) {
             this.saveTagsToDatabase(id,unique)
         }
@@ -77,6 +100,7 @@ class RulesClassifier {
 
     loadRules() {
         // this.rules = rules.transactionRules
+        this.transactionRules = require(config['rules']);
     }
 
     parseRule(rule) {
@@ -105,7 +129,7 @@ class RulesClassifier {
             }
 
             // Handle comparison operators
-            else if (pattern.includes('>') || pattern.includes('<')) {
+            else if (pattern.startsWith('>') || pattern.startsWith('<')) {
                 const operator = pattern.match(/[><]=?/)[0];
                 const value = parseFloat(pattern.split(operator)[1]);
 
@@ -124,15 +148,15 @@ class RulesClassifier {
             }
 
             // Handle NOT
-            if (pattern.startsWith('^')) {
-                return !(new RegExp(pattern.slice(1), "i").test(transaction[field]));
+            if (pattern.startsWith('<>')) {
+                return !(new RegExp(pattern.slice(2), "i").test(transaction[field]));
             }
 
             // Handle matching
             if (pattern.startsWith('(')) {
-                if (new RegExp(/coles/i).test(transaction['description'])) {
-                    console.log("here");
-                }
+                // if (new RegExp(/coles/i).test(transaction['description'])) {
+                //     console.log("here");
+                // }
                 const matches = transaction[field].matchAll(pattern);
                 for (let i=0; i < matches.length; i++ ) {
                     

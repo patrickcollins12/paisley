@@ -13,6 +13,7 @@ const FileWatcher = require('./FileWatcher');
 const FileMover = require('./FileMover');
 const RulesClassifier = require('./RulesClassifier');
 const BankDatabase = require('./BankDatabase');
+const classifier = new RulesClassifier()
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -39,8 +40,7 @@ async function processFile(csvParserFactory, watchDir, processedDir, file) {
     console.log("ready to classify")
     // console.log(parseResults.inserted_ids)
 
-    classifier = new RulesClassifier()
-    await classifier.loadRules()
+    // await classifier.loadRules()
 
     for (let id of parseResults.inserted_ids) {
       const classificationResult = await classifier.classifyId(id);

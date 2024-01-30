@@ -48,9 +48,13 @@ class ChaseCSVParser extends BaseCSVParser {
 
         processed.account = this.accountid
         processed.description = l['Description']
-        // processed.amount =  (l['Details'] === "DEBIT") ? -l['Amount'] : l['Amount']
-        processed.debit = (l['Details'] === "DEBIT") ? -l['Amount'] : "";
-        processed.credit = (l['Details'] === "CREDIT") ? l['Amount'] : "";
+        
+        if (l['Details'] === "DEBIT" ||l['Details'] === "CHECK") {
+            processed.debit = -l['Amount'];
+        } else {
+            // processed.credit = l['Amount'];
+            processed.credit = l['Amount'];
+        }
 
         processed.type = l['Type']
         processed.balance = l['Balance']
