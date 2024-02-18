@@ -7,6 +7,11 @@ $ mkdir ~/paisley
 $ cp config.template.js ~/paisley
 ```
 
+## Back up the Schema occassionally:
+``` 
+$ sqlite3 ~/paisley/transactions.db .schema > schema.sql 
+```
+
 ## Setup a demo database
 
 ```
@@ -23,14 +28,10 @@ node demo/generate_transactions/generate_transactions.js
 node server.js --config ~/paisley/demo/demo_config.js
 ```
 
-## Testing
+## Running your scrapers
 ```
 $ npm test
 $ npx playwright test
 ```
 
-## Back up the Schema occassionally:
-``` 
-$ sqlite3 ~/paisley/transactions.db .schema > schema.sql 
-```
 
