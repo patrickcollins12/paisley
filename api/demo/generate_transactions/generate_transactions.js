@@ -375,10 +375,10 @@ let rowcsvstr = convertAndLogCsv(finalData)
 let pid = process.pid
 const homedir = os.homedir();
 
-let csvfile = path.join(homedir, "paisley/demo/bank_statements", `generic_test_data_${pid}.csv`)
+let csvfile = `generic_test_data_${pid}.csv`
 fs.writeFileSync(csvfile, rowcsvstr, 'utf8');
 
 // dump the rules
 var rulesstr = "module.exports=\n"+ JSON.stringify(finalRules, null, 2); // spacing level = 2
 
-fs.writeFileSync(path.join(homedir, "paisley/demo", "test_rules.js"), rulesstr, 'utf8');
+fs.writeFileSync("demo_rules.js", rulesstr, 'utf8');
