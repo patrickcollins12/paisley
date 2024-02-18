@@ -56,6 +56,7 @@ class WestpacCSVParser extends BaseCSVParser {
             acc = this.bankconfig.firstLinePatterns[acc];
         } catch {
             console.error("this.bankconfig.firstLinePatterns is empty")
+            return
         }
 
         processed.account = acc || l['Bank Account']

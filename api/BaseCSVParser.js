@@ -193,6 +193,7 @@ class BaseCSVParser {
 
     matchFileExpands(fileName) {
         let found = false;
+        if (this.bankconfig && this.bankconfig.fileExpands) { } else { return false}
         try {
             for (const [pattern, accountid] of Object.entries(this.bankconfig.fileExpands)) {
                 if (fileName.includes(pattern)) {

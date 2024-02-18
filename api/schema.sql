@@ -15,6 +15,25 @@ CREATE TABLE IF NOT EXISTS "account" (
 	"currency"	TEXT, "type" TEXT,
 	PRIMARY KEY("accountid")
 );
+CREATE TABLE IF NOT EXISTS "transaction_enriched" (
+	"id"	TEXT NOT NULL UNIQUE,
+	"tags"	JSON,
+	"description"	TEXT,
+	PRIMARY KEY("id")
+);
+CREATE TABLE IF NOT EXISTS "transaction" (
+	"id"	TEXT NOT NULL UNIQUE,
+	"datetime"	TEXT, 
+	"account"	TEXT,
+	"description"	TEXT,
+	"credit" INTEGER,
+    "debit" INTEGER,
+	"balance"	INTEGER,
+	"type"	INTEGER,
+	"tags" JSON,
+	jsondata JSON, "notes" TEXT, 
+	PRIMARY KEY("id")
+);
 CREATE VIEW "account_summary" AS SELECT 
     t1.account, 
     a.institution, 
@@ -47,25 +66,6 @@ GROUP BY
 ORDER BY 
     a.currency, a.institution
 /* account_summary(account,institution,name,type,currency,recent_balance,txns,oldest,newest) */;
-CREATE TABLE IF NOT EXISTS "transaction_enriched" (
-	"id"	TEXT NOT NULL UNIQUE,
-	"tags"	JSON,
-	"description"	TEXT,
-	PRIMARY KEY("id")
-);
-CREATE TABLE IF NOT EXISTS "transaction" (
-	"id"	TEXT NOT NULL UNIQUE,
-	"datetime"	TEXT, 
-	"account"	TEXT,
-	"description"	TEXT,
-	"credit" INTEGER,
-    "debit" INTEGER,
-	"balance"	INTEGER,
-	"type"	INTEGER,
-	"tags" JSON,
-	jsondata JSON, 
-	PRIMARY KEY("id")
-);
 CREATE VIEW "transaction_with_account" AS 
 
 SELECT 
@@ -75,21 +75,20 @@ SELECT
       SUBSTR(t.account, -4) 'account number',
       t.datetime,
       t.description,	
-	  
-	  
-	  t.debit as debit_old,
-	  t.credit as credit_old,
-	  
-    CASE
-    WHEN t.debit IS NULL OR t.debit = 0 OR t.debit = '' THEN NULL
-    ELSE t.debit
-  END AS debit,
-  	  
-	CASE
-    WHEN t.credit IS NULL OR t.credit = 0 OR t.credit='' THEN NULL
-    ELSE  t.credit
-  END AS credit,
-  
+
+	  t.debit,
+      t.credit,
+-- -- 	  
+--     CASE
+--     WHEN t.debit IS NULL OR t.debit = 0 OR t.debit = '' THEN NULL
+--     ELSE t.debit
+--   END AS debit,
+--   	  
+-- 	CASE
+--     WHEN t.credit IS NULL OR t.credit = 0 OR t.credit='' THEN NULL
+--     ELSE  t.credit
+--   END AS credit,
+--   
   CASE
   WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
   WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
@@ -109,4 +108,4 @@ END AS amount,
     ORDER BY 
       t.datetime DESC
 -- 	  limit 1000
-/* transaction_with_account(id,institution,name,"account number",datetime,description,debit_old,credit_old,debit,credit,amount,balance,currency,tags,transaction_type,account_type,jsondata) */;
+/* transaction_with_account(id,institution,name,"account number",datetime,description,debit,credit,amount,balance,currency,tags,transaction_type,account_type,jsondata) */;

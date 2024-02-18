@@ -5,9 +5,17 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const os = require('os');
 const path = require('path');
+const minimist = require('minimist');
 
-// local imports
+// load command line arguments
+const args = minimist(process.argv);
+
+// load the config
 const config = require('./Config');
+// console.log("args:",args);
+config.load( args["config"])
+
+
 const CSVParserFactory = require('./CSVParserFactory');
 const FileWatcher = require('./FileWatcher');
 const FileMover = require('./FileMover');
