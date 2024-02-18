@@ -1,16 +1,3 @@
-// TODO
-// [x] subscriptions
-// [x] generate some credit amounts very rarely and add refund
-// [x] add the other categories, income
-// [x] do the transfers
-// [x] move the transfer object back onto cats.js. also add description and ruledesc. 
-// [x] double check that transfers can't have same account and desc
-// [x] create a test pfm directory
-// [x] create a csv parser
-// [x] load these through serve.js csv importer?? I think so.
-// [x] generate the matching rules
-// [x] clean up this directory
-
 /*
 so the current pipeline was I extracted tags from prod db, fed them into ChatGPT, 
 then hardcoded that into cats_generation.js which generated cats.js.

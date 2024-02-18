@@ -7,7 +7,7 @@ module.exports = {
     csv_watch:     path.join(homedir,   "paisley/demo/bank_statements"),
     csv_processed: path.join(homedir,   "paisley/demo/bank_statements/processed"),
     database:      path.join(homedir,   "paisley/demo/demo_transactions.db"),
-    rules: path.join(homedir,   "paisley/demo/test_rules.js"),
+    rules:         path.join(homedir,   "paisley/demo/demo_rules.js"),
 
     TestdataCSVParser: {
         identifier: "generic_test_data",
