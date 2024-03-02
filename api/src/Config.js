@@ -26,8 +26,8 @@ class Config  {
         }
 
         // TODO allow these to be put back onto config.js. But __dirname is hard to put there
-        this.parsers  = path.join(__dirname, "csv_parsers");
-        this.scrapers = path.join(__dirname, "scrapers");
+        this.parsers  = path.join(__dirname, "..", "csv_parsers");
+        this.scrapers = path.join(__dirname, "..", "scrapers");
 
         // for (const [key,val] of Object.entries(config) ) {
         //     if (this[key]) {

@@ -1,4 +1,4 @@
-const BaseCSVParser = require('../BaseCSVParser');
+const BaseCSVParser = require('../src/BaseCSVParser');
 // const moment = require('moment-timezone');
 
 class BankwestCSVParser extends BaseCSVParser {

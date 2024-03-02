@@ -1,14 +1,14 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const config = require('../Config');
+const config = require('../src/Config');
 
 describe('BankDatabase Class', () => {
     let BankDatabase
     let db;
 
     beforeEach(() => {
-        BankDatabase = require('../BankDatabase');
+        BankDatabase = require('../src/BankDatabase');
     });
 
     test('should be instantiated correctly', () => {

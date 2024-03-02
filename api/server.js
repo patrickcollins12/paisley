@@ -11,16 +11,16 @@ const minimist = require('minimist');
 const args = minimist(process.argv);
 
 // load the config
-const config = require('./Config');
+const config = require('./src/Config');
 // console.log("args:",args);
 config.load( args["config"])
 
 
-const CSVParserFactory = require('./CSVParserFactory');
-const FileWatcher = require('./FileWatcher');
-const FileMover = require('./FileMover');
-const RulesClassifier = require('./RulesClassifier');
-const BankDatabase = require('./BankDatabase');
+const CSVParserFactory = require('./src/CSVParserFactory');
+const FileWatcher = require('./src/FileWatcher');
+const FileMover = require('./src/FileMover');
+const RulesClassifier = require('./src/RulesClassifier');
+const BankDatabase = require('./src/BankDatabase');
 const classifier = new RulesClassifier()
 
 app.use(cors());

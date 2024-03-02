@@ -1,7 +1,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const config = require('../Config');
+const config = require('../src/Config');
 
 describe('FileMover Class', () => {
     beforeEach(() => {
@@ -17,13 +17,13 @@ describe('FileMover Class', () => {
     });
 
     test('should be instantiated correctly', () => {
-        const FileMover = require('../FileMover');
+        const FileMover = require('../src/FileMover');
         expect(FileMover).toBeDefined();
     });
 
     test('can move a file', done => {
         // expect(FileMover).toBeDefined();
-        const FileMover = require('../FileMover');
+        const FileMover = require('../src/FileMover');
         FileMover.moveFile("/tmp/basedir", "/tmp/basedir/file.csv", "/tmp/basedir/processed/file.csv",(err) => {
             if (err) {
                 // Error handling
@@ -41,7 +41,7 @@ describe('FileMover Class', () => {
 
     test('can move a file in a subdirectory of basedir', async () => {
         // expect(FileMover).toBeDefined();
-        const FileMover = require('../FileMover');
+        const FileMover = require('../src/FileMover');
         fs.mkdirSync(    "/tmp/basedir/ubank", { recursive: true });
         fs.writeFileSync('/tmp/basedir/ubank/file.csv', '');
 

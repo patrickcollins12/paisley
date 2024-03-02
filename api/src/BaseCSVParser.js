@@ -6,7 +6,7 @@ const path = require('path');
 const ParseResults = require('./ParseResults.js');
 const config = require('./Config');
 const BankDatabase = require('./BankDatabase');
-const util = require('./Util');
+const util = require('./Util.js');
 
 class BaseCSVParser {
 

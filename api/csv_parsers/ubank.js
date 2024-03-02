@@ -1,6 +1,6 @@
-const BaseCSVParser = require('../BaseCSVParser');
+const BaseCSVParser = require('../src/BaseCSVParser');
 const { DateTime } = require("luxon");
-const util = require('../ScraperUtil');
+const util = require('../src/ScraperUtil');
 
 class UbankCSVParser extends BaseCSVParser {
 

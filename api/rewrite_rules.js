@@ -1,4 +1,4 @@
-const config = require('./Config');
+const config = require('src/Config');
 let rules = require(config['rules']);
 
 let newRules = {}

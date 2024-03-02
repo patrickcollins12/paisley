@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-const util = require('../ScraperUtil');
-const config = require('../Config');
+const util = require('../src/ScraperUtil');
+const config = require('../src/Config');
 config.load()
 const bank_config = config['CommsecScraper'];
 

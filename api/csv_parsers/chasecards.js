@@ -1,4 +1,4 @@
-const BaseCSVParser = require('../BaseCSVParser');
+const BaseCSVParser = require('../src/BaseCSVParser');
 
 class ChaseCardsCSVParser extends BaseCSVParser {
 

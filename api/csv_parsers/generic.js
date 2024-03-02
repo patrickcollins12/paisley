@@ -1,4 +1,4 @@
-const BaseCSVParser = require('../BaseCSVParser');
+const BaseCSVParser = require('../src/BaseCSVParser');
 const { DateTime } = require("luxon");
 
 class GenericCSVParser extends BaseCSVParser {

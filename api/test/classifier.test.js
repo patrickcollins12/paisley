@@ -1,8 +1,8 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const config = require('../Config');
-const RulesClassifier = require('../RulesClassifier');
+const config = require('../src/Config');
+const RulesClassifier = require('../src/RulesClassifier');
 
 describe('RulesClassifier Class', () => {
     beforeEach(() => {

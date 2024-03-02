@@ -4,7 +4,7 @@ const path = require('path');
 
 describe('config file', () => {
 
-    const config = require('../Config');
+    const config = require('../src/Config');
     console.log(config)
 
     test('should be instantiated correctly', () => {

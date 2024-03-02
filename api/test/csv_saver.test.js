@@ -1,4 +1,4 @@
-const util = require('../ScraperUtil');
+const util = require('../src/ScraperUtil');
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
