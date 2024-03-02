@@ -1,7 +1,6 @@
-- [x] add summary after parseFile
-- [x] add a summary to the database? or write the filename?
-- [x] move processed files to processed/
-- [x] run the scrapers
-
-- [x] find my old transactions
-- [ ] write the categorisers
+- add new api end points
+   - add paging to /data 
+   - add filters to /data: description, tags
+   - /data returns enriched cats too
+   - update transaction categories, pass id and 1 or more cats
+   
