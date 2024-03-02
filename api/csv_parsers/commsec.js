@@ -27,6 +27,10 @@ class CommsecCSVParser extends BaseCSVParser {
     processLine(l) {
         let processed = {}
         
+        if ( /No transactions found/.test(l['Date']) ) {
+            return
+        }
+
         processed.datetime = this.convertToLocalTime(l['Date']);
         
         processed.account = this.accountid

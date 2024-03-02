@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 const util = require('../ScraperUtil');
 const config = require('../Config');
+config.load()
 const bank_config = config['CommsecScraper'];
 
 test('test', async ({ page }) => {
@@ -9,7 +10,7 @@ test('test', async ({ page }) => {
   await page.getByPlaceholder('Client ID').fill(bank_config['Client ID']);
   await page.getByPlaceholder('Password').click();
   await page.getByPlaceholder('Password').fill(bank_config['Password']);
-  await page.getByRole('button', { name: 'Login' }).click();
+  await page.getByRole('button', { name: 'Login' }).first().click();
   await page.getByTitle('Portfolio').click();
   await page.getByRole('link', { name: 'View Holdings' }).click();
   await page.getByRole('link', { name: 'Transactions' }).click();

@@ -33,6 +33,8 @@ class RulesClassifier {
             console.log(`Rules file ${path} has been changed... reloading and reclassifying... `);
             this.loadRules();
             this.classifyAllTransactions();
+            console.log(`... done`);
+
         });
     }
 
@@ -99,8 +101,15 @@ class RulesClassifier {
     }
 
     loadRules() {
-        // this.rules = rules.transactionRules
+        // lookup the path for the rules file.. just in case a relative path was passed in
+        const rulesPath = require.resolve(config['rules']);
+
+        // Invalidate the cache for the module
+        delete require.cache[rulesPath];
+
+        // reload the module
         this.transactionRules = require(config['rules']);
+
     }
 
     parseRule(rule) {

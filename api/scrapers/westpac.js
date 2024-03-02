@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 const util = require('../ScraperUtil');
 const config = require('../Config');
+config.load()
 const bank_config = config['WestpacScraper'];
 
 test('test', async ({ page }) => {

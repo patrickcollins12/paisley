@@ -1,12 +1,13 @@
 import { test,expect } from '@playwright/test';
 const util = require('../ScraperUtil');
-const config = require('../Config');
-const bank_config = config['SwyftxScraper'];
+const config = (require('../Config'));
 const { access } = require('fs');
 const { DateTime } = require("luxon");
 const axios = require('axios').default;
 const path = require('path');
 
+config.load()
+const bank_config = config['SwyftxScraper'];
 let API_Key = bank_config['API_Key']
 
 async function getAccessToken() {
