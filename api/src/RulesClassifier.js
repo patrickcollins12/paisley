@@ -132,6 +132,12 @@ class RulesClassifier {
     checkTransaction(transaction, ruleComponents) {
         return ruleComponents.every(({ field, pattern }) => {
 
+
+            // Handle NOT
+            if (pattern.startsWith('<>')) {
+                return !(new RegExp(pattern.slice(2), "i").test(transaction[field]));
+            }
+            
             // Handle case sensitivity
             if (pattern.startsWith('!')) {
                 return new RegExp(pattern.slice(1)).test(transaction[field]);
@@ -156,10 +162,6 @@ class RulesClassifier {
                 }
             }
 
-            // Handle NOT
-            if (pattern.startsWith('<>')) {
-                return !(new RegExp(pattern.slice(2), "i").test(transaction[field]));
-            }
 
             // Handle matching
             if (pattern.startsWith('(')) {
@@ -182,6 +184,7 @@ class RulesClassifier {
 
     applyTagsToTransaction(transaction) {
         let tags = [];
+        
         for (const [rule, ruleTags] of Object.entries(this.transactionRules)) {
             const ruleComponents = this.parseRule(rule);
             // console.log(ruleComponents)

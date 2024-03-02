@@ -3,12 +3,12 @@
 describe('config file', () => {
 
     test('should be instantiated correctly', () => {
-        const util = require('../Util');
+        const util = require('../src/Util');
         expect(util.generateSHAFromObject).toBeDefined();
     });
 
     test('test SHA', () => {
-        const util = require('../Util');
+        const util = require('../src/Util');
         expect(util.generateSHAFromObject).toBeDefined();
         let obj = {
             'account': '123456 89765',
