@@ -5,6 +5,8 @@ config.load()
 const bank_config = config['CommsecScraper'];
 
 test('test', async ({ page }) => {
+  test.slow();
+
   await page.goto('https://www2.commsec.com.au/secure/login?LoginResult=LoginRequired&r=https%3a%2f%2fwww2.commsec.com.au%2f');
   await page.getByPlaceholder('Client ID').click();
   await page.getByPlaceholder('Client ID').fill(bank_config['Client ID']);

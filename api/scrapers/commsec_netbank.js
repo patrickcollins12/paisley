@@ -6,6 +6,8 @@ const bank_config = config['CBAScraper'];
 
 
 test('test', async ({ page }) => {
+    test.slow();
+
     await page.goto('https://www2.commsec.com.au/secure/login?LoginResult=LoginRequired&r=https%3a%2f%2fwww2.commsec.com.au%2f');
     await page.getByPlaceholder('Client ID').click();
     await page.getByPlaceholder('Client ID').fill(bank_config['Client ID']);
@@ -14,7 +16,6 @@ test('test', async ({ page }) => {
     await page.getByRole('button', { name: 'Login' }).first().click();
 
     await page.waitForSelector('text=Commonwealth Securities Limited ABN 60 067 254 399')
-    // await page.getByRole('button', { name: 'NetBank' }).click();
     await page.getByRole('link', { name: 'NetBank', exact: true }).click();
 
     // await page.goto('https://www2.commsec.com.au/private/singlesignon/jump.aspx');

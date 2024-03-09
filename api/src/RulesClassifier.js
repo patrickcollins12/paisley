@@ -132,7 +132,6 @@ class RulesClassifier {
     checkTransaction(transaction, ruleComponents) {
         return ruleComponents.every(({ field, pattern }) => {
 
-
             // Handle NOT
             if (pattern.startsWith('<>')) {
                 return !(new RegExp(pattern.slice(2), "i").test(transaction[field]));

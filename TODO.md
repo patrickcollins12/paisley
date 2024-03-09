@@ -1,6 +1,8 @@
 - add new api end points
-   - add paging to /data 
-   - add filters to /data: description, tags
-   - /data returns enriched cats too
-   - update transaction categories, pass id and 1 or more cats
-   
+    - swagger-jsdoc auto generate.
+    - move the routes to their own directory
+    - [ ] add paging to /data 
+    - [ ] add filters to /data: description, tags
+    - [ ] /data returns enriched cats too
+    - [x] update transaction categories, pass id and 1 or more cats
+- handle rule components: "rule: last-only"

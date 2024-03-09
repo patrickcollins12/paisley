@@ -1,15 +1,13 @@
 {
-  "name": "personal_finance_manager",
+  "name": "paisley",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  
   "scripts": {
     "test": "jest",
     "scrape": "npx playwright test",
     "postinstall": "node install.js"
   },
-
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -23,9 +21,11 @@
     "csv-writer": "^1.6.0",
     "dayjs": "^1.11.10",
     "express": "^4.18.2",
+    "express-validator": "^7.0.1",
     "luxon": "^3.4.4",
     "minimist": "^1.2.8",
-    "moment-timezone": "^0.5.43"
+    "moment-timezone": "^0.5.43",
+    "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
