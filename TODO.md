@@ -1,4 +1,8 @@
 - learn react properly.
+- add documentation 
+    - Docusaurus
+    - https://github.com/Redocly/redoc 
+    - Slate is ok, maybe with widdershins?
 - add new api end points
     - [ ] add a date range filter to /transactions
     - [ ] add an "amount" filter to /transactions
