@@ -1,0 +1,145 @@
+const express = require('express');
+const { body, validationResult } = require('express-validator');
+const router = express.Router();
+const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
+
+/**
+ * @swagger
+ * /update_transaction:
+ *   post:
+ *     summary: Updates the details of an existing transaction
+ *     description: Allows updating the tags and description of a transaction identified by its ID. If the specified ID does not exist, a 404 error is returned. Tags and description fields are optional; however, if provided, they are validated for type and length.
+ *     tags:
+ *       - Transactions
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: The unique identifier of the transaction. This field is required and must not be empty.
+ *                 example: "txn_123456"
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: An optional array of tag strings associated with the transaction. Each tag must be a string under 1000 characters.
+ *                 example: ["urgent", "food"]
+ *               description:
+ *                 type: string
+ *                 description: An optional description for the transaction. Must be a string under 1000 characters.
+ *                 example: "Weekly grocery shopping at supermarket."
+ *     responses:
+ *       200:
+ *         description: Transaction details updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Bad request. Possible reasons include validation errors such as missing ID, incorrect field types, or strings exceeding the maximum length.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       msg:
+ *                         type: string
+ *                         example: "ID is required."
+ *                       param:
+ *                         type: string
+ *                         example: "id"
+ *                       location:
+ *                         type: string
+ *                         example: "body"
+ *       404:
+ *         description: The specified transaction ID does not exist in the database.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "ID does not exist in 'transaction' table"
+ */
+
+router.post('/update_transaction', [
+  // Validate and sanitize the ID
+  body('id').trim().isLength({ min: 1 }).withMessage('ID is required.'),
+  // Make 'tags' optional but validate if provided
+  body('tags').optional().isArray().withMessage('Tags must be an array.'),
+  body('tags.*').optional().isString().withMessage('Each tag must be a string.')
+    .isLength({ max: 1000 }).withMessage('Tag names must be under 1000 characters.'),
+  // Make 'description' optional but validate if provided
+  body('description').optional().isString().withMessage('Description must be a string.')
+    .isLength({ max: 1000 }).withMessage('Description must be under 1000 characters.'),
+], async (req, res) => {
+  // Check for validation errors
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { id, tags, description } = req.body;
+
+  let db = new BankDatabase();
+
+  try {
+
+    // Simplified check if the ID exists in the 'transaction' table
+    let checkQuery = `SELECT id FROM 'transaction' WHERE id = ? LIMIT 1`;
+    const checkStmt = db.db.prepare(checkQuery);
+    const result = checkStmt.get(id);
+    if (!result) {
+      // If the result is undefined or null, the ID does not exist
+      return res.status(404).json({ "error": "ID does not exist in 'transaction' table" });
+    }
+
+    let fields = ['id'];
+    let placeholders = ['?'];
+    let updateSet = [];
+    let params = [id];
+
+    if (tags) {
+      fields.push('tags');
+      placeholders.push('json(?)');
+      updateSet.push('tags = excluded.tags');
+      params.push(JSON.stringify(tags));
+    }
+
+    if (description) {
+      fields.push('description');
+      placeholders.push('?');
+      updateSet.push('description = excluded.description');
+      params.push(description);
+    }
+
+    // Construct the query only with the necessary fields
+    let query = `INSERT INTO transaction_enriched (${fields.join(', ')})
+                 VALUES (${placeholders.join(', ')})
+                 ON CONFLICT(id) DO UPDATE SET ${updateSet.join(', ')};`;
+
+    db.db.prepare(query).run(params);
+    res.json({ "success": true });
+
+
+  } catch (err) {
+    console.log("error: ", err.message);
+    res.status(400).json({ "error": err.message });
+  }
+});
+
+module.exports = router;

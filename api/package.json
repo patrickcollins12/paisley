@@ -25,6 +25,7 @@
     "luxon": "^3.4.4",
     "minimist": "^1.2.8",
     "moment-timezone": "^0.5.43",
+    "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {

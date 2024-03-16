@@ -2,6 +2,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
 const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -26,15 +27,6 @@ const FileMover = require('./src/FileMover');
 const RulesClassifier = require('./src/RulesClassifier');
 const BankDatabase = require('./src/BankDatabase');
 const classifier = new RulesClassifier()
-
-// setup swagger
-const swaggerDocument = require('./swagger.json');
-
-app.use(cors());
-app.use(express.json());
-// app.use(bodyParser.json());
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 
 async function initializeCsvParserFactory() {
   const csvParserFactory = new CSVParserFactory();
@@ -86,119 +78,46 @@ async function setupParsersAndStartWatching() {
 
 setupParsersAndStartWatching();
 
+
 ////////////////
-// serve at localhost:3000/data
-runServer();
-function runServer() {
-  let db = new BankDatabase();
+// EXPRESS SERVER at localhost:3000/data
 
-  // server cats
-  app.get('/data', async (req, res) => {
-    let query = "select * from transaction_with_account"
+// // setup swagger
+// const swaggerDocument = require('./swagger.json');
 
-    try {
-      // console.log(query)
-      const stmt = db.db.prepare(query);
-      const rows = stmt.all();
+app.use(cors());
+app.use(express.json());
+// app.use(bodyParser.json());
 
-      res.json(rows);
-    } catch (err) {
-      console.log("error: ", err.message);
-      res.status(400).json({ "error": err.message });
-    }
+const routes = [
+  './src/routes/transactions.js',
+  './src/routes/update_transactions.js',
+  './src/routes/tags.js',
+]
 
-  });
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Paisley API',
+      version: '1.0.0',
+      description: 'The official API for interacting with Paisley Finance',
+    },
+  },
+  apis: routes // Path to the API docs
+};
 
-  // server cats
-  app.get('/tags', async (req, res) => {
-    let query = `SELECT DISTINCT json_each.value
-    FROM 'transaction',
-         json_each('transaction'.tags)
-    WHERE json_valid('transaction'.tags)
-    ORDER BY json_each.value;`
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+// app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-    try {
-      // console.log(query)
-      const stmt = db.db.prepare(query);
-      const rows = stmt.all().map(obj => obj.value);
-      res.json(rows);
-    } catch (err) {
-      console.log("error: ", err.message);
-      res.status(400).json({ "error": err.message });
-    }
-
-  });
-
-
-  app.post('/update_transaction', [
-    // Validate and sanitize the ID
-    body('id').trim().isLength({ min: 1 }).withMessage('ID is required.'),
-    // Make 'tags' optional but validate if provided
-    body('tags').optional().isArray().withMessage('Tags must be an array.'),
-    body('tags.*').optional().isString().withMessage('Each tag must be a string.')
-      .isLength({ max: 1000 }).withMessage('Tag names must be under 1000 characters.'),
-    // Make 'description' optional but validate if provided
-    body('description').optional().isString().withMessage('Description must be a string.')
-      .isLength({ max: 1000 }).withMessage('Description must be under 1000 characters.'),
-  ], async (req, res) => {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { id, tags, description } = req.body;
-
-
-    try {
-
-      // Simplified check if the ID exists in the 'transaction' table
-      let checkQuery = `SELECT id FROM 'transaction' WHERE id = ? LIMIT 1`;
-      const checkStmt = db.db.prepare(checkQuery);
-      const result = checkStmt.get(id);
-      if (!result) {
-        // If the result is undefined or null, the ID does not exist
-        return res.status(404).json({ "error": "ID does not exist in 'transaction' table" });
-      }
-
-      let fields = ['id'];
-      let placeholders = ['?'];
-      let updateSet = [];
-      let params = [id];
-  
-      if (tags) {
-        fields.push('tags');
-        placeholders.push('json(?)');
-        updateSet.push('tags = excluded.tags');
-        params.push(JSON.stringify(tags));
-      }
-  
-      if (description) {
-        fields.push('description');
-        placeholders.push('?');
-        updateSet.push('description = excluded.description');
-        params.push(description);
-      }
-  
-      // Construct the query only with the necessary fields
-      let query = `INSERT INTO transaction_enriched (${fields.join(', ')})
-                   VALUES (${placeholders.join(', ')})
-                   ON CONFLICT(id) DO UPDATE SET ${updateSet.join(', ')};`;
-  
-      db.db.prepare(query).run(params);
-      res.json({ "success": true });
-
-
-    } catch (err) {
-      console.log("error: ", err.message);
-      res.status(400).json({ "error": err.message });
-    }
-  });
-
-
-  //temporarily disable the webserver
-  const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-  });
+// Load the routes
+for (const rte of routes) {
+  app.use(require(rte));
 }
+
+//temporarily disable the webserver
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
