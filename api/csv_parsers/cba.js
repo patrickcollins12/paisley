@@ -1,5 +1,4 @@
 const BaseCSVParser = require('../src/BaseCSVParser');
-// const moment = require('moment-timezone');
 
 class CBACSVParser extends BaseCSVParser {
 
@@ -8,7 +7,7 @@ class CBACSVParser extends BaseCSVParser {
 
         this.identifier = 'commonwealth bank'
         this.timezone = 'Australia/Sydney'
-        this.dateFormat = 'DD/MM/YYYY'
+        this.dateFormat = 'dd/MM/yyyy'  // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
         // if headers is defined, then the csv parser will 
         // assume there is no header record in the file

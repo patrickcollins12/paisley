@@ -1,13 +1,16 @@
+
 - learn react properly.
 - add documentation 
     - Docusaurus
     - https://github.com/Redocly/redoc 
     - Slate is ok, maybe with widdershins?
-- add new api end points
+- modify API
     - [ ] add a date range filter to /transactions
     - [ ] add an "amount" filter to /transactions
+    - [ ] urgent refactor /transactions to also return metadata, pages, account currencies
 - [ ] handle rule components: "rule: last-only"
-
+- [ ] get coinbase apis: https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/api-accounts
+- [ ] consider letting swyftx and coinbase go directly via API instead of CSV
 
 DONE
     - [O] rewrite /date to filter_field=[description|tags]&filter_val=chatswood&filter_strategy=[starts_with,ends_with,contains,does_not_contain,is_greater_than]. DROPPED

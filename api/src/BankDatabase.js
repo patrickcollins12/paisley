@@ -19,6 +19,7 @@ class BankDatabase {
                 throw new Error(`Database file not found at path: ${path}`);
             }
 
+            // this.db = new Database(path, {verbose: console.log});
             this.db = new Database(path);
             console.log(`Connected to SQLite database: ${path}`);
         } catch (err) {

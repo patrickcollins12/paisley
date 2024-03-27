@@ -10,11 +10,10 @@ class GenericCSVParser extends BaseCSVParser {
 
         // generic insists that the timezone is on the created message
         // this.timezone = null
-        // this.dateFormat = 'DD/MM/YYYY'
+        // this.dateFormat = 'dd/MM/yyyy'  // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
         // what columns from the incoming csv file define a unique record
         this.uniqueColumns = ['datetime', 'account' ]
-
 
     }
 

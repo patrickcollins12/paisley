@@ -5,7 +5,6 @@ const config = require('../src/Config');
 config.load()
 const bank_config = config['RestSuperScraper'];
 const path = require('path');
-// const moment = require('moment');
 const { DateTime } = require("luxon");
 
 // console.log (outCSVFile);
@@ -50,7 +49,6 @@ test('test', async ({ page }) => {
     let cleanBalance = util.cleanPrice(rawBalance);
 
     // setup the csv filename
-    // const dated = moment(new Date()).format('YYYY_MM_DD');
     const dated = DateTime.now().setZone("Australia/Sydney").toISODate();
     // DateTime.local().setZone()
 

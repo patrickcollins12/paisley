@@ -7,7 +7,7 @@ class ChaseCardsCSVParser extends BaseCSVParser {
         
         this.identifier = 'chasecard'
         this.timezone = 'America/Los_Angeles' 
-        this.dateFormat = 'MM/DD/YYYY'
+        this.dateFormat = 'MM/dd/yyyy'  // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
         // what columns from the incoming csv file define a unique record
             // Transaction Date,Post Date,Description,Category,Type,Amount,Memo
@@ -29,7 +29,6 @@ class ChaseCardsCSVParser extends BaseCSVParser {
     processLine(l) {
         let processed = {}
         
-        // processed.datetime = this.toUTC(l['Posting Date'],this.dateFormat); // requires date format defined above.
         processed.datetime = this.convertToLocalTime(l['Transaction Date']);
 
         processed.account = this.accountid

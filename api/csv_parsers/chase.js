@@ -1,5 +1,4 @@
 const BaseCSVParser = require('../src/BaseCSVParser');
-// const moment = require('moment-timezone');
 
 class ChaseCSVParser extends BaseCSVParser {
 
@@ -8,7 +7,7 @@ class ChaseCSVParser extends BaseCSVParser {
 
         this.identifier = 'chase'
         this.timezone = 'America/Los_Angeles'
-        this.dateFormat = 'MM/DD/YYYY'
+        this.dateFormat = 'MM/dd/yyyy' // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
         // what columns from the incoming csv file define a unique record
         // this.uniqueColumns = ['Posting Date', 'Description', 'Amount', 'Balance']
@@ -43,7 +42,6 @@ class ChaseCSVParser extends BaseCSVParser {
     processLine(l) {
         let processed = {}
 
-        // processed.datetime = this.toUTC(l['Posting Date'],this.dateFormat); // requires date format defined above.
         processed.datetime = this.convertToLocalTime(l['Posting Date']);
 
         processed.account = this.accountid

@@ -1,5 +1,4 @@
 const BaseCSVParser = require('../src/BaseCSVParser');
-// const moment = require('moment-timezone');
 
 class WestpacCSVParser extends BaseCSVParser {
 
@@ -8,7 +7,7 @@ class WestpacCSVParser extends BaseCSVParser {
 
         this.identifier = 'westpac'
         this.timezone = 'Australia/Sydney'
-        this.dateFormat = 'DD/MM/YYYY'
+        this.dateFormat = 'dd/MM/yyyy'
 
         this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
 

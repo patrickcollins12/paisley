@@ -1,5 +1,4 @@
 const BaseCSVParser = require('../src/BaseCSVParser');
-// const moment = require('moment-timezone');
 
 class BankwestCSVParser extends BaseCSVParser {
 
@@ -8,7 +7,7 @@ class BankwestCSVParser extends BaseCSVParser {
 
         this.identifier = 'bankwest'
         this.timezone = 'Australia/Sydney' 
-        this.dateFormat = 'DD/MM/YYYY'
+        this.dateFormat = 'dd/MM/yyyy'  // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
         // what columns from the incoming csv file define a unique record
         // this.uniqueColumns = ['Transaction Date', 'Narration', 'Balance' ]

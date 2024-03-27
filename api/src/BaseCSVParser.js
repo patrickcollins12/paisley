@@ -1,6 +1,7 @@
 const CSVParser = require('csv-parser');
 const fs = require('fs');
-const moment = require('moment-timezone');
+const { DateTime } = require("luxon");
+
 const readline = require('readline');
 const path = require('path');
 const ParseResults = require('./ParseResults.js');
@@ -12,12 +13,12 @@ class BaseCSVParser {
 
     constructor(fileName) {
         // if (options) {
-            this.fileName = fileName || "";
-            // this.config = config;
-            this.bankconfig = config[this.constructor.name];
-            this.headers = []; // csv headers, override if needed.
-            this.results = new ParseResults();
-            this.db = new BankDatabase();
+        this.fileName = fileName || "";
+        // this.config = config;
+        this.bankconfig = config[this.constructor.name];
+        this.headers = []; // csv headers, override if needed.
+        this.results = new ParseResults();
+        this.db = new BankDatabase();
 
         // }
     }
@@ -56,7 +57,7 @@ class BaseCSVParser {
                         if (!isAlreadyInserted) {
                             let newid = this.saveTransaction(originalLine, processedLine);
                             this.results.insert(newid);
-                            
+
                             this.results.setMinMaxDate("inserts", processedLine['datetime'])
                         } else {
                             this.results.skipped++;
@@ -86,31 +87,6 @@ class BaseCSVParser {
         // console.log(this.results)
 
         return this.results
-    }
-
-    // async findAccountNumber() {
-    //     if (!this.accountid){
-    //         // this.extractAccountFromFileName();
-    //         await this.extractAccountBySecondLine();
-    //     }
-    // }
-
-
-    toUTC(datetime, dateFormat) {
-
-        if (!this.timezone) {
-            throw new Error("this.timezone is undefined and must be implemented in the parser.");
-        }
-
-        if (!this.dateFormat) {
-            throw new Error("this.dateFormat is undefined and must be implemented in the parser.");
-        }
-
-        if (!moment.tz.zone(this.timezone)) {
-            throw new Error("this.timezone specifies a strange and unknown timezone.");
-        }
-
-        return moment.tz(datetime, dateFormat, this.timezone).utc().format();
     }
 
     // CREATE TABLE "transaction" (
@@ -143,7 +119,7 @@ class BaseCSVParser {
 
     isAlreadyInserted(processedLine) {
 
-        let sha = util.generateSHAFromObject(processedLine,this.uniqueColumns)
+        let sha = util.generateSHAFromObject(processedLine, this.uniqueColumns)
         const stmt = this.db.db.prepare("select id from 'transaction' where id=?");
         const r = stmt.all(sha); // get() for a single row, all() for multiple rows
         if (r.length > 1) throw new Error('Error: Multiple records found.');
@@ -193,7 +169,7 @@ class BaseCSVParser {
 
     matchFileExpands(fileName) {
         let found = false;
-        if (this.bankconfig && this.bankconfig.fileExpands) { } else { return false}
+        if (this.bankconfig && this.bankconfig.fileExpands) { } else { return false }
         try {
             for (const [pattern, accountid] of Object.entries(this.bankconfig.fileExpands)) {
                 if (fileName.includes(pattern)) {
@@ -228,51 +204,50 @@ class BaseCSVParser {
 
     async extractAccountBySecondLine() {
 
-    // console.log(this);
-    return new Promise((resolve, reject) => {
-        const rl = readline.createInterface({
-            input: fs.createReadStream(this.fileName),
-            crlfDelay: Infinity
-        });
+        // console.log(this);
+        return new Promise((resolve, reject) => {
+            const rl = readline.createInterface({
+                input: fs.createReadStream(this.fileName),
+                crlfDelay: Infinity
+            });
 
-        let lineCount = 0;
-        rl.on('line', (line) => {
-            lineCount++;
-            if (lineCount === 1) return; // Skip the first line
+            let lineCount = 0;
+            rl.on('line', (line) => {
+                lineCount++;
+                if (lineCount === 1) return; // Skip the first line
 
-            if (lineCount === 2) {
-                try {
-                    // var parserConfig = config[ Parser.name ]
-                    for (const [pattern, accountid] of Object.entries(this.bankconfig.firstLinePatterns)) {
-                        if (line.includes(pattern)) {
-                            this.accountid = accountid
-                            console.log(`setting accountid: ${accountid}`)
-                            resolve(true);
-                            rl.close();
-                            return
+                if (lineCount === 2) {
+                    try {
+                        // var parserConfig = config[ Parser.name ]
+                        for (const [pattern, accountid] of Object.entries(this.bankconfig.firstLinePatterns)) {
+                            if (line.includes(pattern)) {
+                                this.accountid = accountid
+                                console.log(`setting accountid: ${accountid}`)
+                                resolve(true);
+                                rl.close();
+                                return
+                            }
                         }
-                    }
-                } catch { }
+                    } catch { }
 
 
-                // reject(new Error("No parser matches the second line"));
-                resolve(null);
-                rl.close();
-            }
-        }).on('close', () => {
-            if (lineCount < 2) {
-                // If the second line was not processed, it means the file has only one line
-                resolve(null);
-            }
-        }).on('error', reject);
-    });
-}
+                    // reject(new Error("No parser matches the second line"));
+                    resolve(null);
+                    rl.close();
+                }
+            }).on('close', () => {
+                if (lineCount < 2) {
+                    // If the second line was not processed, it means the file has only one line
+                    resolve(null);
+                }
+            }).on('error', reject);
+        });
+    }
 
-// uses the dateFormat and timezone specified in the parser 
-// to return an ISO time in that timezone
-convertToLocalTime(datetime){
-    return moment.tz(datetime, this.dateFormat, this.timezone).format();
-}
+    convertToLocalTime(datetime) {
+        // Use the DateTime.fromFormat method to parse the input datetime according to the specified format and timezone
+        return DateTime.fromFormat(datetime, this.dateFormat, { zone: this.timezone }).toISO();
+    }
 
 }
 

@@ -27,7 +27,9 @@ class UbankCSVParser extends BaseCSVParser {
     processLine(l) {
         let processed = {}
         
-        processed.datetime = DateTime.fromFormat(l['Date'], this.dateFormat).setZone(this.timezone).toISO();
+        // processed.datetime = DateTime.fromFormat(l['Date'], this.dateFormat).setZone(this.timezone).toISO();
+        processed.datetime = this.convertToLocalTime(l['Date']);
+
         processed.account = this.accountid
         processed.description = l['Description']
         // let cleanBalance = util.cleanPrice(rawBalance);

@@ -98,48 +98,65 @@ router.get('/transactions', [
   query('page').optional().isInt({ min: 1 }).withMessage("'page' must be a positive integer."),
   query('page_size').optional().isInt({ min: 1, max: 10000 }).withMessage("'page_size' must be a positive integer and cannot exceed 10000."),
 ], async (req, res) => {
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
+  // Pagination parameters setup
+  const page = req.query.page ? parseInt(req.query.page, 10) : 1;
+  const pageSize = req.query.page_size ? parseInt(req.query.page_size, 10) : 1000;
+
+
   let db = new BankDatabase();
   let params = [];
-  let query = `
-    SELECT 
-      t.id,
-      t.datetime,
-      t.account,
-      CASE
-        WHEN te.description IS NOT NULL THEN te.description
-        ELSE t.description
-      END AS description,
-      CASE
-        WHEN te.description IS NOT NULL THEN t.description
-        ELSE NULL
-      END AS orig_description,
-      t.credit,
-      t.debit,
-      t.balance,
-      t.type,
-      t.tags,
-      te.tags AS manual_tags
-    FROM 'transaction' t
-    LEFT JOIN 'transaction_enriched' te ON t.id = te.id
-    WHERE 1=1
-  `;
+  let andQuery = ""
 
   // Description filter
   if (req.query.description) {
-    query += ` AND t.description LIKE ?`;
+    andQuery += ` AND t.description LIKE ?`;
     params.push(`%${req.query.description}%`);
   }
 
   // Tags filter
   if (req.query.tags) {
-    query += ` AND (t.tags LIKE ? OR te.tags LIKE ?)`;
+    andQuery += ` AND (t.tags LIKE ? OR te.tags LIKE ?)`;
     params.push(`%${req.query.tags}%`, `%${req.query.tags}%`);
   }
+
+  let query = `
+      SELECT 
+        t.id,
+        t.datetime,
+        t.account,
+        CASE
+          WHEN te.description IS NOT NULL THEN te.description
+          ELSE t.description
+        END AS description,
+        CASE
+          WHEN te.description IS NOT NULL THEN t.description
+          ELSE NULL
+        END AS orig_description,
+        t.credit,
+        t.debit,
+        t.balance,
+        t.type,
+        t.tags,
+        te.tags AS manual_tags
+      FROM 'transaction' t
+      LEFT JOIN 'transaction_enriched' te ON t.id = te.id
+      WHERE 1=1
+      ${andQuery}
+      `;
+
+  let sizeQuery = `
+      SELECT count(t.id) 'count'
+      FROM 'transaction' t
+      LEFT JOIN 'transaction_enriched' te ON t.id = te.id
+      WHERE 1 = 1
+      ${andQuery}
+      `
 
   // Order By
   if (req.query.order_by) {
@@ -149,27 +166,55 @@ router.get('/transactions', [
     query += ` ORDER BY datetime DESC`;
   }
 
-  // Pagination
-  const page = req.query.page ? parseInt(req.query.page, 10) : 1;
-  const pageSize = req.query.page_size ? parseInt(req.query.page_size, 10) : 1000;
-  const offset = (page - 1) * pageSize;
-  query += ` LIMIT ? OFFSET ?`;
-  params.push(pageSize, offset);
-
-
+  // results Summary query
+  let resultSummary = {}
   try {
-    const stmt = db.db.prepare(query);
+    const stmt = db.db.prepare(sizeQuery);
     const rows = stmt.all(params);
+    // console.log("sizeQuery response>> ", rows)
+    const count = rows[0].count
+    const pages = Math.ceil(count / pageSize)
 
-    const cleanedRows = rows.map(row => {
-      return Object.fromEntries(Object.entries(row).filter(([key, value]) => value !== null && value !== ""));
-    });
+    resultSummary = {
+      count: count,
+      pages: pages,
+      pageSize: pageSize,
+      page: page
+    };
 
-    res.json(cleanedRows);
+    // console.log(resultSummary)
+
   } catch (err) {
     console.error("error: ", err.message);
     res.status(500).json({ "error": err.message });
   }
+
+  // Pagination
+  const offset = (page - 1) * pageSize;
+  query += ` LIMIT ? OFFSET ?`;
+  params.push(pageSize, offset);
+
+  // page of results query = actual query results
+  let finalResults = {}
+  try {
+    const stmt = db.db.prepare(query);
+    const rows = stmt.all(params);
+
+    finalResults = rows.map(row => {
+      return Object.fromEntries(Object.entries(row).filter(([key, value]) => value !== null && value !== ""));
+    });
+
+  } catch (err) {
+    console.error("error: ", err.message);
+    res.status(500).json({ "error": err.message });
+  }
+
+  res.json(
+    {
+      'results': finalResults,
+      'resultSummary': resultSummary,
+    });
+
 });
 
 module.exports = router;
