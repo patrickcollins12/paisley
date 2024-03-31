@@ -88,7 +88,7 @@ router.get('/transactions', [
   query('description').optional().isLength({ max: 200 }).withMessage('Description input exceeds the maximum length of 200 characters.'),
   query('tags').optional().isLength({ max: 200 }).withMessage('Tags input exceeds the maximum length of 200 characters.'),
   query('order_by').optional().custom(value => {
-    const validSortColumns = ['datetime', 'account', 'description', 'credit', 'debit', 'balance', 'type', 'tags', 'manual_tags'];
+    const validSortColumns = ['datetime', 'account', 'description', 'credit', 'debit', 'amount', 'balance', 'type', 'tags', 'manual_tags'];
     const parts = value.split(',');
     if (parts.length !== 2 || !validSortColumns.includes(parts[0].trim()) || !['asc', 'desc', 'ASC', 'DESC'].includes(parts[1].trim().toUpperCase())) {
       throw new Error('Invalid order_by parameter');
@@ -140,9 +140,16 @@ router.get('/transactions', [
         END AS orig_description,
         t.credit,
         t.debit,
+
+        CASE
+          WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
+          WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
+          ELSE 0.0
+        END AS amount,
+
         t.balance,
         t.type,
-        t.tags,
+        t.tags 'tags',
         te.tags AS manual_tags
       FROM 'transaction' t
       LEFT JOIN 'transaction_enriched' te ON t.id = te.id
@@ -197,6 +204,8 @@ router.get('/transactions', [
   // page of results query = actual query results
   let finalResults = {}
   try {
+
+    // console.log(query)
     const stmt = db.db.prepare(query);
     const rows = stmt.all(params);
 

@@ -1,3 +1,7 @@
+MOVED TO AIRTABLE
+<!-- 
+
+
 
 - learn react properly.
 - add documentation 
@@ -7,7 +11,7 @@
 - modify API
     - [ ] add a date range filter to /transactions
     - [ ] add an "amount" filter to /transactions
-    - [ ] urgent refactor /transactions to also return metadata, pages, account currencies
+    - [x] urgent refactor /transactions to also return metadata, pages, account currencies
 - [ ] handle rule components: "rule: last-only"
 - [ ] get coinbase apis: https://docs.cloud.coinbase.com/sign-in-with-coinbase/docs/api-accounts
 - [ ] consider letting swyftx and coinbase go directly via API instead of CSV
@@ -20,4 +24,4 @@ DONE
     - [x] add order by to /data
     - [x] /data returns enriched cats too
     - [x] move the routes to their own directory
-    - [x] update transaction categories, pass id and 1 or more cats
+    - [x] update transaction categories, pass id and 1 or more cats -->
