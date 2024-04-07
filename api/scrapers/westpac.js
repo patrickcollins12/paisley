@@ -5,6 +5,8 @@ config.load()
 const bank_config = config['WestpacScraper'];
 
 test('test', async ({ page }) => {
+  test.slow();
+
   await page.goto('https://www.westpac.com.au/');
   await page.getByRole('link', { name: 'Sign in' }).click();
   await page.getByLabel('Customer ID', { exact: true }).click();
