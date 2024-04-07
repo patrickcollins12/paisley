@@ -33,7 +33,18 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
 router.get('/tags', async (req, res) => {
   let db = new BankDatabase();
-  let query = `SELECT DISTINCT json_each.value FROM 'transaction', json_each('transaction'.tags) WHERE json_valid('transaction'.tags) ORDER BY json_each.value;`;
+  let query = `
+      SELECT DISTINCT json_each.value 
+      FROM 'transaction' t, json_each(t.tags) 
+      WHERE json_valid(t.tags)
+
+      UNION
+
+      SELECT DISTINCT json_each.value 
+      FROM transaction_enriched, json_each(transaction_enriched.tags) 
+      WHERE json_valid(transaction_enriched.tags);
+      `;
+
   try {
     const stmt = db.db.prepare(query);
     const rows = stmt.all().map(obj => obj.value);
