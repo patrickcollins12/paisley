@@ -149,8 +149,14 @@ router.get('/transactions', [
 
         t.balance,
         t.type,
-        t.tags 'tags',
-        te.tags AS manual_tags
+
+        CASE
+            WHEN t.tags = '' OR t.tags IS NULL THEN ''
+            ELSE t.tags
+        END AS tags,
+
+        te.tags AS manual_tags,
+        te.auto_categorize 
       FROM 'transaction' t
       LEFT JOIN 'transaction_enriched' te ON t.id = te.id
       WHERE 1=1

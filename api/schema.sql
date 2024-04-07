@@ -12,13 +12,13 @@ CREATE TABLE IF NOT EXISTS "account" (
 	"institution"	TEXT,
 	"name"	TEXT,
 	"holders"	TEXT,
-	"currency"	TEXT, "type" TEXT,
+	"currency"	TEXT, "type" TEXT, "timezone" TEXT,
 	PRIMARY KEY("accountid")
 );
 CREATE TABLE IF NOT EXISTS "transaction_enriched" (
 	"id"	TEXT NOT NULL UNIQUE,
 	"tags"	JSON,
-	"description"	TEXT,
+	"description"	TEXT, "auto_categorize" INTEGER,
 	PRIMARY KEY("id")
 );
 CREATE TABLE IF NOT EXISTS "transaction" (
@@ -109,3 +109,7 @@ END AS amount,
       t.datetime DESC
 -- 	  limit 1000
 /* transaction_with_account(id,institution,name,"account number",datetime,description,debit,credit,amount,balance,currency,tags,transaction_type,account_type,jsondata) */;
+CREATE INDEX idx_account ON "transaction" ("account");
+CREATE INDEX "datetime_idx" ON "transaction" (
+	"datetime"
+);

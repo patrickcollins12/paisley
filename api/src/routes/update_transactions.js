@@ -7,8 +7,11 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
  * @swagger
  * /update_transaction:
  *   post:
- *     summary: Updates the details of an existing transaction
- *     description: Allows updating the tags and description of a transaction identified by its ID. If the specified ID does not exist, a 404 error is returned. Tags and description fields are optional; however, if provided, they are validated for type and length.
+ *     summary: Updates the details of an existing transaction including optional auto categorization
+ *     description: >
+ *       Allows updating the tags, description, and auto categorization status of a transaction identified by its ID.
+ *       If the specified ID does not exist, a 404 error is returned. Tags, description, and auto_categorize fields
+ *       are optional; however, if provided, they are validated for type and appropriate values or length.
  *     tags:
  *       - Transactions
  *     requestBody:
@@ -32,6 +35,10 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
  *                 type: string
  *                 description: An optional description for the transaction. Must be a string under 1000 characters.
  *                 example: "Weekly grocery shopping at supermarket."
+ *               auto_categorize:
+ *                 type: boolean
+ *                 description: An optional flag to indicate if the transaction should be automatically categorized.
+ *                 example: false
  *     responses:
  *       200:
  *         description: Transaction details updated successfully.
@@ -44,7 +51,7 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
  *                   type: boolean
  *                   example: true
  *       400:
- *         description: Bad request. Possible reasons include validation errors such as missing ID, incorrect field types, or strings exceeding the maximum length.
+ *         description: Bad request. Possible reasons include validation errors such as missing ID, incorrect field types, strings exceeding maximum length, or invalid boolean value.
  *         content:
  *           application/json:
  *             schema:
@@ -86,6 +93,8 @@ router.post('/update_transaction', [
   // Make 'description' optional but validate if provided
   body('description').optional().isString().withMessage('Description must be a string.')
     .isLength({ max: 1000 }).withMessage('Description must be under 1000 characters.'),
+  // Validate 'auto_categorize' as an optional boolean
+  body('auto_categorize').optional().isBoolean().withMessage('Auto categorize must be a boolean.'),
 ], async (req, res) => {
   // Check for validation errors
   const errors = validationResult(req);
@@ -93,12 +102,11 @@ router.post('/update_transaction', [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { id, tags, description } = req.body;
+  const { id, tags, description, auto_categorize } = req.body;
 
   let db = new BankDatabase();
 
   try {
-
     // Simplified check if the ID exists in the 'transaction' table
     let checkQuery = `SELECT id FROM 'transaction' WHERE id = ? LIMIT 1`;
     const checkStmt = db.db.prepare(checkQuery);
@@ -127,6 +135,13 @@ router.post('/update_transaction', [
       params.push(description);
     }
 
+    if (typeof auto_categorize !== 'undefined') {
+      fields.push('auto_categorize');
+      placeholders.push('?');
+      updateSet.push('auto_categorize = excluded.auto_categorize');
+      params.push(auto_categorize ? 1 : 0); // Assuming SQLite, convert boolean to 1 or 0
+    }
+
     // Construct the query only with the necessary fields
     let query = `INSERT INTO transaction_enriched (${fields.join(', ')})
                  VALUES (${placeholders.join(', ')})
@@ -134,7 +149,6 @@ router.post('/update_transaction', [
 
     db.db.prepare(query).run(params);
     res.json({ "success": true });
-
 
   } catch (err) {
     console.log("error: ", err.message);
