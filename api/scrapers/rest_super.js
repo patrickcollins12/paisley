@@ -26,7 +26,7 @@ test('test', async ({ page }) => {
     await page.goto(url);
 
     if (!DEBUG) {
-        await page.getByRole('button', { name: 'C Login N' }).click();
+        await page.getByRole('button', { name: 'Login' }).click();
         await page.getByRole('link', { name: 'C Member login' }).click();
         await page.getByRole('textbox').fill(userName);
         await page.getByRole('textbox').press('Enter');
