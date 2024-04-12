@@ -5,7 +5,7 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
 /**
  * @swagger
- * /transactions:
+ * /transactions2:
  *   get:
  *     summary: Retrieve a list of transactions
    *     description: >
@@ -134,7 +134,7 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
  *           example: 2
  */
 
-router.get('/transactions', [
+router.get('/transactions2', [
 
   // Validation chains
   query('description').optional().isLength({ max: 200 }).withMessage('Description input exceeds the maximum length of 200 characters.'),
@@ -160,12 +160,12 @@ router.get('/transactions', [
   const page = req.query.page ? parseInt(req.query.page, 10) : 1;
   const pageSize = req.query.page_size ? parseInt(req.query.page_size, 10) : 1000;
 
-
   let db = new BankDatabase();
   let params = [];
   let andQuery = ""
 
-  
+  console.log(JSON.stringify(req.query,null,'\t'))
+
   // Description filter
   if (req.query.description) {
     andQuery += ` AND t.description LIKE ?`;

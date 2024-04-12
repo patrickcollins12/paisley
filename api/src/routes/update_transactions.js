@@ -128,14 +128,14 @@ router.post('/update_transaction', [
       params.push(JSON.stringify(tags));
     }
 
-    if (description) {
+    if (description !== undefined) {
       fields.push('description');
       placeholders.push('?');
       updateSet.push('description = excluded.description');
       params.push(description);
     }
 
-    if (typeof auto_categorize !== 'undefined') {
+    if (typeof auto_categorize !== undefined) {
       fields.push('auto_categorize');
       placeholders.push('?');
       updateSet.push('auto_categorize = excluded.auto_categorize');
@@ -147,6 +147,7 @@ router.post('/update_transaction', [
                  VALUES (${placeholders.join(', ')})
                  ON CONFLICT(id) DO UPDATE SET ${updateSet.join(', ')};`;
 
+    console.log(query)
     db.db.prepare(query).run(params);
     res.json({ "success": true });
 

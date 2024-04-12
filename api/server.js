@@ -91,6 +91,7 @@ app.use(express.json());
 
 const routes = [
   './src/routes/transactions.js',
+  './src/routes/transactions2.js',
   './src/routes/update_transactions.js',
   './src/routes/tags.js',
   './src/routes/balances.js',
