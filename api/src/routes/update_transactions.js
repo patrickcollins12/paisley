@@ -135,7 +135,7 @@ router.post('/update_transaction', [
       params.push(description);
     }
 
-    if (typeof auto_categorize !== undefined) {
+    if (auto_categorize !== undefined) {
       fields.push('auto_categorize');
       placeholders.push('?');
       updateSet.push('auto_categorize = excluded.auto_categorize');
@@ -147,7 +147,7 @@ router.post('/update_transaction', [
                  VALUES (${placeholders.join(', ')})
                  ON CONFLICT(id) DO UPDATE SET ${updateSet.join(', ')};`;
 
-    console.log(query)
+    // console.log(query)
     db.db.prepare(query).run(params);
     res.json({ "success": true });
 
