@@ -135,7 +135,7 @@ router.post('/update_transaction', [
       params.push(description);
     }
 
-    if (auto_categorize !== undefined) {
+    if (auto_categorize === 0 || auto_categorize === 1 ) {
       fields.push('auto_categorize');
       placeholders.push('?');
       updateSet.push('auto_categorize = excluded.auto_categorize');
