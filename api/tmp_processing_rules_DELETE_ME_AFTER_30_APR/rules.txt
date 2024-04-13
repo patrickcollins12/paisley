@@ -1,0 +1,325 @@
+// employer
+"description: SALARY ZIPMONEY PAYMENT.*WAGES": ["Employer > Income > Zip"]
+"description: Salary Airtasker": ["Employer > Income > Airtasker"]
+"description: Salary Secure Code": ["Employer > Income > Secure Code Warrior"]
+"description: DEPOSIT ZIP CORPORATE FU *REPORT": ["Employer > Expense > Reimbursement > Zip"]
+"description: deposit airtasker": ["Employer > Expense > Reimbursement > Airtasker"]
+"description: SCW Expenses": ["Employer > Expense > Reimbursement > Secure Code Warrior"]
+"description: NTH DEGREE RSA CONFERENCE": ["Employer > Expense"]
+    
+// ecommerce marketplaces
+"description: ebay":       ["eBay (merchant)","Online Shopping"]
+
+// amazon without the word prime
+"description: amazon marketplace; description: <>prime": ["Amazon (merchant)", "Online Shopping", "General"]
+"description: amazon mktplc; description: <>prime": ["Amazon (merchant)", "Online Shopping", "General"]
+"description: amazon au; description: <>prime": ["Amazon (merchant)", "Online Shopping", "General"]
+"description: amzn; description: <>prime": ["Amazon (merchant)", "Online Shopping", "General"]
+"description:prime video": ["Amazon (merchant)", "Entertainment > Videos" ]
+
+// amazon prime subscriptions
+"description: ama?zo?n ; description: prime":["Amazon (merchant)", "Subscription" ]
+
+// various grocery merchants
+"description: aldi":       ["Aldi (merchant)",       "Food > Groceries"]
+"description: woolworths": ["Woolworths (merchant)", "Food > Groceries"]
+"description: costco":     ["Costco (merchant)",     "Food > Groceries"]
+"description: coles":      ["Coles (merchant)",      "Food > Groceries"]
+"description: yj origin":  ["YJ Origin Cornerstore Castle Cove (merchant)",      "Food > Groceries"]
+
+// department stores
+"description: BIG W":       ["BIG W (merchant)",  "Household > Department Store"]
+"description: KMART":       ["Kmart (merchant)",  "Household > Department Store"]
+"description: DAISO":       ["Daiso (merchant)",  "Household > Department Store"]
+"description: TARGET":      ["Target (merchant)",  "Household > Department Store"]
+"description: Officeworks":      ["Officeworks (merchant)",  "Household > Office Supplied"]
+"description: airtasker\\*":       ["Airtasker (merchant)","Household > Services > Handyperson"]
+
+// personal / beauty
+"description: st vin de paul|st vincent de paul": ["St Vincent De Paul (merchant)",  "Personal > Clothing"]
+"description: NEVAGO PTY LTD|EMAA ENTERPRISES P NORTHBRIDGE AUS|just ?cuts": ["Just Cuts (merchant)",  "Personal > Hairdresser"]
+
+"description: ink ?station": ["Ink Station (merchant)",  "Personal > Hobbies > Patrick"]
+"description: Core Electronics": ["Core Electronics (merchant)",  "Personal > Hobbies > Patrick"]
+"description: spot ?light":  ["Spotlight (merchant)",    "Personal > Hobbies > Dan"]
+"description: achieve australia":    ["Sewing Basket (merchant)",  "Personal > Hobbies > Dan"]
+"description: achieve sewing bask":  ["Sewing Basket (merchant)",  "Personal > Hobbies > Dan"]
+"description: HELENS CLOSET PATT":   ["Helen's Closet (merchant)", "Personal > Hobbies > Dan"]
+
+// various Take Away
+"description: McDonalds":         ["McDonalds (merchant)",          "Food > Take Away"]
+"description: Guzman|\\bGYG\\b":  ["Guzman y Gomez (merchant)",     "Food > Take Away"]
+"description: Dominos":           ["Dominos (merchant)",            "Food > Take Away"]
+"description: \\bKFC\\b|6703_Frenchs_Fores": ["KFC (merchant)",     "Food > Take Away"]
+"description: \\bSubway\\b":      ["Subway (merchant)",             "Food > Take Away"]
+"description: Manoosh":           ["Manoosh (merchant)",            "Food > Take Away"]
+"description: chicken theory":    ["The Chicken Theory (merchant)", "Food > Take Away"]
+"description: hungry ?jacks":     ["Hungry Jacks (merchant)",       "Food > Take Away"]
+"description: soul origin":       ["Soul Origin (merchant)",        "Food > Take Away"]
+"description: boost juice":       ["Boost Juice (merchant)",        "Food > Take Away"]
+"description: the star on grand": ["The Star Pizza (merchant)",     "Food > Take Away"]
+"description: sushi\\b":          [                                 "Food > Take Away"]
+"description: \\bthai\\b":        [                                 "Food > Take Away"]
+
+"description: uber.*eats":        ["Uber Eats (merchant)",          "Food > Take Away", "Online Shopping"]
+
+"description: bws liquor":      ["BWS Liquor (merchant)",         "Food > Groceries > Alcohol"]
+"description: dan ?murphy":     ["Dan Murphy's (merchant)",       "Food > Groceries > Alcohol"]
+"description: jimmy brings":    ["Jimmy Brings (merchant)",       "Food > Groceries > Alcohol", "Online Shopping"]
+
+"description: jimmy's falafel":    ["Jimmy Falafel (merchant)",           "Food > Restaurant" ]
+"description: b2bs cafe & restau": ["B2B's Chicken Chatswood (merchant)", "Food > Restaurant" ]
+"description: SKY TRADES PTY LTD WEST PENNANT AUS": ["Cafe Saligna (merchant)", "Food > Restaurant" ]
+"description: CWBR  LLC":          ["City Winery Boston (merchant)", "Food > Restaurant" ]
+"description: HARBOUR BAR RESTAU": ["Harbor Bar (merchant)", "Food > Restaurant" ]
+
+"description: restaur":            [                                      "Food > Restaurant" ]
+"description: cafe; description: <>restau":[                               "Food > Cafe" ]
+"description: Thynamis Pty Ltd":[ "Rossini Cafe (merchant)", "Food > Cafe" ]
+"description: Twelve Squares Caf Chippendale":[ "Twelve Squares Cafe (merchant)", "Food > Cafe" ]
+"description: Something for Chippendale":[ "Something for Jess Cafe (merchant)",  "Food > Cafe" ]
+"description: BREWS BROTHERS COF CHIPPENDALE AUS":[ "Brews Brothers Cafe (merchant)",  "Food > Cafe" ]
+"description: starbucks":[ "Starbucks (merchant)",  "Food > Cafe" ]
+
+"description: patiss":             [                                      "Food > Cafe" ]
+"description: coffee":             [                                      "Food > Cafe" ]
+
+// Pharmacies
+"description: PLINE ?PH|PLINE WARRINGAH": ["Priceline Pharmacy (merchant)", "Health > Pharmacy"]
+"description: BLOOMS THE CHEMIST":        ["Blooms Chemist (merchant)",     "Health > Pharmacy"]
+"description: CHEMI?ST WARE?HOUSE":       ["Chemist Warehouse (merchant)",  "Health > Pharmacy"]
+"description: CWH ARTARMON":              ["Chemist Warehouse (merchant)",  "Health > Pharmacy"]
+"description: TERRY WHITE CHEM|CHEMMART": ["Terry White Chemist (merchant)",  "Health > Pharmacy"]
+"description: CHEMIST":                   ["Health > Pharmacy"]
+"description: PHARMACY|PHARM\\b|PHARMA\\b|PHARMAC\\b":                  ["Health > Pharmacy"]
+
+// "description: CHEMIST":     ["Health > Pharmacy"]
+
+// various online entertainment subscriptions
+"description: netflix":    ["Netflix (merchant)",    "Entertainment > TV/Movies", "Subscription"]
+"description: spotify":    ["Spotify (merchant)",    "Entertainment > Music",     "Subscription"]
+"description: audible":    ["Audible (merchant)",    "Entertainment > Books",     "Subscription"]
+"description: Youtubepremium": ["Youtube (merchant)","Entertainment > Videos",    "Subscription"]
+"description: WNYC WQXR NJPR NYPR RADIO": ["NPR (merchant)","Entertainment > Audio", "Subscription", "Charity"]
+"description: GUARDIAN NEWS": ["The Guardian (merchant)","Entertainment > News", "Subscription"]
+
+// gaming
+"description: CEX; debit: <200":    ["CEX (merchant)",      "Entertainment > Games"]
+"description: CEX; debit: >=200":   ["CEX (merchant)",      "Hardware"]
+"description: JB Hi.?Fi":           ["JB Hi-fi (merchant)", "Household > Electronics"]
+"description: EB Games":            ["EB Games (merchant)", "Entertainment > Games"]
+"description: Playstation":         ["Playstation (merchant)", "Entertainment > Games"]
+"description: steam":               ["Steam (merchant)", "Entertainment > Games"]
+"description: epic games":          ["Epic Games (merchant)", "Entertainment > Games"]
+
+// Events
+"description: Ticketek":    ["Ticketek (merchant)", "Entertainment > Event Tickets" ]
+"description: Tixel":       ["Tixel (merchant)",    "Entertainment > Event Tickets" ]
+"description: Ticketmaster":       ["Ticketmaster (merchant)",    "Entertainment > Event Tickets" ]
+
+// health
+"description: deposit mcare benefits": ["Medicare (merchant)", "Health > Insurance > Refund", "Insurance > Health" ]
+"description: deposit bupa":           ["BUPA (merchant)",     "Health > Insurance > Refund", "Insurance > Health" ]
+"description: PAYMENT BY AUTHORITY TO BUPA AUSTRALIA": ["BUPA (merchant)",     "Health > Insurance > Premium", "Insurance > Health" ]
+"description: CASTLECRAG MEDICAL":     ["Castlecrag Medical (merchant)", "Health > Medical Services > Doctor" ]
+"description: dental|dentist":         ["Health > Medical Services > Denist" ]
+"description: optical":                ["Health > Medical Services > Optical" ]
+"description: northpsych":             ["Health > Medical Services > Psych" ]
+"description: laser clinics":          ["Health > Medical Services > Beauty"]
+"description: specsavers":             ["Health > Eyecare" ]
+
+// various online tool/tech subscriptions
+"description: ChatGPT Subscription": ["OpenAI (merchant)","Software > General", "Subscription"]
+"description: OPENAI SAN FRANCISCO CA USA": ["OpenAI (merchant)","Software > General", "Subscription"]
+
+"description: TRAVELING ?MAILBOX|TRAVELING M PRIVACYCOM":    ["Traveling Mailbox (merchant)",    "Software > General", "Subscription"]
+"description: MAGICJACK.COM":        ["magicjack.com (merchant)",    "Software > General", "Subscription"]
+"description: 1password":            ["1password (merchant)",       "Software > General", "Subscription"]
+"description: privateinte":          ["PIA (merchant)",             "Software > General", "Subscription"]
+"description: Kindle Svcs":          ["Amazon Kindle (merchant)",   "Software > General"]
+"description: godaddy.com":          ["Godaddy (merchant)",         "Software > General"]
+"description: google sto":           ["Google (merchant)",          "Software > Storage", "Subscription"]
+"description: google.*\\bapp\\b":    ["Google (merchant)",          "Software > Apps",    "Subscription"]
+"description: google.*cricut":       ["Cricut (merchant)",          "Software > Apps",    "Subscription"]
+"description: google.*musicnotes":   ["MusicNotes (merchant)",      "Software > Apps",    "Subscription"]
+"description: google.*flowkey":      ["Flowkey (merchant)",         "Software > Apps",    "Subscription"]
+"description: blinks labs":          ["Blinks (merchant)",          "Software > Apps",    "Subscription"]
+"description: apple.com/bill":       ["Apple (merchant)",           "Software > Apps"]
+"description: apple r":              ["Apple Store (merchant)",     "Hardware"]
+"description: apple.com/au":         ["Apple Store (merchant)",     "Hardware", "Online Shopping"]
+
+
+// Travel
+"description: TRANSPORTFORNSW": ["Transport NSW (merchant)", "Travel > Transport > Public Transit"]
+"description: linkt":                ["Linkt (merchant)",         "Travel > Transport > Tolls"]
+"description: uber.*trip":           ["Uber (merchant)",          "Travel > Transport > Rideshare"]
+"description: lyft":                 ["Lyft (merchant)",          "Travel > Transport > Rideshare"]
+'description: parking|uts sydney car par':    ["Travel > Transport > Parking"]
+'description: INTERPARK AUSTRALI ULTIMO AUS': ["Travel > Transport > Parking"]
+
+// Airfare
+"description: JAL1312137441262":     ["Japan Airlines (merchant)", "Travel > Air > Holiday"]
+"description: qantas":               ["Qantas (merchant)", "Travel > Air"]
+"description: fiji airways":         ["Fiji Airways (merchant)", "Travel > Air"]
+"description: webjet":               ["Webjet (merchant)", "Travel > Air"]
+"description: \\besta\\b":                ["US Customs (merchant)", "Travel > Air"]
+"description: UNITED AIR  |UNITED; account:8554":         ["United (merchant)", "Travel > Air"]
+"description: airbnb":               ["Airbnb (merchant)", "Travel > Accommodation"]
+
+"description: inflight|UA INFLT":    [ "Travel > Air > Inflight"]
+
+// Household expenses
+"description: AUSTRALIAN NATIVE LAND": ["ANL (merchant)", "Household > Improvement > Garden"]
+"description: Bunnings": ["Bunnings (merchant)", "Household > Improvement"]
+"description: Mantis Hort": ["Geoff Lawn Guy (merchant)",     "Household > Services > Gardener"]
+"description: xtreme pool": ["David Xtreme (merchant)",     "Household > Services > Pool"]
+"description: hassler heating;account:0378": ["Hassler Heating (merchant)", "Household > Services > HVAC"]
+"description: kennards": ["Kennards (merchant)",     "Household > Improvement > Rental Hire"]
+"description: Landscaping Danielle Collins": ["Landscaper (merchant)", "Household > Improvement > Landscaping"]
+"description: Corika Ratu installer": ["Corika Ratu (merchant)", "Household > Improvement > Shed"]
+
+"description: Poolwerx": ["Poolwerx (merchant)", "Household > Pool"]
+
+// Utilities
+"description: your pool and spa": ["Your Pool and Spa (merchant)", "Household > Improvement > Pool"]
+"description: AUSSIE BROADBAND":  ["Aussie Broadband (merchant)",   "Household > Utilities > Internet"]
+"description: ORIGIN ENERGY":     ["Origin Energy (merchant)",      "Household > Utilities > Electricity or Gas"]
+"description: ORIGIN GAS":        ["Origin Energy (merchant)",      "Household > Utilities > Gas"]
+"description: ORIGIN ELEC":       ["Origin Energy (merchant)",      "Household > Utilities > Elecricity"]
+"description: \\bamberelectric":  ["Amber Energy (merchant)",       "Household > Utilities > Electricity"]
+"description: DEFT":              ["DEFT (Payment Method)",         "Household > Rent"]
+
+"description: vodafone":          ["Vodafone (merchant)",           "Household > Utilities > Mobile"]
+
+"description: Discovery Invest": ["Investment > Property > Net Rent Received"]
+
+// Transfers to kids
+"description: tully coll":    ["Kids > Tully"]
+"description: mitch collins; description: <>glenaeon": ["Kids > Mitch"]
+"description: to mitch collins": ["Kids > Mitch"]
+"description: mitchell collins": ["Kids > Mitch"]
+"description: DEPOSIT-OSKO PAYMENT; account:1776": ["Misc > Reimbursements"]
+// "description: DEPOSIT-OSKO PAYMENT; account:1776; rule: last-only": ["Misc > Reimbursements"]
+// "description: DEPOSIT-OSKO PAYMENT; account:1776;": ["Misc > Marketplace Sales"]
+
+// Transfers
+"description: CHASE CREDIT CRD AUTOPAY; account:0378":        ["Transfer > Credit card payment"]
+"description: AUTOMATIC PAYMENT - THANK; account:8554|9960":  ["Transfer > Credit card payment"]
+"description: TRANSFER FROM CHK; account:7316":  ["Transfer > Savings"]
+"description: TRANSFER TO SAV; account:0378":  ["Transfer > Savings"]
+"description: CREDIT TRANSFER FROM DANIELLE COLLINS; account:8636":  ["Transfer > Mortgage"]
+
+"description: 4 dist.n 2 savers":  ["Transfer > Self Insurance"]
+"description: Self insure elec":   ["Transfer > Self Insurance"]
+"description: transfer to other bank netbank; account:9627":  ["Transfer > CDIA outbound"]
+
+
+"description: DOMESTIC WIRE TRANSFER;description: WISE; account:0378":       ["Transfer > Wire from US"]
+"description: REAL TIME TRANSFER;description: WISE; account:0378":           ["Transfer > Wire from AU"]
+
+"description: REMOTE ONLINE DEPOSIT;account:0378":  ["Misc > Checks Received"]
+"type:CHECK_PAID;account:0378":  ["Misc > Checks Paid"]
+
+// Purchase methods
+"description: paypal \\*": ["Paypal (Payment Method)" ]
+"description: privacycom": ["Privacy.com (Payment Method)" ]
+"description: venmo": ["Venmo (Payment Method)" ]
+"description: sq \\*": ["Square (Payment Method)" ]
+"description: DEBIT CARD PURCHASE ZIPPAY\\*?": ["Zip (Payment Method)" ]
+"description: DEBIT CARD PURCHASE ZIPMNY\\*?": ["Zip (Payment Method)" ]
+"description: DEBIT CARD PURCHASE ZIPMONEY\\*?": ["Zip (Payment Method)" ]
+"description: DEBIT CARD PURCHASE ZIP CO\\*?": ["Zip (Payment Method)" ]
+"description: DEPOSIT ZIPMONEY PAYMENT": ["Zip (Payment Method)" ]
+"description: DEBIT CARD REFUND Zip": ["Zip (Payment Method)" ]
+"description: Zipmoney P": ["Zip (Payment Method)" ]
+"description: DEBIT CARD PURCHASE P": ["Zip (Payment Method)" ]
+
+// bank fee
+"description: account.keeping fee; account: 671776":       ["Westpac (merchant)", "Financial > Bank Fees", "Subscription" ]
+"description: fees included in tran; account: 302985":     ["Bankwest (merchant)", "Financial > Bank Fees > Waived" ]
+"description: PERIODICAL PAYMENT TO COMPLETE VARIABLE HL":           ["Bankwest (merchant)", "Transfer > Mortgage" ]
+"description: CREDIT TRANSFER FROM DANIELLE COLLINS; account:8636":  ["Bankwest (merchant)", "Transfer > Mortgage"]
+
+"description: JPMORGAN CHASE +CHASE ACH": ["Chase (merchant)", "Financial > Mortgage Payment" ]
+"description: ATM; description: FEE; debit: <6": ["Financial > Bank Fees > ATM Fee" ]
+"description: MONTHLY SERVICE FEE|FEE REVERSAL|ANNUAL MEMBERSHIP FEE": ["Financial > Bank Fees" ]
+
+// Interest earned
+"description: interest; credit: >0":    ["Income > Interest", "Financial > Interest"]
+
+// Interest paid
+"description: DEBIT INTEREST AFTER OFFSET; account: 8636; debit: >0": ["Bankwest (Merchant)", "Household > Bank Interest", "Financial > Mortgage Interest"]
+
+// Investment
+"description: direct credit.*payment;  account: 29929627": ["Financial > Investment > Dividends", "Income > Investment Dividends"]
+"description: direct credit.*dividend; account: 29929627": ["Financial > Investment > Dividends", "Income > Investment Dividends"]
+"description: Direct Credit 062895 COMMONWEALTH SEC COMMSEC; account:9627":  ["Transfer > Shares > Commsec"]
+
+"type: bal": ["Financial > Balance Check"]
+
+"description:VGI 529 ACH +DEPOSIT": ["Financial > Investment > Proceeds > Vanguard 529 "]
+"description:FEDWIRE CREDIT":       ["Financial > Investment > Proceeds > Arroyo"]
+"description:Manual CR-Bkrg":       ["Financial > Investment > Proceeds > Shares"]
+"description: REAL TIME TRANSFER;description: coinbase; account:0378":       ["Financial > Investment > Proceeds > Crypto"]
+
+// B 425 VTS @ 305.300000 (Ref: C124878084)
+"description:^B \\d; account:1547": ["Financial > Investment > Acquisition > Shares"]
+
+// S 200 VAS @ 95.240000 (Ref: C125329658)
+"description:^S \\d; account:1547": ["Financial > Investment > Proceeds > Shares"]
+
+// S 200 VAS @ 95.240000 (Ref: C125329658)
+"description:direct transfer|Rej D/Tsfer; account:1547": ["Transfer > Shares > Commsec"]
+
+// School fees
+"description: Transfer To Kirsty McGrath NetBank from patrick; account: 29929627": ["Education > School Fees > Glenaeon"]
+"description: glenaeon":    ["Education > School Fees > Glenaeon"]
+"description: musora.com":    ["Education > School Fees > Glenaeon"]
+"description: gordon west": ["Education > School Fees > Gordon West"]
+"description: tafe.*ultimo": ["Education > School Fees > Tafe"]
+"description: Kristina Petkovich": ["Education > Tuition"]
+
+"description: trybooking":  ["Education > Miscellaneous"]
+"description: flexischool": ["Education > Lunch"]
+
+// health
+"description: ymca": ["Health > Fitness"]
+"description: \\bpets":    ["Pet > Supplies"]
+"description: \\bpetco":    ["Pet > Supplies"]
+"description: \\bpet town":    ["Pet > Supplies"]
+"description: \\bpetbarn": ["Pet > Supplies"]
+"description: \\bvets?\\b": ["Pet > Vet"]
+"description: willougbyv":  ["Pet > Vet"]
+"description: healthy pets plus. 00":  ["Pet > Vet > Subscription", "Subscription"]
+
+// car & fuel
+'description: \\bBP\\b':               ["BP (Merchant)","Travel > Car > Fuel"]
+'description: Ampol':                  ["Ampol (Merchant)","Travel > Car > Fuel"]
+'description: petrol':                 ["Travel > Car > Fuel"]
+'description: 7-eleven; debit: >60':   ["Travel > Car > Fuel"]
+'description: 7-eleven; debit: <60':   ["Food > Take Away"]
+
+// rego
+'description: SDRO INFRNGMNT':   ["Travel > Car > Fines"]
+'description: Service NSW':   ["Travel > Car > Rego"]
+
+// insurance
+'description: aami':         ["Travel > Car > Insurance", "Insurance > Car"]
+'description: nrma':         ["Travel > Car > Insurance", "Insurance > Car"]
+'description: bli - life':     ["Insurance > Life"]
+'description: RACQ Insurance': ["Insurance > House"]
+
+
+// tax
+'description: deposit ato': ["ATO (Merchant)","Tax > Return"]
+'description: IRS.*USATAXPYMT':   ["IRS (Merchant)", "Tax > Payment"]
+'description: US TREASURY PMNT': ["IRS (Merchant)", "Tax > Payment"]
+'description: FRANCHISE TAX': ["CA FTB (Merchant)","Tax > Payment"]
+'description: TO TAX OFFICE': ["ATO (Merchant)","Tax > Payment"]
+'description: tax FY22 Danielle Collins': ["ATO (Merchant)","Tax > Payment"]
+'description: div234': ["ATO (Merchant)","Tax > Payment"]
+
+// business
+'description: stevens and associates': ["Stevens and Associates (Merchant)","Business > Legal"]
+'description: kbf cpas': ["KBF CPAs (Merchant)","Business > Accounting"]
+'description: hlb mann judd': ["KBF CPAs (Merchant)","Business > Accounting"]

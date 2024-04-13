@@ -165,12 +165,18 @@ router.get('/transactions', [
   let params = [];
   let andQuery = ""
 
-  
   // Description filter
   if (req.query.description) {
-    andQuery += ` AND t.description LIKE ?`;
-    params.push(`%${req.query.description}%`);
+    const d = req.query.description
+    andQuery += ` AND (t.description LIKE ? OR t.tags LIKE ? OR te.tags LIKE ?)`;
+    params.push(`%${d}%`,`%${d}%`,`%${d}%`);
   }
+  
+  // // Description filter
+  // if (req.query.description) {
+  //   andQuery += ` AND t.description LIKE ?`;
+  //   params.push(`%${req.query.description}%`);
+  // }
 
   // Tags filter
   if (req.query.tags) {

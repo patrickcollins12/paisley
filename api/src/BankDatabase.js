@@ -10,7 +10,6 @@ class BankDatabase {
         if (!dbPath && BankDatabase.singletonInstance) {
             return BankDatabase.singletonInstance;
         }
-
         const path = dbPath || config.database;
         try {
 
