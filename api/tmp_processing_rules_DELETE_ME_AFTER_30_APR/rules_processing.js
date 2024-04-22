@@ -1,7 +1,7 @@
 const fs = require('fs');
 const Database = require('better-sqlite3');
-const BankDatabase = require('./src/BankDatabase');
-const config = require('./src/Config');
+const BankDatabase = require('../src/BankDatabase');
+const config = require('../src/Config');
 const minimist = require('minimist');
 // load command line arguments
 const args = minimist(process.argv);
@@ -64,6 +64,9 @@ const rules = lines.map(line => {
 
     return null;
 }).filter(rule => rule !== null);
+
+console.log(rules)
+process.exit()
 
 db.exec(`DROP TABLE IF EXISTS "rule";`);
 db.exec(`CREATE TABLE "rule" (

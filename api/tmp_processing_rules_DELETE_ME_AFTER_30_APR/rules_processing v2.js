@@ -1,8 +1,10 @@
 const fs = require('fs');
 const Database = require('better-sqlite3');
-const BankDatabase = require('./src/BankDatabase');
-const config = require('./src/Config');
+const BankDatabase = require('../src/BankDatabase');
+const config = require('../src/Config');
 const minimist = require('minimist');
+const RuleConverter = require('./RuleConverter');
+
 // load command line arguments
 const args = minimist(process.argv);
 
@@ -50,17 +52,22 @@ db.exec(`CREATE TABLE "rule" (
 	"group"	TEXT,
 	"tag"	JSON,
 	"party"	JSON,
+    "comment" TEXT,
 	PRIMARY KEY("id" AUTOINCREMENT)
     );`);
 
 // Prepare the insert statement
-const insertStmt = db.prepare(`INSERT INTO 'rule' (rule, tag, party, 'group') VALUES (?, ?, ?, ?)`);
+const insertStmt = db.prepare(`INSERT INTO 'rule' (rule, tag, party, 'group', comment) VALUES (?, ?, ?, ?, ?)`);
+
+const ruleConverter = new RuleConverter();
 
 // Begin transaction
 const insertMany = db.transaction((rules) => {
     for (const rule of rules) {
-        console.log(rule)
-        insertStmt.run(rule.rule, JSON.stringify(rule.tags), JSON.stringify(rule.party), rule.group);
+        const rule_new = ruleConverter.convertV1toV2(rule.rule)
+        rule.rule_new = rule_new.replace(/\\b/g,'\b')
+        console.log("rule>>",rule)
+        insertStmt.run(rule.rule_new, JSON.stringify(rule.tags), JSON.stringify(rule.party), rule.group, rule.rule);
     }
 });
 
