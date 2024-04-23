@@ -2,6 +2,32 @@ const express = require('express');
 const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
+router.get('/tags', async (req, res) => {
+  let db = new BankDatabase();
+  let query = `
+      SELECT DISTINCT json_each.value 
+      FROM 'transaction' t, json_each(t.tags) 
+      WHERE json_valid(t.tags)
+
+      UNION
+
+      SELECT DISTINCT json_each.value 
+      FROM transaction_enriched, json_each(transaction_enriched.tags) 
+      WHERE json_valid(transaction_enriched.tags);
+      `;
+
+  try {
+    const stmt = db.db.prepare(query);
+    const rows = stmt.all().map(obj => obj.value);
+    res.json(rows);
+  } catch (err) {
+    console.log("error: ", err.message);
+    res.status(400).json({ "error": err.message });
+  }
+});
+
+module.exports = router;
+
 /**
  * @swagger
  * /tags:
@@ -30,29 +56,3 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
  *                   type: string
  *                   example: "Error message describing the specific issue."
  */
-
-router.get('/tags', async (req, res) => {
-  let db = new BankDatabase();
-  let query = `
-      SELECT DISTINCT json_each.value 
-      FROM 'transaction' t, json_each(t.tags) 
-      WHERE json_valid(t.tags)
-
-      UNION
-
-      SELECT DISTINCT json_each.value 
-      FROM transaction_enriched, json_each(transaction_enriched.tags) 
-      WHERE json_valid(transaction_enriched.tags);
-      `;
-
-  try {
-    const stmt = db.db.prepare(query);
-    const rows = stmt.all().map(obj => obj.value);
-    res.json(rows);
-  } catch (err) {
-    console.log("error: ", err.message);
-    res.status(400).json({ "error": err.message });
-  }
-});
-
-module.exports = router;

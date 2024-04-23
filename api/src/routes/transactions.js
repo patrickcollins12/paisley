@@ -1,15 +1,170 @@
 const express = require('express');
 const router = express.Router();
-const { query, validationResult } = require('express-validator');
+const { validationResult } = require('express-validator');
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
+const RuleToSqlParser = require('../RuleToSqlParser');
+
+const { validateTransactions } = require('./transactions_validator');
+
+// TODO
+  // GET /transactions?
+  //   filter[accounts]=account b,account c
+  //   &filter[tags][startsWith]=Employer
+  //   &filter[tags][contains]=Secure
+  //   &filter[tags]=Tag>1,Tag>2
+  //   &filter[merchant][is_empty]
+  //   &filter[merchant][is_any]=Bunnings,Kmart
+  //   &filter[merchant][is_not]=Bunnings
+  //   &filter[date][gte]=2023-03-01
+  //   &filter[date][lte]=2023-03-31
+  //   &filter[date][btwn]=2023-03-01,2023-03-31
+  //   &filter[amount][between]=100,300
+  //   &filter[amount][lte]=100
+  //   &filter[amount][gte]=100
+  //   &sort=-date,-amount
+  //   &page=1
+  //   &pageSize=10
+
+
+router.get('/transactions', validateTransactions, async (req, res) => {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  // Pagination parameters setup
+  const page = req.query.page ? parseInt(req.query.page, 10) : 1;
+  const pageSize = req.query.page_size ? parseInt(req.query.page_size, 10) : 1000;
+
+  try {
+
+    let db = new BankDatabase();
+    let params = [];
+    let andQuery = ""
+
+    // Description filter
+    if (req.query.description) {
+      const d = req.query.description
+      andQuery += ` AND (description LIKE ? OR tags LIKE ? OR manual_tags LIKE ?)`;
+      params.push(`%${d}%`, `%${d}%`, `%${d}%`);
+    }
+
+    // // Description filter
+    // if (req.query.description) {
+    //   andQuery += ` AND t.description LIKE ?`;
+    //   params.push(`%${req.query.description}%`);
+    // }
+
+    // Tags filter
+    if (req.query.tags) {
+      andQuery += ` AND (tags LIKE ? OR manual_tags LIKE ?)`;
+      params.push(`%${req.query.tags}%`, `%${req.query.tags}%`);
+    }
+
+    // these queries are stored in the database because it's 
+    // a view we need to use often
+    let query = BankDatabase.allTransactionsQuery + andQuery
+    let sizeQuery = BankDatabase.allTransactionsSizeQuery + andQuery
+
+    function fetchRule(id) {
+      const row = db.db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
+      if (!row) {
+        throw new Error(`No record found for id ${id}`);
+      }
+      return row;
+    }
+
+    // ruleid=4
+    let rule = ""
+    if (req.query.ruleid) {
+      rule = fetchRule(req.query.ruleid).rule
+      // rule = rule.rule
+    }
+
+    // rule="description = /DEPOSIT ZIP CORPORATE FU *REPORT/"
+    if (req.query.rule) {
+      // let rule = decodeURIComponent(req.query.rule)
+      rule = req.query.rule
+    }
+
+    if (rule) {
+      const parser = new RuleToSqlParser();
+
+      // where= { sql: , params: , regexEnabled:  };
+      const where = parser.parse(rule)
+
+      // console.log(`${rule} where: ${JSON.stringify(where)}`)
+
+      query += " AND " + where.sql
+      sizeQuery += " AND " + where.sql
+      params.push(...where.params)
+    }
+
+    // Order By
+    if (req.query.order_by) {
+      const [column, direction] = req.query.order_by.split(',');
+      query += ` ORDER BY ${column.trim()} ${direction.trim().toUpperCase()}`;
+    } else {
+      query += ` ORDER BY datetime DESC`;
+    }
+
+    // results Summary query
+    let resultSummary = {}
+    const summarystmt = db.db.prepare(sizeQuery);
+    const summaryrows = summarystmt.all(params);
+    // console.log("sizeQuery response>> ", rows)
+    const count = summaryrows[0].cnt
+    const pages = Math.ceil(count / pageSize)
+
+    resultSummary = {
+      count: count,
+      pages: pages,
+      pageSize: pageSize,
+      page: page
+    };
+    // console.log(resultSummary)
+
+    // Pagination
+    const offset = (page - 1) * pageSize;
+    query += ` LIMIT ? OFFSET ?`;
+    params.push(pageSize, offset);
+
+    // page of results query = actual query results
+    let finalResults = {}
+
+    // console.log(query)
+    const stmt = db.db.prepare(query);
+    const rows = stmt.all(params);
+
+    finalResults = rows.map(row => {
+      return Object.fromEntries(Object.entries(row).filter(([key, value]) => value !== null && value !== ""));
+    });
+
+    res.json(
+      {
+        'results': finalResults,
+        'resultSummary': resultSummary,
+      });
+  
+  } catch (err) {
+    console.error("error: ", err.message);
+    res.status(500).json({ "error": err.message });
+  }
+
+
+});
+
+module.exports = router;
+
 
 /**
  * @swagger
  * /transactions:
  *   get:
  *     summary: Retrieve a list of transactions
-   *     description: >
- *       Retrieve a list of transactions with optional filters for description, tags, and pagination. Supports ordering by specified columns and directions. Returns both the transactions and a summary of results including total count, pages, page size, and the current page.
+ *     description: >
+ *       Retrieve a list of transactions with optional filters for description, tags, pagination, and dynamic rule-based filtering. Supports ordering by specified columns and directions. Returns both the transactions and a summary of results including total count, pages, page size, and the current page.
  *     tags:
  *       - Transactions
  *     parameters:
@@ -41,6 +196,19 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
  *         name: page_size
  *         required: false
  *         description: Specify the number of transactions to retrieve per page. Must be a positive integer and cannot exceed 10000.
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: rule
+ *         required: false
+ *         description: Apply a custom rule filter to transactions, encoded as a URL parameter.
+ *         schema:
+ *           type: string
+ *           example: "description%20%3D%20%2FDEPOSIT%20ZIP%20CORPORATE%20FU%20*REPORT%2F"
+ *       - in: query
+ *         name: ruleid
+ *         required: false
+ *         description: Apply a stored rule filter by rule ID to transactions.
  *         schema:
  *           type: integer
  *     responses:
@@ -133,168 +301,3 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
  *           description: The current page number.
  *           example: 2
  */
-
-router.get('/transactions', [
-
-  // Validation chains
-  query('description').optional().isLength({ max: 200 }).withMessage('Description input exceeds the maximum length of 200 characters.'),
-  query('tags').optional().isLength({ max: 200 }).withMessage('Tags input exceeds the maximum length of 200 characters.'),
-  query('order_by').optional().custom(value => {
-    const validSortColumns = ['datetime', 'account', 'description', 'credit', 'debit', 'amount', 'balance', 'type', 'tags', 'manual_tags'];
-    const parts = value.split(',');
-    if (parts.length !== 2 || !validSortColumns.includes(parts[0].trim()) || !['asc', 'desc', 'ASC', 'DESC'].includes(parts[1].trim().toUpperCase())) {
-      throw new Error('Invalid order_by parameter');
-    }
-    return true;
-  }),
-  query('page').optional().isInt({ min: 1 }).withMessage("'page' must be a positive integer."),
-  query('page_size').optional().isInt({ min: 1, max: 10000 }).withMessage("'page_size' must be a positive integer and cannot exceed 10000."),
-], async (req, res) => {
-
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  // Pagination parameters setup
-  const page = req.query.page ? parseInt(req.query.page, 10) : 1;
-  const pageSize = req.query.page_size ? parseInt(req.query.page_size, 10) : 1000;
-
-
-  let db = new BankDatabase();
-  let params = [];
-  let andQuery = ""
-
-  // Description filter
-  if (req.query.description) {
-    const d = req.query.description
-    andQuery += ` AND (t.description LIKE ? OR t.tags LIKE ? OR te.tags LIKE ?)`;
-    params.push(`%${d}%`,`%${d}%`,`%${d}%`);
-  }
-  
-  // // Description filter
-  // if (req.query.description) {
-  //   andQuery += ` AND t.description LIKE ?`;
-  //   params.push(`%${req.query.description}%`);
-  // }
-
-  // Tags filter
-  if (req.query.tags) {
-    andQuery += ` AND (t.tags LIKE ? OR te.tags LIKE ?)`;
-    params.push(`%${req.query.tags}%`, `%${req.query.tags}%`);
-  }
-
-//   CASE
-//   WHEN te.description IS NOT NULL THEN te.description
-//   ELSE t.description
-// END AS description,
-// CASE
-//   WHEN te.description IS NOT NULL THEN t.description
-//   ELSE NULL
-// END AS orig_description,
-
-
-  let query = `
-      SELECT 
-        t.id,
-        t.datetime,
-        t.account,
-
-        t.description as description,
-        te.description as revised_description,
-
-        t.credit,
-        t.debit,
-
-        CASE
-          WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
-          WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
-          ELSE 0.0
-        END AS amount,
-
-        t.balance,
-        t.type,
-
-        CASE
-            WHEN t.tags = '' OR t.tags IS NULL THEN ''
-            ELSE t.tags
-        END AS tags,
-
-        te.tags AS manual_tags,
-        te.auto_categorize 
-      FROM 'transaction' t
-      LEFT JOIN 'transaction_enriched' te ON t.id = te.id
-      WHERE 1=1
-      ${andQuery}
-      `;
-
-  let sizeQuery = `
-      SELECT count(t.id) 'count'
-      FROM 'transaction' t
-      LEFT JOIN 'transaction_enriched' te ON t.id = te.id
-      WHERE 1 = 1
-      ${andQuery}
-      `
-
-  // Order By
-  if (req.query.order_by) {
-    const [column, direction] = req.query.order_by.split(',');
-    query += ` ORDER BY ${column.trim()} ${direction.trim().toUpperCase()}`;
-  } else {
-    query += ` ORDER BY datetime DESC`;
-  }
-
-  // results Summary query
-  let resultSummary = {}
-  try {
-    const stmt = db.db.prepare(sizeQuery);
-    const rows = stmt.all(params);
-    // console.log("sizeQuery response>> ", rows)
-    const count = rows[0].count
-    const pages = Math.ceil(count / pageSize)
-
-    resultSummary = {
-      count: count,
-      pages: pages,
-      pageSize: pageSize,
-      page: page
-    };
-
-    // console.log(resultSummary)
-
-  } catch (err) {
-    console.error("error: ", err.message);
-    res.status(500).json({ "error": err.message });
-  }
-
-  // Pagination
-  const offset = (page - 1) * pageSize;
-  query += ` LIMIT ? OFFSET ?`;
-  params.push(pageSize, offset);
-
-  // page of results query = actual query results
-  let finalResults = {}
-  try {
-
-    // console.log(query)
-    const stmt = db.db.prepare(query);
-    const rows = stmt.all(params);
-
-    finalResults = rows.map(row => {
-      return Object.fromEntries(Object.entries(row).filter(([key, value]) => value !== null && value !== ""));
-    });
-
-  } catch (err) {
-    console.error("error: ", err.message);
-    res.status(500).json({ "error": err.message });
-  }
-
-  res.json(
-    {
-      'results': finalResults,
-      'resultSummary': resultSummary,
-    });
-
-});
-
-module.exports = router;

@@ -50,6 +50,62 @@ class BankDatabase {
             }
         });
     }
+
+    static allTransactionsSizeQuery = `
+        SELECT count(id) as cnt
+        FROM 
+        ( select 
+            t.id as id,
+            t.description as description,
+            te.description as revised_description,
+            CASE
+                WHEN t.tags = '' OR t.tags IS NULL THEN ''
+                ELSE t.tags
+            END AS tags,
+            te.tags AS manual_tags
+            from 
+            'transaction' t
+            LEFT JOIN 'transaction_enriched' te ON t.id = te.id
+        )
+        WHERE 1 = 1 
+        `
+
+    static allTransactionsQuery = `
+        select * from
+        (        SELECT 
+                t.id,
+                t.datetime,
+                t.account,
+        
+                t.description as description,
+                te.description as revised_description,
+        
+                t.credit,
+                t.debit,
+        
+                CASE
+                    WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
+                    WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
+                    ELSE 0.0
+                END AS amount,
+        
+                t.balance,
+                t.type,
+        
+                CASE
+                    WHEN t.tags = '' OR t.tags IS NULL THEN ''
+                    ELSE t.tags
+                END AS tags,
+        
+                te.tags AS manual_tags,
+                te.auto_categorize 
+                FROM 'transaction' t
+                LEFT JOIN 'transaction_enriched' te ON t.id = te.id
+        
+        ) 
+        WHERE 1=1
+        `
+
 }
 
 // Singleton instance is not created until the first call without a path

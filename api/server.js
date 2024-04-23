@@ -95,6 +95,8 @@ const routes = [
   './src/routes/update_transactions.js',
   './src/routes/tags.js',
   './src/routes/balances.js',
+  './src/routes/rule.js',
+  './src/routes/rules.js',
 ]
 
 const swaggerOptions = {
