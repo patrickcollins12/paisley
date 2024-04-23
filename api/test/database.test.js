@@ -2,6 +2,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const config = require('../src/Config');
+config.load()
 
 describe('BankDatabase Class', () => {
     let BankDatabase

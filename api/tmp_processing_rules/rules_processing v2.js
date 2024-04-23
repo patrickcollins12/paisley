@@ -1,3 +1,6 @@
+// CONVERTS rules.js to the rule table
+// in the process it uses RuleConverter to convert v1 rules to v2 rules.
+
 const fs = require('fs');
 const Database = require('better-sqlite3');
 const BankDatabase = require('../src/BankDatabase');
@@ -64,8 +67,8 @@ const ruleConverter = new RuleConverter();
 // Begin transaction
 const insertMany = db.transaction((rules) => {
     for (const rule of rules) {
-        const rule_new = ruleConverter.convertV1toV2(rule.rule)
-        rule.rule_new = rule_new.replace(/\\b/g,'\b')
+        rule.rule_new = ruleConverter.convertV1toV2(rule.rule)
+        // rule.rule_new = rule_new.replace(/\\b/g,'\b')
         console.log("rule>>",rule)
         insertStmt.run(rule.rule_new, JSON.stringify(rule.tags), JSON.stringify(rule.party), rule.group, rule.rule);
     }
