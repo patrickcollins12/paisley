@@ -43,7 +43,7 @@ describe('SQL WHERE Clause Parser', () => {
   test('parses regular expressions', () => {
     const input = "description = /amaz?n/";
     const result = parser.parse(input);
-    expect(result.sql).toBe("lower(description) REGEXP ?");
+    expect(result.sql).toBe("description REGEXP ?");
     expect(result.params).toEqual(['amaz?n']);
     expect(result.regexEnabled).toEqual(true);
   });
@@ -65,7 +65,7 @@ describe('SQL WHERE Clause Parser', () => {
   test('handles parentheses and complex expressions', () => {
     const input = "(description = 'amazon' and amount > 30) or (description = /prime/ and amount < 100)";
     const result = parser.parse(input);
-    expect(result.sql).toBe("(description LIKE ? AND amount > ?) OR (lower(description) REGEXP ? AND amount < ?)");
+    expect(result.sql).toBe("(description LIKE ? AND amount > ?) OR (description REGEXP ? AND amount < ?)");
     expect(result.params).toEqual(['%amazon%', '30', 'prime', '100']);
   });
 
@@ -78,7 +78,7 @@ describe('SQL WHERE Clause Parser', () => {
       ) or 
       (description = /prime/ and amount < 100)`;
     const result = parser.parse(input);
-    expect(result.sql).toBe("((description LIKE ? AND description NOT LIKE ?) OR (description LIKE ? AND amount > ?)) OR (lower(description) REGEXP ? AND amount < ?)");
+    expect(result.sql).toBe("((description LIKE ? AND description NOT LIKE ?) OR (description LIKE ? AND amount > ?)) OR (description REGEXP ? AND amount < ?)");
     expect(result.params).toEqual(['amazon%', '%amazon%', '%amazon%', '30', 'prime', '100']);
   });
 
