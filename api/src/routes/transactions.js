@@ -8,20 +8,6 @@ const { validateTransactions } = require('./transactions_validator');
 const TransactionQuery = require('../TransactionQuery.cjs');
 
 // TODO
-// GET /transactions?
-//   filter[accounts]=account b,account c
-//   &filter[tags][startsWith]=Employer
-//   &filter[tags][contains]=Secure
-//   &filter[tags]=Tag>1,Tag>2
-//   &filter[merchant][is_empty]
-//   &filter[merchant][is_any]=Bunnings,Kmart
-//   &filter[merchant][is_not]=Bunnings
-//   &filter[date][gte]=2023-03-01
-//   &filter[date][lte]=2023-03-31
-//   &filter[date][btwn]=2023-03-01,2023-03-31
-//   &filter[amount][between]=100,300
-//   &filter[amount][lte]=100
-//   &filter[amount][gte]=100
 //   &sort=-date,-amount
 //   &page=1
 //   &pageSize=10
@@ -38,7 +24,7 @@ router.get('/transactions', validateTransactions, async (req, res) => {
 
     let db = new BankDatabase();
 
-    console.log(JSON.stringify(req.query,null,"\t"))
+    // console.log(JSON.stringify(req.query,null,"\t"))
 
     // calculate the where clause based on the request
     const tq = new TransactionQuery(req.query)
@@ -57,7 +43,7 @@ router.get('/transactions', validateTransactions, async (req, res) => {
       });
 
   } catch (err) {
-    console.error("error: ", err.message);
+    console.error("error: ", err);
     res.status(500).json({ "error": err.message });
   }
 

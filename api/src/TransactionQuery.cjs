@@ -8,7 +8,6 @@ class TransactionQuery {
     constructor(params) {
         this._resetQueries()
         this.queryParams = params
-        this.db = new BankDatabase()
     }
 
     // Resets the SQL and parameters to their base queries
@@ -25,6 +24,7 @@ class TransactionQuery {
     processParams() {
         this._resetQueries(); // Reset queries to handle new request cleanly
         this._processRuleParams()
+        this._processDescriptionAndTagsParams()
         this._processFilterParams()
         this._processOrderByParams()
         this._processPaginationParams()
@@ -76,10 +76,13 @@ class TransactionQuery {
 
         let query = this.sizeQuery()
         let params = this.getParams(false)
+
+        this.db = new BankDatabase()
+
         const summarystmt = this.db.db.prepare(query);
         const summaryrows = summarystmt.all(params);
         this.count = summaryrows[0].cnt
-        this.pages = Math.ceil( this.count / this.pageSize)
+        this.pages = Math.ceil(this.count / this.pageSize)
 
         return {
             pages: this.pages,
@@ -91,8 +94,10 @@ class TransactionQuery {
 
     getTransactions(limitOffsetEnabled = true, cleanOutNullAndEmptyValues = true) {
 
-        const mainQuery = this.getTransactionQuery(limitOffsetEnabled,true)
-            
+        this.db = new BankDatabase()
+
+        const mainQuery = this.getTransactionQuery(limitOffsetEnabled, true)
+
         const stmt = this.db.db.prepare(mainQuery);
         let rows = stmt.all(this.getParams(limitOffsetEnabled));
 
@@ -108,11 +113,9 @@ class TransactionQuery {
 
     // Helper method to add SQL conditions
     _addSqlCondition(condition, paramsToAdd) {
-        this.where += ` AND (${condition})`
+        this.where += ` AND (${condition})\n`
         this.params.push(...paramsToAdd)
     }
-
-
 
     _processPaginationParams() {
         // Pagination parameters setup
@@ -133,7 +136,99 @@ class TransactionQuery {
         }
     }
 
+    // GET /transactions?
+    //   &filter[description]="exact string"
+    //   &filter[description][startsWith]=Employer
+    //   &filter[description][endsWith]="bye"
+    //   &filter[description][contains]="partial string"
+    //   &filter[tags][0]=Tag>1
+    //   &filter[tags][1]=Tag>2
+    //   &filter[tags][is null]=
+    //   &filter[tags][is not null]=
+    //   &filter[merchant][in][0]=Bunnings
+    //   &filter[merchant][in][1]=Kmart
+    //   &filter[date][>=]=2023-03-01
+    //   &filter[date][<=>]=2023-03-31
+    //   &filter[amount]=50
+    //   &filter[amount][>]=50
+    //   &filter[amount][>=]=100
     _processFilterParams() {
+        if (this.queryParams.filter) {
+            const filters = this.queryParams.filter
+            // console.log(JSON.stringify(filters, null, "\t"))
+
+            for (const [field, filter] of Object.entries(filters)) {
+
+                if (typeof filter === 'string') {
+                    this.processFilter(field, "=", filter)
+                }
+                else if (typeof filter === 'object' && filter !== null) {
+                    for (const [operator, value] of Object.entries(filter)) {
+                        this.processFilter(field, operator, value)
+                    }
+                }
+            }
+        }
+    }
+
+    isNumeric(str) {
+        return /^[\+\-]?\d*\.?\d+$/.test(str);
+    }
+
+    processFilter(field, operator, filter) {
+
+
+        switch (operator.toLowerCase()) {
+            case '>=':
+            case '>':
+            case '<':
+            case '<=':
+            case '=':
+
+                if (field === "datetime") {
+                    this._addSqlCondition(`date(${field}) ${operator} date(?)`, [filter])
+                } else {
+                    if (this.isNumeric(filter)) {
+                        this._addSqlCondition(`${field} ${operator} CAST(? AS NUMERIC)`, [filter])
+                    } else {
+                        this._addSqlCondition(`${field} ${operator} ?`, [filter])
+                    }
+                }
+
+                break;
+            case 'startswith':
+                this._addSqlCondition(`${field} LIKE ?`, [`${filter}%`])
+                break;
+            case 'endswith':
+                this._addSqlCondition(`${field} LIKE ?`, [`%${filter}`])
+                break;
+            case 'contains':
+                this._addSqlCondition(`${field} LIKE ?`, [`%${filter}%`])
+                break;
+            case 'regex':
+                this._addSqlCondition(`${field} REGEXP ?`, [filter])
+                break;
+            case 'in':
+                this._addSqlCondition(`${field} IN (${filter.map(() => '?').join(',')})`, [...filter])
+                break;
+            case 'between':
+                if (filter.length !== 2) throw new Error(`Error [10002]: btwn can only have two arguments, but you supplied ${filter.length}`)
+                this._addSqlCondition(`${field} >=`, [filter[0]])
+                this._addSqlCondition(`${field} <=`, [filter[1]])
+            case 'is null':
+                this._addSqlCondition(`${field} IS NULL OR ${field} = ''`, [])
+                break;
+            case 'is not null':
+                this._addSqlCondition(`${field} IS NOT NULL`, [])
+                break;
+    
+            default:
+                return false;
+        }
+    }
+
+    // NEED TO DEPRECATE THIS
+    _processDescriptionAndTagsParams() {
 
         // Description filter
         if (this.queryParams.description) {
@@ -147,7 +242,6 @@ class TransactionQuery {
             this._addSqlCondition('tags LIKE ? OR manual_tags LIKE ?', [`%${t}%`, `%${t}%`])
         }
     }
-
 
     _processRuleParams() {
         // RuleID filter
@@ -194,6 +288,7 @@ class TransactionQuery {
         ( select 
             t.id as id,
             t.datetime,
+            t.account,
             t.description as description,
             te.description as revised_description,
             t.credit,
@@ -251,7 +346,7 @@ class TransactionQuery {
         
         ) 
         WHERE 1=1
-        `
+`
 
 
 }
