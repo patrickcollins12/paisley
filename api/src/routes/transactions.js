@@ -38,6 +38,8 @@ router.get('/transactions', validateTransactions, async (req, res) => {
 
     let db = new BankDatabase();
 
+    console.log(JSON.stringify(req.query,null,"\t"))
+
     // calculate the where clause based on the request
     const tq = new TransactionQuery(req.query)
     tq.processParams()
