@@ -8,6 +8,7 @@ class BankDatabase {
     // if no dbPath if provided, it will load from the config and return a singleton.
     // if you provide a dbPath, it will give you a new BankDatabase Object.
     constructor(dbPath = null) {
+
         if (!dbPath && BankDatabase.singletonInstance) {
             return BankDatabase.singletonInstance;
         }
@@ -25,6 +26,9 @@ class BankDatabase {
 
             // this.db = new Database(path, {verbose: console.log});
             this.db = new Database(path);
+
+            // this.db = this.createDbProxy(this.db);
+
             this.addRegex()
             console.log(`Connected to SQLite database: ${path}`);
         } catch (err) {
@@ -34,79 +38,87 @@ class BankDatabase {
         if (!dbPath) {
             BankDatabase.singletonInstance = this;
         }
+
+        this.regexCache = new Map();  // Cache for storing compiled regex objects
     }
 
-    // TODO, make case insensitivity
+
+    // createDbProxy(db) {
+    //     const self = this;
+    //     return new Proxy(db, {
+    //         get(target, property, receiver) {
+    //             const original = Reflect.get(target, property, receiver);
+    //             if (typeof original === 'function') {
+    //                 return function (...args) {
+    //                     const context = this === receiver ? target : this;  // Ensure correct 'this' context
+    //                     const result = original.apply(context, args);  // Apply using correct context
+
+    //                     // Handle Statement objects and transactions specifically
+    //                     if (property === 'prepare' && typeof result === 'object') {
+    //                         return self.createDbProxy(result);
+    //                     }
+    //                     if (property === 'transaction' && typeof result === 'function') {
+    //                         return self.createTransactionProxy(result);
+    //                     }
+
+    //                     // Clear regex cache for direct db method calls like exec, run
+    //                     if (['exec', 'run', 'prepare'].includes(property)) {
+    //                         self.regexCache.clear();
+    //                     }
+
+    //                     return result;
+    //                 };
+    //             }
+    //             return original;
+    //         }
+    //     });
+    // }
+
+    // createTransactionProxy(transaction) {
+    //     const self = this;
+    //     return function (...args) {
+    //         const transactionResult = transaction.apply(this, args);
+    //         self.regexCache.clear();  // Clear cache after transaction execution
+    //         return transactionResult;
+    //     };
+    // }
+
     addRegex() {
-        // Define the REGEXP function
+
+        // Add a custom a function to sqlite.
+        // description REGEXP 'myregex/i'
+        // it will cache the regex into the regexCache set
         this.db.function('REGEXP', (pattern, value) => {
-            // Try to create a RegExp object and test the value
-            try {
-                const regex = new RegExp(pattern, 'i');
-                return regex.test(value) ? 1 : 0;
-            } catch (e) {
-                // In case of an invalid regex pattern, return 0
-                return 0;
+            // Attempt to retrieve the regex, or undefined if not present
+            let regex = this.regexCache.get(pattern);
+
+            if (regex === undefined) {  // If the pattern is not in the cache
+                try {
+
+                    const flagMatch = /\/([a-z]+)$/.exec(pattern);
+                    const flags = flagMatch ? flagMatch[1] : '';
+                    const regexPattern = flagMatch ? pattern.slice(0, flagMatch.index) : pattern;
+
+                    regex = new RegExp(regexPattern, flags);  // Try compiling the regex
+                    this.regexCache.set(pattern, regex);      // Cache the compiled regex
+
+                    // console.log(`incoming pattern ${pattern}, regexPattern ${regexPattern}, flags ${flags}, final regex ${regex}`)
+
+                } catch (e) {
+                    this.regexCache.set(pattern, null);  // Cache the failure state
+                    throw new Error("Regex error [E10001]: " + e.message)
+                }
             }
+
+            if (regex === null) return 0;  // Return 0 if regex compilation failed
+
+            // Return 1 if the value matches the regex, else 0
+            return regex.test(value) ? 1 : 0;
         });
     }
-
-    static allTransactionsSizeQuery = `
-        SELECT count(id) as cnt
-        FROM 
-        ( select 
-            t.id as id,
-            t.description as description,
-            te.description as revised_description,
-            CASE
-                WHEN t.tags = '' OR t.tags IS NULL THEN ''
-                ELSE t.tags
-            END AS tags,
-            te.tags AS manual_tags
-            from 
-            'transaction' t
-            LEFT JOIN 'transaction_enriched' te ON t.id = te.id
-        )
-        WHERE 1 = 1 
-        `
-
-    static allTransactionsQuery = `
-        select * from
-        (        SELECT 
-                t.id,
-                t.datetime,
-                t.account,
-        
-                t.description as description,
-                te.description as revised_description,
-        
-                t.credit,
-                t.debit,
-        
-                CASE
-                    WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
-                    WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
-                    ELSE 0.0
-                END AS amount,
-        
-                t.balance,
-                t.type,
-        
-                CASE
-                    WHEN t.tags = '' OR t.tags IS NULL THEN ''
-                    ELSE t.tags
-                END AS tags,
-        
-                te.tags AS manual_tags,
-                te.auto_categorize 
-                FROM 'transaction' t
-                LEFT JOIN 'transaction_enriched' te ON t.id = te.id
-        
-        ) 
-        WHERE 1=1
-        `
-
 }
+    
+
 
 // Singleton instance is not created until the first call without a path
 module.exports = BankDatabase;

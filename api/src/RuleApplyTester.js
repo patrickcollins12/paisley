@@ -1,7 +1,7 @@
 const BankDatabase = require('./BankDatabase');
 const RuleToSqlParser = require('./RuleToSqlParser');
 
-class RuleApply {
+class RuleApplyTester {
 
     constructor() {
         this.db = new BankDatabase();
@@ -54,4 +54,4 @@ class RuleApply {
 
 }
 
-module.exports = RuleApply;
+module.exports = RuleApplyTester;

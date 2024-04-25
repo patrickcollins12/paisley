@@ -1,6 +1,14 @@
 const { query } = require('express-validator');
 
 const validateTransactions = [
+  query('rule')
+    .optional()
+    .isLength({ max: 2000 })
+    .withMessage('Rule input exceeds the maximum length of 2000 characters.'),
+  query('ruleid')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage("'ruleid' must be a positive integer."),
   query('description')
     .optional()
     .isLength({ max: 200 })

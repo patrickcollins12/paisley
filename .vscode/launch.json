@@ -17,6 +17,15 @@
             "skipFiles": ["<node_internals>/**"],
             "program": "${workspaceFolder}/api/server.js",
             "cwd": "${workspaceFolder}/api"
+        },
+        {
+            "type": "node",
+            "name": "Attach by Process ID",
+            "processId": "${command:PickProcess}",
+            "request": "attach",
+            "skipFiles": ["<node_internals>/**"],
+            "cwd": "${workspaceFolder}/api"
         }
+
     ]
 }

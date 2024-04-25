@@ -3,7 +3,7 @@ const minimist = require('minimist');
 
 // Load command line arguments
 const args = minimist(process.argv);
-const url = args['url'] || 'http://localhost:4000/transactions?page=1&page_size=25&description=young';
+const url = args['url'] || 'http://localhost:4000/transactions?page=1&page_size=25&ruleid=42';
 
 async function makeRequest(url) {
     try {

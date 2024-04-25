@@ -1,4 +1,4 @@
-const RuleApply = require('./RuleApply');
+const RuleApplyTester = require('./RuleApplyTester');
 const minimist = require('minimist');
 const config = require('./Config');
 const args = minimist(process.argv);
@@ -8,7 +8,7 @@ describe('Rule application', () => {
     let parser;
   
     beforeEach(() => {
-      rules = new RuleApply(); // Initialize a new instance of the parser for each test
+      rules = new RuleApplyTester(); // Initialize a new instance of the parser for each test
     });
  
     test('test loading 10 rules', () => {

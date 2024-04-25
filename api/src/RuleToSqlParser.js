@@ -3,15 +3,11 @@ const moo = require('moo');
 const lexer = moo.compile({
     WS: /[ \t]+/,
     number: /0|[1-9][0-9]*/,
-    // string: /'[^']*'/,
-    // string: /'(?:[^'\\]|\\.)*'/, // Updated to handle escaped characters
     string: /'(?:[^'\\]|\\['\\])*'/, // Updated to handle apostrophes and backslashes inside string literals
-    // regex: /\/(?:[^\/\\]|\\.)+\/[g]*/,  // Adding flags as optional
-    regex: /\/(?:[^\/\\]|\\.)*\//, // Updated to handle escaped slashes within regex literals
-    // regex: /\/[^\/]*\//,
+    regex: /\/(?:[^\/\\]|\\.)*\/[a-z]*/, // Updated to handle escaped slashes within regex literals
     lparen: '(',
     rparen: ')',
-    and: ['and','AND'],
+    and: ['and', 'AND'],
     or: ['or', 'OR'],
     eq: /=/,
     neq: /<>/,
@@ -31,12 +27,11 @@ class RuleToSqlParser {
         this.params = [];
         this.lastField = null;
         this.lastOperator = null;
-        this.regexEnabled = false;
         this.allowedFieldList = ['description', 'account', 'type', 'amount', 'credit', 'debit'];
     }
 
     parse(input) {
-        this.input=input
+        this.input = input
         lexer.reset(input);
         let token;
 
@@ -45,7 +40,7 @@ class RuleToSqlParser {
             this.handleToken(token);
         }
 
-        return { sql: this.sql, params: this.params, regexEnabled: this.regexEnabled };
+        return { sql: this.sql, params: this.params };
     }
 
     handleToken(token) {
@@ -113,16 +108,22 @@ class RuleToSqlParser {
         this.lastOperator = null;
     }
 
-    handleRegex(token) {
-        const regexContent = token.value.slice(1, -1);
-        // const fieldModifier = this.lastField ? `lower(${this.lastField})` : this.lastField;
-        // const fieldModifier = this.lastField;
+    // could be /blah\.stuff\/morestuff/is
+    // where is is a modifier
+    handleRegex(regex) {
+
+        // Turn '/regex/i' into 'regex/i'
+        const flagMatch = /\/(.*)\/([a-z]*)$/.exec(regex);
+        let regexContent = ""
+        regexContent += flagMatch ? flagMatch[1] : regex;
+        regexContent += flagMatch[2] ? "/" + flagMatch[2] : ''; // add the modifier
+
         if (this.lastOperator === 'eq') {
             this.sql += `${this.lastField} REGEXP ?`;
         } else if (this.lastOperator === 'neq') {
             this.sql += `${this.lastField} NOT REGEXP ?`;
         }
-        this.regexEnabled = true
+
         this.params.push(regexContent);
         this.lastField = null;
         this.lastOperator = null;
