@@ -1,4 +1,4 @@
-const TransactionQuery = require('./TransactionQuery');
+const TransactionQuery = require('./TransactionQuery.cjs');
 
 describe('Test TransactionQuery', () => {
   let tq;
@@ -23,7 +23,7 @@ describe('Test TransactionQuery', () => {
       filter: {
         "tags": {
           "startsWith": "Misc"
-        }
+        },
       }
     });
 
@@ -32,6 +32,19 @@ describe('Test TransactionQuery', () => {
     expect(tq.params[0]).toBe("Misc%");
   });
 
+  test('test simple parameter', () => {
+    tq = new TransactionQuery({
+      filter: {
+        "tags": {
+          "endsWith": "Misc"
+        }
+      }
+    });
+
+    tq.processParams()
+    expect(tq.where).toBe(" AND (tags LIKE ?)\n");
+    expect(tq.params[0]).toBe("%Misc");
+  });
 
   test('test simple parameter', () => {
     tq = new TransactionQuery({
@@ -89,7 +102,7 @@ describe('Test TransactionQuery', () => {
     tq.processParams()
     expect(tq.where).toBe(" AND (tags IS NULL OR tags = '')\n");
     expect(tq.params.length).toBe(0);
-    
+
   });
 
   test('test is not null', () => {
@@ -104,7 +117,7 @@ describe('Test TransactionQuery', () => {
     tq.processParams()
     expect(tq.where).toBe(" AND (tags IS NOT NULL)\n");
     expect(tq.params.length).toBe(0);
-    
+
   });
 
   test('test regex', () => {
@@ -119,7 +132,22 @@ describe('Test TransactionQuery', () => {
     tq.processParams()
     expect(tq.where).toBe(" AND (description REGEXP ?)\n");
     expect(tq.params[0]).toBe('manoosh/i');
-    
+
+  });
+
+
+  test('test regex', () => {
+    tq = new TransactionQuery({
+      filter: {
+        "description": {
+          "BAD OPERATOR": "stuff",
+        }
+      }
+    });
+
+    expect(() => {
+      tq.processParams()
+    }).toThrow();
   });
 
 

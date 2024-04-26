@@ -1,6 +1,7 @@
-const { query } = require('express-validator');
+const { query } = require('express-validator')
 
 const validateTransactions = [
+  // NOTE: for simplicity filter[] validation occurs in TransactionQuery.processFilter()
   query('rule')
     .optional()
     .isLength({ max: 2000 })
@@ -35,6 +36,6 @@ const validateTransactions = [
     .optional()
     .isInt({ min: 1, max: 10000 })
     .withMessage("'page_size' must be a positive integer and cannot exceed 10000."),
-];
+]
 
-module.exports = { validateTransactions };
+module.exports = { validateTransactions }

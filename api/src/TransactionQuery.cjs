@@ -152,6 +152,7 @@ class TransactionQuery {
     //   &filter[amount]=50
     //   &filter[amount][>]=50
     //   &filter[amount][>=]=100
+    // go through each parameter one-by-one
     _processFilterParams() {
         if (this.queryParams.filter) {
             const filters = this.queryParams.filter
@@ -175,8 +176,18 @@ class TransactionQuery {
         return /^[\+\-]?\d*\.?\d+$/.test(str);
     }
 
-    processFilter(field, operator, filter) {
-
+    _validateFilterField(field,operator,value) {
+        const validFields = ['description','tags','type','debit','credit','amount','balance','account','datetime']
+        if ( ! validFields.includes(field.toLowerCase())) {
+            throw new Error(`Invalid filter field: "${field}". Must be one of ${validFields}`)
+        }
+        const validOperators = ['>=','>','<','<=','=',]
+        if ( ! validFields.includes(field.toLowerCase())) {
+            throw new Error(`Invalid filter field: "${field}". Must be one of ${validFields}`)
+        }    
+    }
+    processFilter(field, operator, value) {
+        this._validateFilterField(field,operator,value)
 
         switch (operator.toLowerCase()) {
             case '>=':
@@ -186,35 +197,34 @@ class TransactionQuery {
             case '=':
 
                 if (field === "datetime") {
-                    this._addSqlCondition(`date(${field}) ${operator} date(?)`, [filter])
+                    this._addSqlCondition(`date(${field}) ${operator} date(?)`, [value])
                 } else {
-                    if (this.isNumeric(filter)) {
-                        this._addSqlCondition(`${field} ${operator} CAST(? AS NUMERIC)`, [filter])
+                    if (this.isNumeric(value)) {
+                        this._addSqlCondition(`${field} ${operator} CAST(? AS NUMERIC)`, [value])
                     } else {
-                        this._addSqlCondition(`${field} ${operator} ?`, [filter])
+                        this._addSqlCondition(`${field} ${operator} ?`, [value])
                     }
                 }
-
                 break;
             case 'startswith':
-                this._addSqlCondition(`${field} LIKE ?`, [`${filter}%`])
+                this._addSqlCondition(`${field} LIKE ?`, [`${value}%`])
                 break;
             case 'endswith':
-                this._addSqlCondition(`${field} LIKE ?`, [`%${filter}`])
+                this._addSqlCondition(`${field} LIKE ?`, [`%${value}`])
                 break;
             case 'contains':
-                this._addSqlCondition(`${field} LIKE ?`, [`%${filter}%`])
+                this._addSqlCondition(`${field} LIKE ?`, [`%${value}%`])
                 break;
             case 'regex':
-                this._addSqlCondition(`${field} REGEXP ?`, [filter])
+                this._addSqlCondition(`${field} REGEXP ?`, [value])
                 break;
             case 'in':
-                this._addSqlCondition(`${field} IN (${filter.map(() => '?').join(',')})`, [...filter])
+                this._addSqlCondition(`${field} IN (${value.map(() => '?').join(',')})`, [...value])
                 break;
             case 'between':
-                if (filter.length !== 2) throw new Error(`Error [10002]: btwn can only have two arguments, but you supplied ${filter.length}`)
-                this._addSqlCondition(`${field} >=`, [filter[0]])
-                this._addSqlCondition(`${field} <=`, [filter[1]])
+                if (value.length !== 2) throw new Error(`Error [10002]: btwn can only have two arguments, but you supplied ${value.length}`)
+                this._addSqlCondition(`${field} >=`, [value[0]])
+                this._addSqlCondition(`${field} <=`, [value[1]])
             case 'is null':
                 this._addSqlCondition(`${field} IS NULL OR ${field} = ''`, [])
                 break;
@@ -223,7 +233,7 @@ class TransactionQuery {
                 break;
     
             default:
-                return false;
+                throw new Error(`Invalid operator: "${operator}". Expected, startsWith, in, not null, <,>, etc`)
         }
     }
 
@@ -282,72 +292,50 @@ class TransactionQuery {
         return row
     }
 
+
+    static allTransactionsSubView = `
+        SELECT 
+        t.id,
+        t.datetime,
+        t.account,
+
+        t.description as description,
+        te.description as revised_description,
+
+        t.credit,
+        t.debit,
+
+        CASE
+            WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
+            WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
+            ELSE 0.0
+        END AS amount,
+
+        t.balance,
+        t.type,
+
+        CASE
+            WHEN t.tags = '' OR t.tags IS NULL THEN ''
+            ELSE t.tags
+        END AS tags,
+
+        te.tags AS manual_tags,
+        te.auto_categorize 
+        FROM 'transaction' t
+        LEFT JOIN 'transaction_enriched' te ON t.id = te.id
+    `
+
     static allTransactionsSizeQuery = `
-        SELECT count(id) as cnt
-        FROM 
-        ( select 
-            t.id as id,
-            t.datetime,
-            t.account,
-            t.description as description,
-            te.description as revised_description,
-            t.credit,
-            t.debit,
-
-            CASE
-                WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
-                WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
-                ELSE 0.0
-            END AS amount,
-
-            CASE
-                WHEN t.tags = '' OR t.tags IS NULL THEN ''
-                ELSE t.tags
-            END AS tags,
-            te.tags AS manual_tags
-            from 
-            'transaction' t
-            LEFT JOIN 'transaction_enriched' te ON t.id = te.id
-        )
-        WHERE 1 = 1 
-        `
-
-    static allTransactionsQuery = `
-        select * from
-        (        SELECT 
-                t.id,
-                t.datetime,
-                t.account,
-        
-                t.description as description,
-                te.description as revised_description,
-        
-                t.credit,
-                t.debit,
-        
-                CASE
-                    WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
-                    WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
-                    ELSE 0.0
-                END AS amount,
-        
-                t.balance,
-                t.type,
-        
-                CASE
-                    WHEN t.tags = '' OR t.tags IS NULL THEN ''
-                    ELSE t.tags
-                END AS tags,
-        
-                te.tags AS manual_tags,
-                te.auto_categorize 
-                FROM 'transaction' t
-                LEFT JOIN 'transaction_enriched' te ON t.id = te.id
-        
-        ) 
-        WHERE 1=1
+SELECT count(id) as cnt
+FROM (${TransactionQuery.allTransactionsSubView})
+WHERE 1 = 1 
 `
 
+    static allTransactionsQuery = `
+SELECT * 
+FROM (${TransactionQuery.allTransactionsSubView})
+WHERE 1=1
+`
 
 }
 

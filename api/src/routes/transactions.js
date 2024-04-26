@@ -11,8 +11,9 @@ const TransactionQuery = require('../TransactionQuery.cjs');
 //   &sort=-date,-amount
 //   &page=1
 //   &pageSize=10
-
-
+//
+// update swagger docs
+// add a "search" which searches all fields
 router.get('/transactions', validateTransactions, async (req, res) => {
 
   const errors = validationResult(req);
