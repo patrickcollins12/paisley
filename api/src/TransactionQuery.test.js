@@ -60,6 +60,21 @@ describe('Test TransactionQuery', () => {
     expect(tq.params[0]).toBe('30');
   });
 
+  test('test simple parameter', () => {
+    tq = new TransactionQuery({
+      filter: {
+        "amount": {
+          "abs>": "30"
+        }
+      }
+    });
+
+    tq.processParams()
+    expect(tq.where).toBe(" AND (ABS(amount) > CAST(? AS NUMERIC))\n");
+    expect(tq.params[0]).toBe('30');
+  });
+
+
   test('test between', () => {
     tq = new TransactionQuery({
       filter: {
@@ -115,7 +130,7 @@ describe('Test TransactionQuery', () => {
     });
 
     tq.processParams()
-    expect(tq.where).toBe(" AND (tags IS NOT NULL)\n");
+    expect(tq.where).toBe(" AND (tags IS NOT NULL AND tags <> '')\n");
     expect(tq.params.length).toBe(0);
 
   });

@@ -116,6 +116,15 @@ class TransactionQuery {
         this.where += ` AND (${condition})\n`
         this.params.push(...paramsToAdd)
     }
+    
+    // Helper method to add SQL conditions
+    _addSqlConditionField(condition, fields, paramsToAdd) {
+        var conditions = []
+
+        this.where += ` AND (${condition})\n`
+        this.params.push(...paramsToAdd)
+    }
+
 
     _processPaginationParams() {
         // Pagination parameters setup
@@ -186,8 +195,23 @@ class TransactionQuery {
             throw new Error(`Invalid filter field: "${field}". Must be one of ${validFields}`)
         }    
     }
+
     processFilter(field, operator, value) {
         this._validateFilterField(field,operator,value)
+
+        let abs_val = false
+        if (operator.startsWith('abs')) {
+            operator = operator.slice(3)
+            abs_val = true
+        }
+
+        let fields = [field]
+        if (field === "description") {
+            fields = ["description","revised_description"]
+        }
+        if (field === "tags") {
+            fields = ["tags","manual_tags"]
+        }
 
         switch (operator.toLowerCase()) {
             case '>=':
@@ -195,12 +219,15 @@ class TransactionQuery {
             case '<':
             case '<=':
             case '=':
-
                 if (field === "datetime") {
                     this._addSqlCondition(`date(${field}) ${operator} date(?)`, [value])
                 } else {
                     if (this.isNumeric(value)) {
-                        this._addSqlCondition(`${field} ${operator} CAST(? AS NUMERIC)`, [value])
+                        if (abs_val) {
+                            this._addSqlCondition(`ABS(${field}) ${operator} CAST(? AS NUMERIC)`, [value])
+                        } else {
+                            this._addSqlCondition(`${field} ${operator} CAST(? AS NUMERIC)`, [value])
+                        }
                     } else {
                         this._addSqlCondition(`${field} ${operator} ?`, [value])
                     }
@@ -221,15 +248,11 @@ class TransactionQuery {
             case 'in':
                 this._addSqlCondition(`${field} IN (${value.map(() => '?').join(',')})`, [...value])
                 break;
-            case 'between':
-                if (value.length !== 2) throw new Error(`Error [10002]: btwn can only have two arguments, but you supplied ${value.length}`)
-                this._addSqlCondition(`${field} >=`, [value[0]])
-                this._addSqlCondition(`${field} <=`, [value[1]])
             case 'is null':
                 this._addSqlCondition(`${field} IS NULL OR ${field} = ''`, [])
                 break;
             case 'is not null':
-                this._addSqlCondition(`${field} IS NOT NULL`, [])
+                this._addSqlCondition(`${field} IS NOT NULL AND ${field} <> ''`, [])
                 break;
     
             default:
