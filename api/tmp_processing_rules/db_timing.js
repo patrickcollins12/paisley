@@ -19,54 +19,49 @@ const db = new Database(args['db']);
 //                WHERE json_valid(transaction_enriched.tags);
 
 
-const query2 = `
-
-               SELECT json_each.value 
-               FROM 'transaction' t, json_each(t.tags) 
-               WHERE json_valid(t.tags)
-               
-               UNION
-               
-               SELECT json_each.value 
-               FROM transaction_enriched, json_each(transaction_enriched.tags) 
-               WHERE json_valid(transaction_enriched.tags);
-               `;
-
 const query = `
-SELECT 
-t.id,
-t.datetime,
-t.account,
 
-t.description as description,
-te.description as revised_description,
-
-t.credit,
-t.debit,
-
-CASE
-  WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
-  WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
-  ELSE 0.0
-END AS amount,
-
-t.balance,
-t.type,
-
-CASE
-    WHEN t.tags = '' OR t.tags IS NULL THEN ''
-    ELSE t.tags
-END AS tags,
-
-te.tags AS manual_tags,
-te.auto_categorize 
-FROM 'transaction' t
-LEFT JOIN 'transaction_enriched' te ON t.id = te.id
+SELECT * 
+FROM (
+        SELECT 
+        t.id,
+        t.datetime,
+        t.account,
+        t.description as description,
+        te.description as revised_description,
+        CASE
+            WHEN te.description NOT NULL AND te.description != '' THEN 
+                te.description
+            ELSE
+                t.description
+        END AS new_description
+        t.credit,
+        t.debit,
+        CASE
+            WHEN t.debit != '' AND t.debit > 0.0 THEN -t.debit
+            WHEN t.credit != '' AND t.credit > 0.0 THEN t.credit
+            ELSE 0.0
+        END AS amount,
+        t.balance,
+        t.type,
+        CASE
+            WHEN t.tags = '' OR t.tags IS NULL THEN '[]' -- Ensuring valid JSON array
+            ELSE t.tags
+        END AS auto_tags,
+        CASE
+            WHEN te.tags = '' OR te.tags IS NULL THEN '[]' -- Ensuring valid JSON array
+            ELSE te.tags
+        END AS manual_tags,
+        te.auto_categorize 
+        FROM 'transaction' t
+        LEFT JOIN 'transaction_enriched' te ON t.id = te.id
+    ) AS main
 WHERE 1=1
-AND (t.description LIKE '%young%' OR t.tags LIKE '%young%' OR te.tags LIKE '%young%')
-ORDER BY datetime DESC LIMIT 100.0 OFFSET 0.0
+ AND ((auto_tags IS NULL OR auto_tags = '' OR auto_tags = '[]'))
+ AND ((manual_tags IS NOT NULL AND manual_tags <> '' AND manual_tags <> '[]'))
+ ORDER BY datetime
 
-`;
+               `;
 
 function measurePerformance(query, numberOfExecutions) {
     let timings = [];

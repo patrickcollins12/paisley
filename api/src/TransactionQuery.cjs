@@ -1,5 +1,7 @@
 const RuleToSqlParser = require('./RuleToSqlParser')
 const BankDatabase = require('./BankDatabase')
+const { default: exp } = require('constants')
+const { execPath } = require('process')
 
 class TransactionQuery {
 
@@ -79,6 +81,7 @@ class TransactionQuery {
 
         this.db = new BankDatabase()
 
+        console.log(query)
         const summarystmt = this.db.db.prepare(query);
         const summaryrows = summarystmt.all(params);
         this.count = summaryrows[0].cnt
@@ -96,9 +99,10 @@ class TransactionQuery {
 
         this.db = new BankDatabase()
 
-        const mainQuery = this.getTransactionQuery(limitOffsetEnabled, true)
+        const query = this.getTransactionQuery(limitOffsetEnabled, true)
 
-        const stmt = this.db.db.prepare(mainQuery);
+        console.log(query)
+        const stmt = this.db.db.prepare(query);
         let rows = stmt.all(this.getParams(limitOffsetEnabled));
 
         if (cleanOutNullAndEmptyValues) {
@@ -108,21 +112,6 @@ class TransactionQuery {
         }
 
         return rows
-    }
-
-
-    // Helper method to add SQL conditions
-    _addSqlCondition(condition, paramsToAdd) {
-        this.where += ` AND (${condition})\n`
-        this.params.push(...paramsToAdd)
-    }
-    
-    // Helper method to add SQL conditions
-    _addSqlConditionField(condition, fields, paramsToAdd) {
-        var conditions = []
-
-        this.where += ` AND (${condition})\n`
-        this.params.push(...paramsToAdd)
     }
 
 
@@ -145,27 +134,11 @@ class TransactionQuery {
         }
     }
 
-    // GET /transactions?
-    //   &filter[description]="exact string"
-    //   &filter[description][startsWith]=Employer
-    //   &filter[description][endsWith]="bye"
-    //   &filter[description][contains]="partial string"
-    //   &filter[tags][0]=Tag>1
-    //   &filter[tags][1]=Tag>2
-    //   &filter[tags][is null]=
-    //   &filter[tags][is not null]=
-    //   &filter[merchant][in][0]=Bunnings
-    //   &filter[merchant][in][1]=Kmart
-    //   &filter[date][>=]=2023-03-01
-    //   &filter[date][<=>]=2023-03-31
-    //   &filter[amount]=50
-    //   &filter[amount][>]=50
-    //   &filter[amount][>=]=100
-    // go through each parameter one-by-one
+    
     _processFilterParams() {
         if (this.queryParams.filter) {
             const filters = this.queryParams.filter
-            // console.log(JSON.stringify(filters, null, "\t"))
+            console.log(JSON.stringify(filters, null, "\t"))
 
             for (const [field, filter] of Object.entries(filters)) {
 
@@ -181,37 +154,103 @@ class TransactionQuery {
         }
     }
 
+    _addSqlTagsWhere(fields, paramsToAdd, not = '') {
+
+        // (${value.map(() => '?').join(',')})
+        let expressionArray = []
+        for (const field of fields) {
+            expressionArray.push( `EXISTS (SELECT 1 FROM json_each(main.${field}) WHERE value IN (${paramsToAdd.map(() => '?').join(',')}))\n`
+            )
+            this.params.push(...paramsToAdd)
+        }
+        this.where += this._andOrJoin(expressionArray,"OR")
+    }
+
+    // _andOrJoin(["this is x","this is y"], "and|or" )
+    _andOrJoin(expressions, condition) {
+        if (expressions.length === 1) {
+            return " AND" + expressions[0]
+        }
+        else {
+            return " AND (\n" + expressions.join(` ${condition} \n`) + ")\n"
+        }
+        
+    }
+
+    // Helper method to add SQL conditions
+    // 'field LIKE ?'
+
+    _addSqlConditionField(condition, fields, paramsToAdd, not = '') {
+        var conditions = []
+        for (const field of fields) {
+
+            const re = new RegExp(/\%\%/, 'g')
+            const expandedField = condition.replace(re, field)
+            conditions.push(expandedField)
+
+            this.params.push(...paramsToAdd)
+        }
+
+        const condstr = (conditions.length === 1) ? conditions[0] : conditions.join(not ? " OR " : " AND ")
+        this.where += ` AND (${condstr})\n`
+
+        // this.params.push(...paramsToAdd)
+    }
+
+
     isNumeric(str) {
         return /^[\+\-]?\d*\.?\d+$/.test(str);
     }
-
-    _validateFilterField(field,operator,value) {
-        const validFields = ['description','tags','type','debit','credit','amount','balance','account','datetime']
-        if ( ! validFields.includes(field.toLowerCase())) {
+    _validateFilterField(field, operator, value) {
+        const validFields = [
+            'all', 'description', 'revised_description', 'new_description', 
+            'tags', 'manual_tags', 'auto_tags', 
+            'type', 'debit', 'credit', 'amount', 'balance', 
+            'account', 'datetime'
+        ]
+        if (!validFields.includes(field.toLowerCase())) {
             throw new Error(`Invalid filter field: "${field}". Must be one of ${validFields}`)
         }
-        const validOperators = ['>=','>','<','<=','=',]
-        if ( ! validFields.includes(field.toLowerCase())) {
+        const validOperators = ['>=', '>', '<', '<=', '=',]
+        if (!validFields.includes(field.toLowerCase())) {
             throw new Error(`Invalid filter field: "${field}". Must be one of ${validFields}`)
-        }    
+        }
     }
 
     processFilter(field, operator, value) {
-        this._validateFilterField(field,operator,value)
+        this._validateFilterField(field, operator, value)
 
         let abs_val = false
+        let NOT = ""
+        let IS_NULL = ""
+
+        // deal with modifiers abs and not_
         if (operator.startsWith('abs')) {
             operator = operator.slice(3)
             abs_val = true
         }
 
+        if (operator.startsWith('not_')) {
+            operator = operator.slice(4)
+            NOT = "NOT"
+            IS_NULL = " OR %% IS NULL"
+        }
+
         let fields = [field]
+
         if (field === "description") {
-            fields = ["description","revised_description"]
+            fields = ["description", "revised_description"]
         }
+
         if (field === "tags") {
-            fields = ["tags","manual_tags"]
+            fields = ["auto_tags", "manual_tags"]
         }
+
+        if (field === "all") {
+            fields = ["description", "revised_description", "tags", "manual_tags", "type", "party"]
+
+        }
+
 
         switch (operator.toLowerCase()) {
             case '>=':
@@ -219,46 +258,59 @@ class TransactionQuery {
             case '<':
             case '<=':
             case '=':
+            case '<>':
                 if (field === "datetime") {
-                    this._addSqlCondition(`date(${field}) ${operator} date(?)`, [value])
+                    this._addSqlConditionField(`date(%%) ${operator} date(?)`, fields, [value], NOT)
                 } else {
                     if (this.isNumeric(value)) {
                         if (abs_val) {
-                            this._addSqlCondition(`ABS(${field}) ${operator} CAST(? AS NUMERIC)`, [value])
+                            this._addSqlConditionField(`ABS(%%) ${operator} CAST(? AS NUMERIC)`, fields, [value], NOT)
                         } else {
-                            this._addSqlCondition(`${field} ${operator} CAST(? AS NUMERIC)`, [value])
+                            this._addSqlConditionField(`%% ${operator} CAST(? AS NUMERIC)`, fields, [value], NOT)
                         }
                     } else {
-                        this._addSqlCondition(`${field} ${operator} ?`, [value])
+                        this._addSqlConditionField(`%% ${operator} ?`, fields, [value], NOT)
                     }
                 }
                 break;
             case 'startswith':
-                this._addSqlCondition(`${field} LIKE ?`, [`${value}%`])
+                this._addSqlConditionField(`(%% ${NOT} LIKE ? ${IS_NULL})`, fields, [`${value}%`], NOT)
                 break;
             case 'endswith':
-                this._addSqlCondition(`${field} LIKE ?`, [`%${value}`])
+                this._addSqlConditionField(`(%% ${NOT} LIKE ? ${IS_NULL})`, fields, [`%${value}`], NOT)
                 break;
             case 'contains':
-                this._addSqlCondition(`${field} LIKE ?`, [`%${value}%`])
+                this._addSqlConditionField(`(%% ${NOT} LIKE ? ${IS_NULL})`, fields, [`%${value}%`], NOT)
                 break;
             case 'regex':
-                this._addSqlCondition(`${field} REGEXP ?`, [value])
+                this._addSqlConditionField(`(%% ${NOT} REGEXP ? ${IS_NULL})`, fields, [value], NOT)
                 break;
             case 'in':
-                this._addSqlCondition(`${field} IN (${value.map(() => '?').join(',')})`, [...value])
+                if (/tags/.test(field)) {
+                    this._addSqlTagsWhere(fields,value)
+
+                } else {
+                    this._addSqlConditionField(`(%% ${NOT} IN (${value.map(() => '?').join(',')}) ${IS_NULL})`, fields, [...value], NOT)
+                }
+
                 break;
-            case 'is null':
-                this._addSqlCondition(`${field} IS NULL OR ${field} = ''`, [])
+            case 'empty':
+                if (NOT) {
+                    this._addSqlConditionField(`(%% IS ${NOT} NULL AND %% <> '' AND %% <> '[]')`, fields, [], NOT)
+                } else {
+                    this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '[]')`, fields, [], NOT)
+                }
+
                 break;
-            case 'is not null':
-                this._addSqlCondition(`${field} IS NOT NULL AND ${field} <> ''`, [])
-                break;
-    
+            // case 'is not null':
+            //     this._addSqlConditionField(`(%% IS NOT NULL AND %% <> '')`, fields, [])
+            //     break;
+
             default:
                 throw new Error(`Invalid operator: "${operator}". Expected, startsWith, in, not null, <,>, etc`)
         }
     }
+
 
     // NEED TO DEPRECATE THIS
     _processDescriptionAndTagsParams() {
@@ -266,13 +318,13 @@ class TransactionQuery {
         // Description filter
         if (this.queryParams.description) {
             const d = this.queryParams.description
-            this._addSqlCondition('description LIKE ? OR tags LIKE ? OR manual_tags LIKE ?', [`%${d}%`, `%${d}%`, `%${d}%`])
+            this._addSqlCondition('description LIKE ? OR auto_tags LIKE ? OR manual_tags LIKE ?', [`%${d}%`, `%${d}%`, `%${d}%`])
         }
 
         // Tags filter
         if (this.queryParams.tags) {
             const t = this.queryParams.tags
-            this._addSqlCondition('tags LIKE ? OR manual_tags LIKE ?', [`%${t}%`, `%${t}%`])
+            this._addSqlCondition('auto_tags LIKE ? OR manual_tags LIKE ?', [`%${t}%`, `%${t}%`])
         }
     }
 
@@ -324,25 +376,31 @@ class TransactionQuery {
 
         t.description as description,
         te.description as revised_description,
+        
+        CASE
+        WHEN te.description NOT NULL AND te.description != '' THEN 
+            te.description
+        ELSE
+            t.description
+        END AS new_description,
 
         t.credit,
         t.debit,
-
         CASE
-            WHEN t.debit != '' AND t.debit > 0.0 THEN  -t.debit
-            WHEN t.credit != '' AND t.credit > 0.0 THEN  t.credit
+            WHEN t.debit != '' AND t.debit > 0.0 THEN -t.debit
+            WHEN t.credit != '' AND t.credit > 0.0 THEN t.credit
             ELSE 0.0
         END AS amount,
-
         t.balance,
         t.type,
-
         CASE
-            WHEN t.tags = '' OR t.tags IS NULL THEN ''
+            WHEN t.tags = '' OR t.tags IS NULL THEN '[]' -- Ensuring valid JSON array
             ELSE t.tags
-        END AS tags,
-
-        te.tags AS manual_tags,
+        END AS auto_tags,
+        CASE
+            WHEN te.tags = '' OR te.tags IS NULL THEN '[]' -- Ensuring valid JSON array
+            ELSE te.tags
+        END AS manual_tags,
         te.auto_categorize 
         FROM 'transaction' t
         LEFT JOIN 'transaction_enriched' te ON t.id = te.id
@@ -350,13 +408,13 @@ class TransactionQuery {
 
     static allTransactionsSizeQuery = `
 SELECT count(id) as cnt
-FROM (${TransactionQuery.allTransactionsSubView})
+FROM (${TransactionQuery.allTransactionsSubView}) AS main
 WHERE 1 = 1 
 `
 
     static allTransactionsQuery = `
 SELECT * 
-FROM (${TransactionQuery.allTransactionsSubView})
+FROM (${TransactionQuery.allTransactionsSubView}) AS main
 WHERE 1=1
 `
 
