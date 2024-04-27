@@ -154,7 +154,8 @@ class TransactionQuery {
         }
     }
 
-    _addSqlTagsWhere(fields, paramsToAdd, not = '') {
+    // tags, manual_tags and auto_tags need special treatment becasue they're json
+    _addSqlTagsWhere(fields, paramsToAdd, NOT='') {
 
         // (${value.map(() => '?').join(',')})
         let expressionArray = []
@@ -163,16 +164,16 @@ class TransactionQuery {
             )
             this.params.push(...paramsToAdd)
         }
-        this.where += this._andOrJoin(expressionArray,"OR")
+        this.where += ` AND ${NOT} ` + this._andOrJoin(expressionArray,"OR")
     }
 
     // _andOrJoin(["this is x","this is y"], "and|or" )
     _andOrJoin(expressions, condition) {
         if (expressions.length === 1) {
-            return " AND" + expressions[0]
+            return expressions[0]
         }
         else {
-            return " AND (\n" + expressions.join(` ${condition} \n`) + ")\n"
+            return "(\n" + expressions.join(` ${condition} \n`) + ")\n"
         }
         
     }
@@ -191,8 +192,14 @@ class TransactionQuery {
             this.params.push(...paramsToAdd)
         }
 
-        const condstr = (conditions.length === 1) ? conditions[0] : conditions.join(not ? " OR " : " AND ")
-        this.where += ` AND (${condstr})\n`
+        // TODO
+        // this line needs to always be AND for tags
+        // and be AND/OR for everything else. not AND else OR
+        // I think, clearer minds needed
+        const condstr = this._andOrJoin(conditions,"AND")
+
+
+        this.where += ` AND ${not} (${condstr})\n`
 
         // this.params.push(...paramsToAdd)
     }
@@ -274,32 +281,28 @@ class TransactionQuery {
                 }
                 break;
             case 'startswith':
-                this._addSqlConditionField(`(%% ${NOT} LIKE ? ${IS_NULL})`, fields, [`${value}%`], NOT)
+                this._addSqlConditionField(`(%% LIKE ? ${IS_NULL})`, fields, [`${value}%`], NOT)
                 break;
             case 'endswith':
-                this._addSqlConditionField(`(%% ${NOT} LIKE ? ${IS_NULL})`, fields, [`%${value}`], NOT)
+                this._addSqlConditionField(`(%% LIKE ? ${IS_NULL})`, fields, [`%${value}`], NOT)
                 break;
             case 'contains':
-                this._addSqlConditionField(`(%% ${NOT} LIKE ? ${IS_NULL})`, fields, [`%${value}%`], NOT)
+                this._addSqlConditionField(`(%% LIKE ? ${IS_NULL})`, fields, [`%${value}%`], NOT)
                 break;
             case 'regex':
-                this._addSqlConditionField(`(%% ${NOT} REGEXP ? ${IS_NULL})`, fields, [value], NOT)
+                this._addSqlConditionField(`(%% REGEXP ? ${IS_NULL})`, fields, [value], NOT)
                 break;
             case 'in':
                 if (/tags/.test(field)) {
-                    this._addSqlTagsWhere(fields,value)
+                    this._addSqlTagsWhere(fields,value,NOT)
 
                 } else {
-                    this._addSqlConditionField(`(%% ${NOT} IN (${value.map(() => '?').join(',')}) ${IS_NULL})`, fields, [...value], NOT)
+                    this._addSqlConditionField(`(%% IN (${value.map(() => '?').join(',')}) ${IS_NULL})`, fields, [...value], NOT)
                 }
 
                 break;
             case 'empty':
-                if (NOT) {
-                    this._addSqlConditionField(`(%% IS ${NOT} NULL AND %% <> '' AND %% <> '[]')`, fields, [], NOT)
-                } else {
-                    this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '[]')`, fields, [], NOT)
-                }
+                this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '[]')`, fields, [], NOT)
 
                 break;
             // case 'is not null':

@@ -20,8 +20,8 @@ describe('Test TransactionQuery', () => {
 
   test('test _addSqlTagsWhere', () => {
     tq = new TransactionQuery();
-    tq._addSqlTagsWhere(["manual_tags","auto_tags"], ['x > y','a > b'])
-    expect(tq.where.trim()).toBe(` AND (
+    tq._addSqlTagsWhere(["manual_tags","auto_tags"], ['x > y','a > b'], '')
+    expect(tq.where.trim()).toBe(` AND  (
 EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?,?))
  OR 
 EXISTS (SELECT 1 FROM json_each(main.auto_tags) WHERE value IN (?,?))
@@ -29,6 +29,17 @@ EXISTS (SELECT 1 FROM json_each(main.auto_tags) WHERE value IN (?,?))
 );
   });
   
+  test('test _addSqlTagsWhere NOT', () => {
+    tq = new TransactionQuery();
+    tq._addSqlTagsWhere(["manual_tags","auto_tags"], ['x > y','a > b'], 'NOT')
+    expect(tq.where.trim()).toBe(` AND NOT (
+EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?,?))
+ OR 
+EXISTS (SELECT 1 FROM json_each(main.auto_tags) WHERE value IN (?,?))
+)`.trim()
+);
+  });
+    
   test('test isNumeric()', () => {
     tq = new TransactionQuery();
     expect(tq.isNumeric('123')).toBe(true);
