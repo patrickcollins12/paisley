@@ -2,14 +2,10 @@ const express = require('express');
 const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
-
-router.get('/rule', async (req, res) => {
+// Retrieve a specific rule by ID
+router.get('/rule/:id', async (req, res) => {
     const db = new BankDatabase().db;
-    const id = req.query.id;
-    if (!id) {
-        return res.status(400).send({ error: 'Missing rule ID' });
-    }
-
+    const id = req.params.id;
     try {
         const rule = db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
         if (!rule) {
@@ -21,27 +17,54 @@ router.get('/rule', async (req, res) => {
     }
 });
 
+// Create a new rule
 router.post('/rule', async (req, res) => {
-    const db = new BankDatabase();
+    const db = new BankDatabase().db;
     const { rule, group, tag, party, comment } = req.body;
+
     if (!rule) {
         return res.status(400).send({ error: 'Required data missing' });
     }
 
     try {
-        const result = db.prepare('INSERT INTO "rule" (rule, group, tag, party, comment) VALUES (?, ?, ?, ?, ?)').run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment);
+        const query = 'INSERT INTO "rule" (rule, "group", tag, party, comment) VALUES (?, ?, ?, ?, ?)'
+        const result = db.prepare(query).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment);
         res.status(201).send({ id: result.lastInsertRowid });
     } catch (error) {
         res.status(400).send({ error: error.message });
     }
 });
 
-router.delete('/rule', async (req, res) => {
-    const db = new BankDatabase();
-    const id = req.query.id;
-    if (!id) {
-        return res.status(400).send({ error: 'Missing rule ID' });
+// Update a specific rule by ID
+router.patch('/rule/:id', async (req, res) => {
+    const db = new BankDatabase().db;
+    const id = req.params.id;
+    const { rule, group, tag, party, comment } = req.body;
+
+    const existingRule = db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
+    if (!existingRule) {
+        return res.status(404).send({ error: 'Rule not found' });
     }
+
+    const sql = `UPDATE "rule" SET 
+                 rule = COALESCE(?, rule), 
+                 "group" = COALESCE(?, "group"), 
+                 tag = COALESCE(?, tag), 
+                 party = COALESCE(?, party), 
+                 comment = COALESCE(?, comment) 
+                 WHERE id = ?`;
+    try {
+        db.prepare(sql).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment, id);
+        res.send({ message: 'Rule updated successfully' });
+    } catch (error) {
+        res.status(400).send({ error: error.message });
+    }
+});
+
+// Delete a specific rule by ID
+router.delete('/rule/:id', async (req, res) => {
+    const db = new BankDatabase().db;
+    const id = req.params.id;
 
     try {
         const result = db.prepare('DELETE FROM "rule" WHERE id = ?').run(id);
@@ -60,13 +83,13 @@ module.exports = router;
 
 /**
  * @swagger
- * /rule:
+ * /rule/{id}:
  *   get:
  *     summary: Retrieves a specific rule by ID
  *     description: Fetch a single rule by its ID.
  *     tags: [Rule]
  *     parameters:
- *       - in: query
+ *       - in: path
  *         name: id
  *         required: true
  *         description: The ID of the rule to retrieve.
@@ -124,12 +147,47 @@ module.exports = router;
  *         description: Rule created successfully.
  *       400:
  *         description: Bad request due to incorrect body format.
+ *   patch:
+ *     summary: Updates a specific rule by ID
+ *     description: Update an existing rule in the database by specifying its ID and any fields you wish to update.
+ *     tags: [Rule]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the rule to update.
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rule:
+ *                 type: string
+ *               group:
+ *                 type: string
+ *               tag:
+ *                 type: object
+ *               party:
+ *                 type: object
+ *               comment:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Rule updated successfully.
+ *       404:
+ *         description: Rule not found.
+ *       400:
+ *         description: Bad request, possibly due to missing or invalid parameters.
  *   delete:
  *     summary: Deletes a specific rule by ID
  *     description: Remove a rule from the database by its ID.
  *     tags: [Rule]
  *     parameters:
- *       - in: query
+ *       - in: path
  *         name: id
  *         required: true
  *         description: The ID of the rule to delete.
