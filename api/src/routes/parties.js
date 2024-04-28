@@ -30,21 +30,21 @@ module.exports = router;
 
 /**
  * @swagger
- * /tags:
+ * /parties:
  *   get:
- *     summary: Retrieves a list of distinct tags from all transactions
- *     description: This endpoint returns an array of distinct tags from the transactions database, sorted alphabetically.
+ *     summary: Retrieves a list of distinct parties from all transactions
+ *     description: This endpoint returns an array of distinct parties from the transactions database, sorted alphabetically.
  *     tags: [Transactions]
  *     responses:
  *       200:
- *         description: An array of distinct tags.
+ *         description: An array of distinct parties.
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 type: string
- *               example: ["groceries", "utilities", "salary"]
+ *               example: ["Ampol", "Bankwest", "7-Eleven"]
  *       400:
  *         description: Bad request, possibly due to a query error.
  *         content:
