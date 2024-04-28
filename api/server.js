@@ -97,6 +97,7 @@ const routes = [
   './src/routes/balances.js',
   './src/routes/rule.js',
   './src/routes/rules.js',
+  './src/routes/parties.js',
 ]
 
 const swaggerOptions = {

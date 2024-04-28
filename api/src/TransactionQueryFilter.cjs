@@ -1,6 +1,3 @@
-// const RuleToSqlParser = require('./RuleToSqlParser')
-// const BankDatabase = require('./BankDatabase')
-
 class TransactionQueryFilter {
 
     constructor(filterObj) {
