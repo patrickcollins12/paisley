@@ -9,17 +9,18 @@ class TransactionQuery {
     constructor(params) {
         this._resetQueries()
         this.queryParams = params
+        this.db = new BankDatabase()
     }
 
-    // Resets the SQL and parameters to their base queries
-    _resetQueries() {
-        this.where = ""
-        this.order_by = ""
-        this.limit = ""
+        // Resets the SQL and parameters to their base queries
+        _resetQueries() {
+            this.where = ""
+            this.order_by = ""
+            this.limit = ""
 
-        this.params = []
-        this.limitParams = []
-    }
+            this.params = []
+            this.limitParams = []
+        }
 
     // Processes all of the params and sets up the where, order by and limit clauses.
     processParams() {
@@ -147,13 +148,16 @@ class TransactionQuery {
         // Description filter
         if (this.queryParams.description) {
             const d = this.queryParams.description
-            this._addSqlCondition('description LIKE ? OR auto_tags LIKE ? OR manual_tags LIKE ?', [`%${d}%`, `%${d}%`, `%${d}%`])
+            this.where += ' AND description LIKE ? OR auto_tags LIKE ? OR manual_tags LIKE ?'
+            this.params.push(`%${d}%`, `%${d}%`, `%${d}%`)
         }
 
         // Tags filter
         if (this.queryParams.tags) {
             const t = this.queryParams.tags
-            this._addSqlCondition('auto_tags LIKE ? OR manual_tags LIKE ?', [`%${t}%`, `%${t}%`])
+            this.where += ' AND auto_tags LIKE ? OR manual_tags LIKE ?'
+            this.params.push(`%${t}%`, `%${t}%`)
+
         }
     }
 
@@ -175,10 +179,9 @@ class TransactionQuery {
             const parser = new RuleToSqlParser();
 
             // where= { sql: , params: , regexEnabled:  };
-            const where = parser.parse(rule)
-
-            // console.log(`${rule} where: ${JSON.stringify(where)}`)
-            this._addSqlCondition(where.sql, where.params)
+            const ruleWhere = parser.parse(rule)
+            this.where += " AND " + ruleWhere.sql
+            this.params.push(...ruleWhere.params)
         }
     }
 

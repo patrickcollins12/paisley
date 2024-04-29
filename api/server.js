@@ -24,9 +24,9 @@ config.load(args["config"])
 const CSVParserFactory = require('./src/CSVParserFactory');
 const FileWatcher = require('./src/FileWatcher');
 const FileMover = require('./src/FileMover');
-const RulesClassifier = require('./src/RulesClassifier');
+// const RulesClassifier = require('./src/RulesClassifier');
 const BankDatabase = require('./src/BankDatabase');
-const classifier = new RulesClassifier()
+// const classifier = new RulesClassifier()
 
 async function initializeCsvParserFactory() {
   const csvParserFactory = new CSVParserFactory();
@@ -53,7 +53,7 @@ async function processFile(csvParserFactory, watchDir, processedDir, file) {
     // await classifier.loadRules()
 
     for (let id of parseResults.inserted_ids) {
-      const classificationResult = await classifier.classifyId(id);
+      // const classificationResult = await classifier.classifyId(id);
       // console.log("Classification Done", classificationResult);
     }
 

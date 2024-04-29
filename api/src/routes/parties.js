@@ -13,8 +13,13 @@ router.get('/parties', async (req, res) => {
 
       SELECT DISTINCT json_each.value 
       FROM transaction_enriched, json_each(transaction_enriched.party) 
-      WHERE json_valid(transaction_enriched.party);
-      `;
+      WHERE json_valid(transaction_enriched.party)
+
+      UNION
+      SELECT DISTINCT json_each.value 
+      FROM rule, json_each(rule.party) 
+      WHERE json_valid(rule.party)
+  `;
 
   try {
     const stmt = db.db.prepare(query);
