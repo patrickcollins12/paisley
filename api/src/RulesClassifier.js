@@ -1,5 +1,8 @@
 const BankDatabase = require('./BankDatabase');
 const config = require('./Config');
+const RuleToSqlParser = require('./RuleToSqlParser');
+const TransactionQuery = require('./TransactionQuery.cjs');
+
 
 class RulesClassifier {
 
@@ -18,12 +21,16 @@ class RulesClassifier {
             params = params.concat(txids);
         }
 
+        // TODO: this needs to return
+        //          orig_description
+        //          new_description
+        //          description CASE
+        //          rules can use any of them.
         // Fetch the current tags for transactions that match the rule and txids
-        const fetchSql = `
-            SELECT id, tags
-            FROM 'transaction'
-            WHERE ${ruleWhereClause} ${txidsCondition}
-        `;
+
+        const fetchSql = TransactionQuery.allTransactionsQuery +
+            ` AND ${ruleWhereClause} ${txidsCondition}`
+        // console.log(`fetchSql: ${fetchSql}`)
         const fetchStmt = this.db.db.prepare(fetchSql);
         const transactions = fetchStmt.all(params);
 
@@ -38,174 +45,78 @@ class RulesClassifier {
 
         // Update each transaction with the new merged tags
         transactions.forEach(transaction => {
-            const existingTags = JSON.parse(transaction.tags || '[]');
+            const existingTags = JSON.parse(transaction.auto_tags || '[]');
             const mergedTags = Array.from(new Set([...existingTags, ...newTags])); // Use Set to remove duplicates
             const tagsJson = JSON.stringify(mergedTags);
             updateStmt.run(tagsJson, JSON.stringify(party), transaction.id);
         });
 
-        console.log(`Rows updated: ${transactions.length}`);
+        // console.log(`Rows updated: ${transactions.length}`);
         return transactions.length
     }
 
+    // will clear ALL tags, 
+    // or if supplied with txids, will clear just those
+    clearTags(txids) {
+        // RESET tags and party for txids
+        let txidsCondition = ""
+        let params = []
 
-    // fetches directly all ids and calls this.classifyId(id)
-    async classifyAllTransactions() {
-        const query = 'SELECT id FROM "transaction"';
+        if (txids && txids.length > 0) {
+            txidsCondition = ` WHERE id IN (${txids.map(() => '?').join(', ')})`;
+            params = txids
+        }
+
+        let resetTagsQuery = `UPDATE "transaction"
+            SET tags = '[]',
+                party = '[]'
+            ${txidsCondition}`
+
+        // console.log(`resetTagsQuery: ${resetTagsQuery}`)
+        const stmt = this.db.db.prepare(resetTagsQuery)
+        stmt.run(params);
+    }
+
+
+    applyOneRule(id) {
+        const rule = this.db.db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
+
+        // Classify this rule across all transactions
+        const parser = new RuleToSqlParser();
+        const classifier = new RulesClassifier()
+        const whereSqlObj = parser.parse(rule.rule);
+        const cnt = classifier.applyRule(
+            whereSqlObj.sql,
+            whereSqlObj.params,
+            null,
+            JSON.parse(rule.tag),
+            JSON.parse(rule.party)
+        )
+        return cnt
+    }
+
+    applyAllRules(txids) {
+        let query = 'SELECT * FROM "rule"';
         const result = this.db.db.prepare(query).all();
+        let parser = new RuleToSqlParser(); // Initialize a new instance of the parser for each test
 
-        for (const record of result) {
-            const id = record['id'];
-            // console.log("here>> ", id);
-            const classificationResult = await this.classifyId(id);
+        this.clearTags(txids)
+
+        let cnt = 0
+        for (const rule of result) {
+            const whereSqlObj = parser.parse(rule.rule);
+            const tag = JSON.parse(rule.tag || [])
+            const party = JSON.parse(rule.party || [])
+
+            cnt += this.applyRule(
+                whereSqlObj.sql,
+                whereSqlObj.params,
+                txids,
+                tag,
+                party
+            )
         }
-    }
-
-    fetchTransactionFromDatabase(id) {
-        const query = 'SELECT * FROM "transaction" WHERE id = ?';
-        try {
-            const result = this.db.db.prepare(query).all(id);
-            if (result.length !== 1) {
-                throw new Error(`Expected 1 row in transaction for ${id}`);
-            }
-            return result[0];
-        } catch (err) {
-            console.error("Query error:", err.message);
-            throw err;
-        }
-    }
-
-    saveTagsToDatabase(id, tags) {
-        const query = 'UPDATE "transaction" SET tags = ? WHERE id = ?';
-
-        try {
-            // Assuming `tags` is an array, convert it to a string 
-            // (or other format suitable for your database schema)
-            const tagsFormatted = JSON.stringify(tags);
-
-            // Prepare and run the update statement
-            const stmt = this.db.db.prepare(query);
-            const result = stmt.run(tagsFormatted, id);
-
-            // `result.changes` indicates the number of rows affected
-            if (result.changes !== 1) {
-                throw new Error(`Expected to update 1 row in transaction for ${id}, but updated ${result.changes}`);
-            }
-
-            // Return the result or a confirmation message
-            return result; // or return a custom object/message as needed
-        } catch (err) {
-            console.error("Query error:", err.message);
-            throw err;
-        }
-    }
-
-    classify(transaction) {
-        let tags = this.applyTagsToTransaction(transaction)
-        // if (tags.length > 0) {
-        let t = { ...transaction }
-        delete t.jsondata;
-        // console.log(t)
-        // console.log(`tags for ${t.id}:`, tags)
-        // console.log("\n")
-        // }
-        return tags
-    }
-
-    // server.js currently only calls this.
-    classifyId(id) {
-        let transactionDoc = this.fetchTransactionFromDatabase(id)
-        let tags = this.classify(transactionDoc)
-
-        const unique = [...new Set(tags)];
-        if (unique.length > 0) {
-            this.saveTagsToDatabase(id, unique)
-        }
-    }
-
-
-    parseRule(rule) {
-        // Split the rule into components (field, operator, value)
-        if (this.ruleComponents[rule]) {
-            return this.ruleComponents[rule]
-        } else {
-            // split 
-            //    amount: >50 ; description : blah \n account: 12345
-            // into
-            //        { amount: ">50", "description": "blah", "account": "12345"}
-            const components = rule.split(/\s*[;\n]\s*/).map(component => {
-                const [field, pattern] = component.split(/\s*:\s*/).map(str => str.trim());
-                return { field, pattern };
-            });
-            return this.ruleComponents[rule] = components;
-        }
-    }
-
-    checkTransaction(transaction, ruleComponents) {
-        return ruleComponents.every(({ field, pattern }) => {
-
-            // Handle NOT
-            if (pattern.startsWith('<>')) {
-                return !(new RegExp(pattern.slice(2), "i").test(transaction[field]));
-            }
-
-            // Handle case sensitivity
-            if (pattern.startsWith('!')) {
-                return new RegExp(pattern.slice(1)).test(transaction[field]);
-            }
-
-            // Handle comparison operators
-            else if (pattern.startsWith('>') || pattern.startsWith('<')) {
-                const operator = pattern.match(/[><]=?/)[0];
-                const value = parseFloat(pattern.split(operator)[1]);
-
-                switch (operator) {
-                    case '>':
-                        return transaction[field] > value;
-                    case '>=':
-                        return transaction[field] >= value;
-                    case '<':
-                        return transaction[field] < value;
-                    case '<=':
-                        return transaction[field] <= value;
-                    default:
-                        return false;
-                }
-            }
-
-
-            // Handle matching
-            if (pattern.startsWith('(')) {
-                // if (new RegExp(/coles/i).test(transaction['description'])) {
-                //     console.log("here");
-                // }
-                const matches = transaction[field].matchAll(pattern);
-                for (let i = 0; i < matches.length; i++) {
-
-                }
-                return (new RegExp(pattern, "i").test(transaction[field]));
-            }
-
-            else {
-                // Default case-insensitive regex match
-                return new RegExp(pattern, 'i').test(transaction[field]);
-            }
-        });
-    }
-
-    applyTagsToTransaction(transaction) {
-        let tags = [];
-
-        for (const [rule, ruleTags] of Object.entries(this.transactionRules)) {
-            const ruleComponents = this.parseRule(rule);
-            // console.log(ruleComponents)
-            if (this.checkTransaction(transaction, ruleComponents)) {
-                tags = tags.concat(ruleTags);
-                // console.log("Matched!", rule)
-                // console.log("   returning tags:", tags)
-            }
-        }
-        return tags;
+        return cnt
     }
 
 }

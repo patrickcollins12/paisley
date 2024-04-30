@@ -200,13 +200,14 @@ class TransactionQuery {
     }
 
 
+    // TODO: Changed it so that description is the merged one. So frontend grid has to be adjusted
     static allTransactionsSubView = `
         SELECT 
         t.id,
         t.datetime,
         t.account,
 
-        t.description as description,
+        t.description as orig_description,
         te.description as revised_description,
         
         CASE
@@ -214,7 +215,7 @@ class TransactionQuery {
             te.description
         ELSE
             t.description
-        END AS new_description,
+        END AS description,
 
         t.credit,
         t.debit,

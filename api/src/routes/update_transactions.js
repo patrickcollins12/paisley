@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
+const RulesClassifier = require('../RulesClassifier');
 
 /**
  * @swagger
@@ -135,7 +136,7 @@ router.post('/update_transaction', [
       params.push(description);
     }
 
-    if (auto_categorize === 0 || auto_categorize === 1 ) {
+    if (auto_categorize === 0 || auto_categorize === 1) {
       fields.push('auto_categorize');
       placeholders.push('?');
       updateSet.push('auto_categorize = excluded.auto_categorize');
@@ -150,6 +151,12 @@ router.post('/update_transaction', [
     // console.log(query)
     db.db.prepare(query).run(params);
     res.json({ "success": true });
+
+    // Reclassify all of the rules onto this txid
+    // Performance optimization... this could be expensive
+    const classifier = new RulesClassifier();
+    const cnt = classifier.applyAllRules([id])
+    console.log(`Reapplied all rules to ${id} and matched ${cnt} rules`)
 
   } catch (err) {
     console.log("error: ", err.message);

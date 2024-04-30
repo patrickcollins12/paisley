@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
+const RulesClassifier = require('../RulesClassifier');
+const RuleToSqlParser = require('../RuleToSqlParser');
 
 // Retrieve a specific rule by ID
 router.get('/rule/:id', async (req, res) => {
@@ -29,7 +31,13 @@ router.post('/rule', async (req, res) => {
     try {
         const query = 'INSERT INTO "rule" (rule, "group", tag, party, comment) VALUES (?, ?, ?, ?, ?)'
         const result = db.prepare(query).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment);
-        res.status(201).send({ id: result.lastInsertRowid });
+
+        const id = result.lastInsertRowid
+
+        // // Classify this new rule across all transactions
+        const cnt = new RulesClassifier().applyOneRule(id)
+
+        res.status(201).send({ id: id, classified: cnt, message: `Rule created and classified ${cnt} txns`  });
     } catch (error) {
         res.status(400).send({ error: error.message });
     }
@@ -55,7 +63,13 @@ router.patch('/rule/:id', async (req, res) => {
                  WHERE id = ?`;
     try {
         db.prepare(sql).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment, id);
-        res.send({ message: 'Rule updated successfully' });
+
+        // // Reload the rule by id
+
+        // // Classify this rule across all transactions
+        const cnt = new RulesClassifier().applyOneRule(id)
+
+        res.status(201).send({ id: id, classified: cnt, message: `Rule updated successfully and reclassified ${cnt} txns`  });
     } catch (error) {
         res.status(400).send({ error: error.message });
     }

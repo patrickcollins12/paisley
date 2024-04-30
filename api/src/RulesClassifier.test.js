@@ -5,11 +5,11 @@ const RuleToSqlParser = require('./RuleToSqlParser');
 describe('Rules classifier', () => {
   let classifier;
   let db;
+
   beforeEach(() => {
     db = new BankDatabase(':memory:').db
     classifier = new RulesClassifier(); // Initialize a new instance of the parser for each test
     parser = new RuleToSqlParser(); // Initialize a new instance of the parser for each test
-
 
     // Create tables
     db.exec(`
@@ -32,6 +32,12 @@ describe('Rules classifier', () => {
             "tag"   JSON,
             "party" JSON,
             PRIMARY KEY("id" AUTOINCREMENT)
+        );
+        CREATE TABLE "transaction_enriched" (
+          "id"	TEXT NOT NULL UNIQUE,
+          "tags"	JSON,
+          "description"	TEXT, "auto_categorize" INTEGER, party JSON,
+          PRIMARY KEY("id")
         );
     `);
 
@@ -67,11 +73,11 @@ describe('Rules classifier', () => {
     const rules = [
       ["description = 'Initial'",
         JSON.stringify(['Transfer > 1', 'Finance > Stuff']),
-        'Bank Inc'],
+        '["Bank Inc"]'],
 
-      ["type = DEP AND debit > 50",
+      ["type = 'DEP' AND debit > 50",
         JSON.stringify(['Large > Tag1', 'Small > Tag2']),
-        'Party Inc']
+        '["Party Inc"]']
 
     ];
 
@@ -85,6 +91,7 @@ describe('Rules classifier', () => {
     db.close(); // Close the database connection
   });
 
+  //////////////////////////////
   // Testing a simple select query for transactions
   test('test a simple select on transactions', () => {
     const stmt = db.prepare('SELECT * FROM "transaction" WHERE id = ?');
@@ -116,12 +123,11 @@ describe('Rules classifier', () => {
       id: 1,
       rule: "description = 'Initial'",
       tag: JSON.stringify(['Transfer > 1', 'Finance > Stuff']),
-      party: 'Bank Inc'
+      party: '["Bank Inc"]'
     });
   });
 
 
-  // Testing a simple select query for rules
   test('test a simple classify', () => {
     const stmt = db.prepare('SELECT * FROM "rule" WHERE id = ?');
     const result = stmt.get(1);
@@ -134,19 +140,72 @@ describe('Rules classifier', () => {
     //   tag:'["Transfer > 1","Finance > Stuff"]'
     // }
 
-    expect(result.party).toEqual("Bank Inc")
+    expect(result.party).toEqual('["Bank Inc"]')
 
-    //  {sql: 'description LIKE ?', params: ["%Initial%"]}
+    //  whereSqlObj = {sql: 'description LIKE ?', params: ["%Initial%"]}
     const whereSqlObj = parser.parse(result.rule);
     expect(whereSqlObj.sql).toEqual('description LIKE ?')
 
     // applyRule(ruleWhereClause, params, txids, newTags, party) {
-    const cnt = classifier.applyRule(whereSqlObj.sql, whereSqlObj.params, ["tx1"], JSON.parse(result.tag), result.party)
+    const cnt = classifier.applyRule(
+      whereSqlObj.sql, 
+      whereSqlObj.params, 
+      ["tx1"], 
+      JSON.parse(result.tag), 
+      JSON.parse(result.party))
+
     expect(cnt).toBe(1)
 
     const stmt2 = db.prepare('SELECT * FROM "transaction" WHERE id = ?');
     const result2 = stmt2.get("tx1");
     expect(result2.tags).toEqual('["tag1","tag2","Transfer > 1","Finance > Stuff"]')
+    expect(result2.party).toEqual('["Bank Inc"]')
+
+  });
+
+
+  test('test a classify of multiple records', () => {
+    const whereSqlObj = parser.parse(`description = /[\\w]/i`);
+    expect(whereSqlObj.sql).toEqual(`description REGEXP ?`)
+    expect(whereSqlObj.params[0]).toEqual('[\\w]/i')
+    
+
+    // applyRule(ruleWhereClause, params, txids, newTags, party) {
+    const cnt = classifier.applyRule(whereSqlObj.sql, whereSqlObj.params, null, 'blah', 'blah')
+    expect(cnt).toBe(3)
+  });
+
+  test('test a classify of 1 rule to all txns', () => {
+    const whereSqlObj = parser.parse(`description = /[\\w]/i`);
+    expect(whereSqlObj.sql).toEqual(`description REGEXP ?`)
+    expect(whereSqlObj.params[0]).toEqual('[\\w]/i')
+    
+    // applyRule(ruleWhereClause, params, txids, newTags, party) {
+    const cnt = classifier.applyRule(whereSqlObj.sql, whereSqlObj.params, ["tx1","tx2"], 'blah', 'blah')
+    expect(cnt).toBe(2)
+  });
+
+
+  test('test a classify of all rules to all txs', () => {
+    // applyRule(ruleWhereClause, params, txids, newTags, party) {
+    const cnt = classifier.applyAllRules()
+    expect(cnt).toBe(2)
+  });
+
+  test('test a classify of all rules to 2 txn', () => {
+    // applyRule(ruleWhereClause, params, txids, newTags, party) {
+    const cnt = classifier.applyAllRules(["tx1", "tx2"])
+    expect(cnt).toBe(2)
+
+    const stmt = db.prepare('SELECT * FROM "transaction" WHERE id in (?, ?)');
+    const result = stmt.all(['tx1','tx2']);
+
+    console.log("result>>",JSON.stringify(result,null,"\t"))
+
+    expect(result[0].tags).toBe("[\"Transfer > 1\",\"Finance > Stuff\"]")
+    expect(result[1].tags).toBe("[\"Large > Tag1\",\"Small > Tag2\"]")
+
   });
 
 });
+

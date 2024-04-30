@@ -44,26 +44,15 @@ async function processFile(csvParserFactory, watchDir, processedDir, file) {
       await FileMover.moveFile(watchDir, file, processedDir);
     }
 
-    // if (parseResults.hadInserts()) {
-    // Run the classifier on the parsed data
-    // results should hold the ids of the entries just added, for classification.
+    // CLASSIFY THE RECENTLY ADDED TRANSACTIONS
     console.log("ready to classify")
-    // console.log(parseResults.inserted_ids)
-
-    // await classifier.loadRules()
-
-    for (let id of parseResults.inserted_ids) {
-      const classificationResult = await classifier.classifyId(id);
-      // console.log("Classification Done", classificationResult);
-    }
-
-    // }
-
+    classifier.applyAllRules(parseResults.inserted_ids)
     console.log("Finished processing:", file);
 
   } catch (error) {
     console.error("Error processing file:", error);
   }
+  
 }
 
 async function setupParsersAndStartWatching() {

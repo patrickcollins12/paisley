@@ -22,15 +22,22 @@ const lexer = moo.compile({
 
 class RuleToSqlParser {
     constructor() {
+        this.allowedFieldList = ['description', 'account', 'type', 'amount', 'credit', 'debit'];
+
+        this.setup()
+    }
+
+    setup () {
         this.sql = '';
         this.input = '';
         this.params = [];
         this.lastField = null;
         this.lastOperator = null;
-        this.allowedFieldList = ['description', 'account', 'type', 'amount', 'credit', 'debit'];
     }
 
     parse(input) {
+        this.setup()
+
         this.input = input
         lexer.reset(input);
         let token;
