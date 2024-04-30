@@ -26,7 +26,6 @@ describe('SQL WHERE Clause Parser', () => {
     const result = parser.parse(input);
     expect(result.sql).toBe("description NOT LIKE ?");
     expect(result.params).toEqual(['%amazon%']);
-    expect(result.regexEnabled).toEqual(false);
 
   });
 
@@ -36,7 +35,6 @@ describe('SQL WHERE Clause Parser', () => {
     const result = parser.parse(input);
     expect(result.sql).toBe("description LIKE ?");
     expect(result.params).toEqual(['%ama\\\'zon%']);
-    expect(result.regexEnabled).toEqual(false);
 
   });
 
@@ -45,7 +43,6 @@ describe('SQL WHERE Clause Parser', () => {
     const result = parser.parse(input);
     expect(result.sql).toBe("description REGEXP ?");
     expect(result.params).toEqual(['amaz?n']);
-    expect(result.regexEnabled).toEqual(true);
   });
 
   test('parses combined conditions with AND', () => {

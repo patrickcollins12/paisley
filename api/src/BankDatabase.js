@@ -28,17 +28,19 @@ class BankDatabase {
 
             // this.db = this.createDbProxy(this.db);
 
+            BankDatabase.singletonInstance = this;
+            
             this.addRegex()
+            this.regexCache = new Map();  // Cache for storing compiled regex objects
+            
             console.log(`Connected to SQLite database: ${path}`);
         } catch (err) {
             console.error("Connect error: ", err.message);
         }
 
-        if (!dbPath) {
-            BankDatabase.singletonInstance = this;
-        }
+        // if (!dbPath) {
+        // }
 
-        this.regexCache = new Map();  // Cache for storing compiled regex objects
     }
 
 
