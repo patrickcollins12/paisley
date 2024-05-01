@@ -7,7 +7,6 @@ const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 
-
 const os = require('os');
 const path = require('path');
 const minimist = require('minimist');
@@ -19,7 +18,6 @@ const args = minimist(process.argv);
 const config = require('./src/Config');
 // console.log("args:",args);
 config.load(args["config"])
-
 
 const CSVParserFactory = require('./src/CSVParserFactory');
 const FileWatcher = require('./src/FileWatcher');
@@ -45,9 +43,9 @@ async function processFile(csvParserFactory, watchDir, processedDir, file) {
     }
 
     // CLASSIFY THE RECENTLY ADDED TRANSACTIONS
-    console.log("ready to classify")
-    classifier.applyAllRules(parseResults.inserted_ids)
-    console.log("Finished processing:", file);
+    // console.log("ready to classify")
+    // classifier.applyAllRules(parseResults.inserted_ids)
+    // console.log("Finished processing:", file);
 
   } catch (error) {
     console.error("Error processing file:", error);

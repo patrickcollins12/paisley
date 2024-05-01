@@ -37,8 +37,8 @@ class FileWatcher {
       if (event == "add" && re.test(path)) {
         await callfunc(path)
       }
-
     });
+    
   }
 }
 
