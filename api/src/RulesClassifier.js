@@ -83,9 +83,9 @@ class RulesClassifier {
 
         // Classify this rule across all transactions
         const parser = new RuleToSqlParser();
-        const classifier = new RulesClassifier()
+        // const classifier = new RulesClassifier()
         const whereSqlObj = parser.parse(rule.rule);
-        const cnt = classifier.applyRule(
+        const cnt = this.applyRule(
             whereSqlObj.sql,
             whereSqlObj.params,
             null,

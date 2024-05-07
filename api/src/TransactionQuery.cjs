@@ -226,6 +226,8 @@ class TransactionQuery {
         END AS amount,
         t.balance,
         t.type,
+
+        /* tags */
         CASE
             WHEN t.tags = '' OR t.tags IS NULL THEN '[]' -- Ensuring valid JSON array
             ELSE t.tags
@@ -234,6 +236,19 @@ class TransactionQuery {
             WHEN te.tags = '' OR te.tags IS NULL THEN '[]' -- Ensuring valid JSON array
             ELSE te.tags
         END AS manual_tags,
+
+
+        /* party */
+        CASE
+            WHEN t.party = '' OR t.party IS NULL THEN '[]' -- Ensuring valid JSON array
+            ELSE t.party
+        END AS auto_party,
+        CASE
+            WHEN te.party = '' OR te.party IS NULL THEN '[]' -- Ensuring valid JSON array
+            ELSE te.party
+        END AS manual_party,
+		
+
         te.auto_categorize 
         FROM 'transaction' t
         LEFT JOIN 'transaction_enriched' te ON t.id = te.id

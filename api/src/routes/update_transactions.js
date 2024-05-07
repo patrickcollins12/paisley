@@ -4,87 +4,9 @@ const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RulesClassifier = require('../RulesClassifier');
 
-/**
- * @swagger
- * /update_transaction:
- *   post:
- *     summary: Updates the details of an existing transaction including optional auto categorization
- *     description: >
- *       Allows updating the tags, description, and auto categorization status of a transaction identified by its ID.
- *       If the specified ID does not exist, a 404 error is returned. Tags, description, and auto_categorize fields
- *       are optional; however, if provided, they are validated for type and appropriate values or length.
- *     tags:
- *       - Transactions
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *                 description: The unique identifier of the transaction. This field is required and must not be empty.
- *                 example: "txn_123456"
- *               tags:
- *                 type: array
- *                 items:
- *                   type: string
- *                 description: An optional array of tag strings associated with the transaction. Each tag must be a string under 1000 characters.
- *                 example: ["urgent", "food"]
- *               description:
- *                 type: string
- *                 description: An optional description for the transaction. Must be a string under 1000 characters.
- *                 example: "Weekly grocery shopping at supermarket."
- *               auto_categorize:
- *                 type: boolean
- *                 description: An optional flag to indicate if the transaction should be automatically categorized.
- *                 example: false
- *     responses:
- *       200:
- *         description: Transaction details updated successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *       400:
- *         description: Bad request. Possible reasons include validation errors such as missing ID, incorrect field types, strings exceeding maximum length, or invalid boolean value.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 errors:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       msg:
- *                         type: string
- *                         example: "ID is required."
- *                       param:
- *                         type: string
- *                         example: "id"
- *                       location:
- *                         type: string
- *                         example: "body"
- *       404:
- *         description: The specified transaction ID does not exist in the database.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 error:
- *                   type: string
- *                   example: "ID does not exist in 'transaction' table"
- */
+const JWTAuthenticator = require('../JWTAuthenticator');
 
-router.post('/update_transaction', [
+router.post('/update_transaction', JWTAuthenticator.authenticateToken, [
   // Validate and sanitize the ID
   body('id').trim().isLength({ min: 1 }).withMessage('ID is required.'),
   // Make 'tags' optional but validate if provided
@@ -165,3 +87,83 @@ router.post('/update_transaction', [
 });
 
 module.exports = router;
+
+/**
+ * @swagger
+ * /update_transaction:
+ *   post:
+ *     summary: Updates the details of an existing transaction including optional auto categorization
+ *     description: >
+ *       Allows updating the tags, description, and auto categorization status of a transaction identified by its ID.
+ *       If the specified ID does not exist, a 404 error is returned. Tags, description, and auto_categorize fields
+ *       are optional; however, if provided, they are validated for type and appropriate values or length.
+ *     tags:
+ *       - Transactions
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: The unique identifier of the transaction. This field is required and must not be empty.
+ *                 example: "txn_123456"
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: An optional array of tag strings associated with the transaction. Each tag must be a string under 1000 characters.
+ *                 example: ["urgent", "food"]
+ *               description:
+ *                 type: string
+ *                 description: An optional description for the transaction. Must be a string under 1000 characters.
+ *                 example: "Weekly grocery shopping at supermarket."
+ *               auto_categorize:
+ *                 type: boolean
+ *                 description: An optional flag to indicate if the transaction should be automatically categorized.
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: Transaction details updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Bad request. Possible reasons include validation errors such as missing ID, incorrect field types, strings exceeding maximum length, or invalid boolean value.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       msg:
+ *                         type: string
+ *                         example: "ID is required."
+ *                       param:
+ *                         type: string
+ *                         example: "id"
+ *                       location:
+ *                         type: string
+ *                         example: "body"
+ *       404:
+ *         description: The specified transaction ID does not exist in the database.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "ID does not exist in 'transaction' table"
+ */

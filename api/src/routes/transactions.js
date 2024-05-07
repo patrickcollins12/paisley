@@ -7,6 +7,9 @@ const RuleToSqlParser = require('../RuleToSqlParser');
 const { validateTransactions } = require('./transactions_validator');
 const TransactionQuery = require('../TransactionQuery.cjs');
 
+const JWTAuthenticator = require('../JWTAuthenticator');
+// router.use(JWTAuthenticator.authenticateToken);
+
 // TODO
 //   &sort=-date,-amount
 //   &page=1
@@ -14,7 +17,7 @@ const TransactionQuery = require('../TransactionQuery.cjs');
 //
 // update swagger docs
 // add a "search" which searches all fields
-router.get('/transactions', validateTransactions, async (req, res) => {
+router.get('/transactions', JWTAuthenticator.authenticateToken, async (req, res) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

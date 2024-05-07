@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
-router.get('/parties', async (req, res) => {
+const JWTAuthenticator = require('../JWTAuthenticator');
+
+router.get('/parties', JWTAuthenticator.authenticateToken, async (req, res) => {
   let db = new BankDatabase();
   let query = `
       SELECT DISTINCT json_each.value 

@@ -4,20 +4,23 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RulesClassifier = require('../RulesClassifier');
 const RuleToSqlParser = require('../RuleToSqlParser');
 
+const JWTAuthenticator = require('../JWTAuthenticator');
+
 // Retrieve a specific rule by ID
-router.get('/rule/:id', async (req, res) => {
-    const db = new BankDatabase().db;
-    const id = req.params.id;
-    try {
-        const rule = db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
-        if (!rule) {
-            return res.status(404).send({ error: 'Rule not found' });
+router.get('/rule/:id', JWTAuthenticator.authenticateToken,
+    async (req, res) => {
+        const db = new BankDatabase().db;
+        const id = req.params.id;
+        try {
+            const rule = db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
+            if (!rule) {
+                return res.status(404).send({ error: 'Rule not found' });
+            }
+            res.json(rule);
+        } catch (error) {
+            res.status(400).send({ error: error.message });
         }
-        res.json(rule);
-    } catch (error) {
-        res.status(400).send({ error: error.message });
-    }
-});
+    });
 
 // Create a new rule
 router.post('/rule', async (req, res) => {
@@ -37,7 +40,7 @@ router.post('/rule', async (req, res) => {
         // // Classify this new rule across all transactions
         const cnt = new RulesClassifier().applyOneRule(id)
 
-        res.status(201).send({ id: id, classified: cnt, message: `Rule created and classified ${cnt} txns`  });
+        res.status(201).send({ id: id, classified: cnt, message: `Rule created and classified ${cnt} txns` });
     } catch (error) {
         res.status(400).send({ error: error.message });
     }
@@ -69,7 +72,7 @@ router.patch('/rule/:id', async (req, res) => {
         // // Classify this rule across all transactions
         const cnt = new RulesClassifier().applyOneRule(id)
 
-        res.status(201).send({ id: id, classified: cnt, message: `Rule updated successfully and reclassified ${cnt} txns`  });
+        res.status(201).send({ id: id, classified: cnt, message: `Rule updated successfully and reclassified ${cnt} txns` });
     } catch (error) {
         res.status(400).send({ error: error.message });
     }
