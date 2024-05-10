@@ -1,8 +1,14 @@
 const bcrypt = require('bcrypt');
 const fs = require('fs');
+const config = require('./Config');
 
 class UserManager {
     constructor(configFileName) {
+
+        if (!configFileName) {
+            configFileName = config['users_file']
+        }
+
         this.configFileName = configFileName;
         this.users = {};
 
@@ -10,6 +16,13 @@ class UserManager {
         this.loadUsersFromConfigFile();
     }
 
+    userExists(username){
+        if (!this.users) {
+            this.loadUsersFromConfigFile();
+        }
+        return this.users[username] ? true:false
+    }
+    
     // Load users from the configuration file
     loadUsersFromConfigFile() {
         try {
