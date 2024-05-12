@@ -65,12 +65,11 @@ router.patch('/rule/:id', async (req, res) => {
                  comment = COALESCE(?, comment) 
                  WHERE id = ?`;
     try {
-        db.prepare(sql).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment, id);
-
-        // // Reload the rule by id
 
         // // Classify this rule across all transactions
         const cnt = new RulesClassifier().applyOneRule(id)
+
+        db.prepare(sql).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment, id);
 
         res.status(201).send({ id: id, classified: cnt, message: `Rule updated successfully and reclassified ${cnt} txns` });
     } catch (error) {
