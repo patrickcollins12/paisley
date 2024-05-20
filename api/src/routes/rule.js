@@ -66,14 +66,23 @@ router.patch('/rule/:id', async (req, res) => {
                  WHERE id = ?`;
     try {
 
-        // // Classify this rule across all transactions
-        const cnt = new RulesClassifier().applyOneRule(id)
+        // if a new rule string is supplied then this needs to validated FIRST
+        // this can be done by attempting to parse it
+        if (rule) {
+            const parser = new RuleToSqlParser();
+            parser.parse(rule);
+        }
 
+        // if you get this far then the parser hasn't thrown and the rule is 👍
+        // so we (1) update the rule in the database
         db.prepare(sql).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment, id);
 
-        res.status(201).send({ id: id, classified: cnt, message: `Rule updated successfully and reclassified ${cnt} txns` });
+        // and (2) classify this rule across all transactions
+        const cnt = new RulesClassifier().applyOneRule(id);
+
+        return res.status(201).send({ id: id, classified: cnt, message: `Rule updated successfully and reclassified ${cnt} txns` });
     } catch (error) {
-        res.status(400).send({ error: error.message });
+        return res.status(400).send({ error: error.message });
     }
 });
 
