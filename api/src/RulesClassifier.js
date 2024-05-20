@@ -16,6 +16,13 @@ class RulesClassifier {
         let txidsCondition = '';
         // let params = [];
 
+        if (!Array.isArray(newTags)) {
+            throw new TypeError('The rule.tags is not an array.');
+        }
+        if (!Array.isArray(party)) {
+            throw new TypeError('The rule.party is not an array.');
+        }
+
         if (txids && txids.length > 0) {
             txidsCondition = `AND id IN (${txids.map(() => '?').join(', ')})`;
             params = params.concat(txids);
@@ -49,6 +56,7 @@ class RulesClassifier {
             const mergedTags = Array.from(new Set([...existingTags, ...newTags])); // Use Set to remove duplicates
             const tagsJson = JSON.stringify(mergedTags);
             updateStmt.run(tagsJson, JSON.stringify(party), transaction.id);
+
         });
 
         // console.log(`Rows updated: ${transactions.length}`);
@@ -84,14 +92,20 @@ class RulesClassifier {
         // Classify this rule across all transactions
         const parser = new RuleToSqlParser();
         // const classifier = new RulesClassifier()
-        const whereSqlObj = parser.parse(rule.rule);
-        const cnt = this.applyRule(
-            whereSqlObj.sql,
-            whereSqlObj.params,
-            null,
-            JSON.parse(rule.tag),
-            JSON.parse(rule.party)
-        )
+        try {
+
+            const whereSqlObj = parser.parse(rule.rule);
+            const cnt = this.applyRule(
+                whereSqlObj.sql,
+                whereSqlObj.params,
+                null,
+                JSON.parse(rule.tag),
+                JSON.parse(rule.party)
+            )
+        } catch (e) {
+            console.log("Rule processing failed:", rule)
+        }
+
         return cnt
     }
 
@@ -107,14 +121,19 @@ class RulesClassifier {
             const whereSqlObj = parser.parse(rule.rule);
             const tag = JSON.parse(rule.tag || [])
             const party = JSON.parse(rule.party || [])
+            try {
+                cnt += this.applyRule(
+                    whereSqlObj.sql,
+                    whereSqlObj.params,
+                    txids,
+                    tag,
+                    party
+                )
+            }
+            catch (e) {
+                console.log("Rule processing failed:", rule)
+            }
 
-            cnt += this.applyRule(
-                whereSqlObj.sql,
-                whereSqlObj.params,
-                txids,
-                tag,
-                party
-            )
         }
         return cnt
     }

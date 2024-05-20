@@ -11,6 +11,7 @@ router.post('/update_transaction', JWTAuthenticator.authenticateToken, [
   body('id').trim().isLength({ min: 1 }).withMessage('ID is required.'),
   // Make 'tags' optional but validate if provided
   body('tags').optional().isArray().withMessage('Tags must be an array.'),
+  body('party').optional().isArray().withMessage('Party must be an array.'),
   body('tags.*').optional().isString().withMessage('Each tag must be a string.')
     .isLength({ max: 1000 }).withMessage('Tag names must be under 1000 characters.'),
   // Make 'description' optional but validate if provided
@@ -25,7 +26,7 @@ router.post('/update_transaction', JWTAuthenticator.authenticateToken, [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { id, tags, description, auto_categorize } = req.body;
+  const { id, tags, party, description, auto_categorize } = req.body;
 
   let db = new BankDatabase();
 
@@ -49,6 +50,13 @@ router.post('/update_transaction', JWTAuthenticator.authenticateToken, [
       placeholders.push('json(?)');
       updateSet.push('tags = excluded.tags');
       params.push(JSON.stringify(tags));
+    }
+
+    if (party) {
+      fields.push('party');
+      placeholders.push('json(?)');
+      updateSet.push('party = excluded.party');
+      params.push(JSON.stringify(party));
     }
 
     if (description !== undefined) {
