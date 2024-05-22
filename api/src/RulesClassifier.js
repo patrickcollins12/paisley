@@ -88,14 +88,20 @@ class RulesClassifier {
 
     applyOneRule(id) {
         const rule = this.db.db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
+        this.applyOneRuleDirectly(rule)
+    }
+
+    applyOneRuleDirectly(rule) {
+        // const cnt = new RulesClassifier().applyOneRuleDirectly(rule)
 
         // Classify this rule across all transactions
         const parser = new RuleToSqlParser();
+        let cnt = 0
         // const classifier = new RulesClassifier()
         try {
 
             const whereSqlObj = parser.parse(rule.rule);
-            const cnt = this.applyRule(
+            cnt = this.applyRule(
                 whereSqlObj.sql,
                 whereSqlObj.params,
                 null,

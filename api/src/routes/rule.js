@@ -34,11 +34,13 @@ router.post('/rule', async (req, res) => {
     try {
         const query = 'INSERT INTO "rule" (rule, "group", tag, party, comment) VALUES (?, ?, ?, ?, ?)'
         const result = db.prepare(query).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment);
-
         const id = result.lastInsertRowid
+        rule.id = id
 
         // // Classify this new rule across all transactions
-        const cnt = new RulesClassifier().applyOneRule(id)
+        // const cnt = new RulesClassifier().applyOneRule(id)
+        let cnt=0
+        cnt = new RulesClassifier().applyOneRuleDirectly(rule)
 
         res.status(201).send({ id: id, classified: cnt, message: `Rule created and classified ${cnt} txns` });
     } catch (error) {
