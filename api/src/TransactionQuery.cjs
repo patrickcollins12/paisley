@@ -114,7 +114,6 @@ class TransactionQuery {
         return rows
     }
 
-
     _processPaginationParams() {
         // Pagination parameters setup
         this.pageNumber = this.queryParams.page ? parseInt(this.queryParams.page, 10) : 1;

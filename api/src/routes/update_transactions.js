@@ -80,7 +80,6 @@ router.post('/update_transaction', JWTAuthenticator.authenticateToken, [
 
     // console.log(query)
     db.db.prepare(query).run(params);
-    res.json({ "success": true });
 
     // Reclassify all of the rules onto this txid
     // Performance optimization... this could be expensive
@@ -88,8 +87,10 @@ router.post('/update_transaction', JWTAuthenticator.authenticateToken, [
     const cnt = classifier.applyAllRules([id])
     console.log(`Reapplied all rules to ${id} and matched ${cnt} rules`)
 
+    res.json({ "success": true });
+
   } catch (err) {
-    console.log("error: ", err.message);
+    console.log("error: ", err);
     res.status(400).json({ "error": err.message });
   }
 });

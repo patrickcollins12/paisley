@@ -125,9 +125,15 @@ class RulesClassifier {
         let cnt = 0
         for (const rule of result) {
             const whereSqlObj = parser.parse(rule.rule);
-            const tag = JSON.parse(rule.tag || [])
-            const party = JSON.parse(rule.party || [])
+
             try {
+
+                // Rule processing failed:, {"id":241,"rule":"account = 'RES0103AU'","group":null,"tag":null,"party":null,"comment":null}
+                // SyntaxError: Unexpected end of JSON input
+
+                const tag = JSON.parse(rule?.tag || [])
+                const party = JSON.parse(rule?.party || [])
+
                 cnt += this.applyRule(
                     whereSqlObj.sql,
                     whereSqlObj.params,
@@ -137,7 +143,7 @@ class RulesClassifier {
                 )
             }
             catch (e) {
-                console.log("Rule processing failed:", rule)
+                console.log(`Rule processing failed:, ${JSON.stringify(rule)}\n${e}`)
             }
 
         }
