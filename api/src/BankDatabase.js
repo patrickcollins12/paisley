@@ -35,7 +35,7 @@ class BankDatabase {
             
             console.log(`Connected to SQLite database: ${path}`);
         } catch (err) {
-            console.error("Connect error: ", err.message);
+            console.error("Connect error: ", err);
         }
 
         // if (!dbPath) {

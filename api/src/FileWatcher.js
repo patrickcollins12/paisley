@@ -1,44 +1,50 @@
 const chokidar = require('chokidar');
 const path = require('path');
-// const fs = require('fs')
 const fs = require('fs').promises;
+const Queue = require('better-queue');
 
 class FileWatcher {
-  constructor(dir,processed) {
-      this.dir = dir
-      this.processed = processed
-      this.watcher = null;
-  }
+  constructor(callfunc, postProcessingFunc) {
+    this.callfunc = callfunc;
+    this.postProcessingFunc = postProcessingFunc;
 
-  // Function to move a file
-  moveFile(sourcePath, destinationDir) {
-    const fileName = path.basename(sourcePath);
-    const destinationPath = path.join(destinationDir, fileName);
+    this.queue = new Queue(async (filePath, cb) => {
+      await this.callfunc(filePath);
+      cb();
+    }, { concurrent: 1 });
 
-    fs.rename(sourcePath, destinationPath, function(err) {
-        if (err) {
-          console.error(`Error occurred while moving the file: ${sourcePath} `, err);
-          return;
-        }
-        console.log(`Moved \"${fileName}\" to ${destinationDir}\n\n`);
+    this.watcher = null;
+    this.queueEmptyTimeout = null;
+
+    // Process the queue
+    this.queue.on('drain', () => {
+      this.resetQueueEmptyTimeout();
     });
   }
 
-  startWatching(callfunc) {
-    // console.log(callfunc);
-    this.watcher = chokidar.watch (this.dir, { 
+  resetQueueEmptyTimeout() {
+    if (this.queueEmptyTimeout) {
+      clearTimeout(this.queueEmptyTimeout);
+    }
+    this.queueEmptyTimeout = setTimeout(() => {
+      if (this.queue.length === 0 && this.postProcessingFunc) {
+        this.postProcessingFunc();
+      }
+    }, 3000);
+  }
+
+  startWatching(directory,processed) {
+
+    this.watcher = chokidar.watch(directory, { 
       awaitWriteFinish: true, 
-      ignored: this.processed
+      ignored: processed
     });
 
-    this.watcher.on('all', async (event, path) => {
-      //   console.log("Calling ", callfunc, " with ", event, path);
-      let re = /\.csv$/i;
-      if (event == "add" && re.test(path)) {
-        await callfunc(path)
+    this.watcher.on('all', (event, filePath) => {
+      if (event === "add" && /\.csv$/i.test(filePath)) {
+        this.queue.push(filePath);
       }
     });
-    
   }
 }
 

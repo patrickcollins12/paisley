@@ -1,67 +1,28 @@
 // system imports
+const minimist = require('minimist');
+const cors = require('cors');
 const express = require('express');
-const { body, validationResult } = require('express-validator');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
+const { body, validationResult } = require('express-validator');
 const app = express();
-const cors = require('cors');
-const JWTAuthenticator = require('./src/JWTAuthenticator'); // Update the path as necessary
-const os = require('os');
-const path = require('path');
-const minimist = require('minimist');
 
+const JWTAuthenticator = require('./src/JWTAuthenticator'); // Update the path as necessary
+const config = require('./src/Config');
+const TransactionFileProcessor = require('./src/TransactionFileProcessor');
+
+////////////////
 // load command line arguments
 const args = minimist(process.argv);
 
+////////////////
 // load the config
-const config = require('./src/Config');
-// console.log("args:",args);
 config.load(args["config"])
 
-const CSVParserFactory = require('./src/CSVParserFactory');
-const FileWatcher = require('./src/FileWatcher');
-const FileMover = require('./src/FileMover');
-
-const RulesClassifier = require('./src/RulesClassifier');
-const classifier = new RulesClassifier()
-
-async function initializeCsvParserFactory() {
-  const csvParserFactory = new CSVParserFactory();
-  await csvParserFactory.loadParsers();
-  return csvParserFactory;
-}
-
-async function processFile(csvParserFactory, watchDir, processedDir, file) {
-  try {
-    const csvParser = await csvParserFactory.chooseParser(file);
-    let parseResults = await csvParser.parse(file);
-
-    if (parseResults.isSuccess()) {
-      // console.log(parseResults); // prints all the findings
-      await FileMover.moveFile(watchDir, file, processedDir);
-    }
-
-    // CLASSIFY THE RECENTLY ADDED TRANSACTIONS
-    console.log("ready to classify")
-    classifier.applyAllRules(parseResults.inserted_ids)
-    console.log("Finished processing:", file);
-
-  } catch (error) {
-    console.error("Error processing file:", error);
-  }
-}
-
-async function setupParsersAndStartWatching() {
-  const csvParserFactory = await initializeCsvParserFactory();
-  const watchDir = config.csv_watch || path.join(os.homedir(), "Downloads/bank_statements");
-  const processedDir = config.csv_processed || path.join(os.homedir(), "Downloads/bank_statements/processed");
-  const fileWatcher = new FileWatcher(watchDir, processedDir);
-
-  fileWatcher.startWatching(file => processFile(csvParserFactory, watchDir, processedDir, file));
-  console.log("Watching for CSV files");
-}
-
-setupParsersAndStartWatching();
+////////////////
+// Start the Transaction CSV File Processor
+const tfp = new TransactionFileProcessor()
+tfp.start()
 
 ////////////////
 // EXPRESS SERVER at localhost:3000/data

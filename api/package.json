@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "start": "node server.js",
     "scrape": "npx playwright test",
     "postinstall": "node install.js"
   },
@@ -14,6 +15,7 @@
     "@playwright/test": "^1.40.1",
     "axios": "^1.6.3",
     "bcrypt": "^5.1.1",
+    "better-queue": "^3.8.12",
     "better-sqlite3": "^9.2.2",
     "chokidar": "^3.5.3",
     "cors": "^2.8.5",

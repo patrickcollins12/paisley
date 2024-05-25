@@ -101,12 +101,14 @@ class BaseCSVParser {
     // );
     saveTransaction(originalLine, processedLine) {
         originalLine['file'] = path.basename(this.fileName);
+
+        // add metadata to transaction
         processedLine['jsondata'] = JSON.stringify(originalLine);
-
         processedLine['id'] = util.generateSHAFromObject(processedLine, this.uniqueColumns)
+        processedLine['inserted_datetime'] = DateTime.now().toISO();
 
+        // insert the transaction
         const columns = Object.keys(processedLine).map(key => `"${key}"`).join(', ');
-
         const placeholders = Object.keys(processedLine).map(() => '?').join(', ');
         const sql = `INSERT INTO 'transaction' (${columns}) VALUES (${placeholders})`;
         // console.log('sql:', sql, processedLine)
