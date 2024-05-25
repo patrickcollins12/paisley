@@ -30,7 +30,7 @@ class FileWatcher {
       if (this.queue.length === 0 && this.postProcessingFunc) {
         this.postProcessingFunc();
       }
-    }, 3000);
+    }, 1000);
   }
 
   startWatching(directory,processed) {

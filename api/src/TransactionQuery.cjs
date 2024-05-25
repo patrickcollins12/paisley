@@ -81,7 +81,7 @@ class TransactionQuery {
 
         this.db = new BankDatabase()
 
-        console.log(query)
+        // console.log(query)
         const summarystmt = this.db.db.prepare(query);
         const summaryrows = summarystmt.all(params);
         this.count = summaryrows[0].cnt
@@ -101,7 +101,7 @@ class TransactionQuery {
 
         const query = this.getTransactionQuery(limitOffsetEnabled, true)
 
-        console.log(query)
+        // console.log(query)
         const stmt = this.db.db.prepare(query);
         let rows = stmt.all(this.getParams(limitOffsetEnabled));
 

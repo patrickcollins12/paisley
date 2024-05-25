@@ -5,64 +5,69 @@ const FileMover = require('./FileMover');
 const RulesClassifier = require('./RulesClassifier');
 
 class TransactionFileProcessor {
-  constructor() {
-    this.parsers = {};
-    this.parseResultsBatch = [];
-    this.classifier = new RulesClassifier();
-  }
-
-  async start() {
-    const csvParserFactory = await this.initializeCsvParserFactory();
-
-    if (!config.csv_watch) {
-      throw new Error('csv_watch configuration is required');
-    }
-    if (!config.csv_processed) {
-      throw new Error('csv_processed configuration is required');
+    constructor() {
+        this.parsers = {};
+        this.parseResultsBatch = [];
+        this.classifier = new RulesClassifier();
     }
 
-    const watchDir = config.csv_watch;
-    const processedDir = config.csv_processed;
+    async start() {
+        const csvParserFactory = await this.initializeCsvParserFactory();
 
-    const processFile = async (file) => {
-      try {
-        const csvParser = await csvParserFactory.chooseParser(file);
-        let parseResults = await csvParser.parse(file);
-
-        if (parseResults.isSuccess()) {
-          await FileMover.moveFile(watchDir, file, processedDir);
+        if (!config.csv_watch) {
+            throw new Error('csv_watch configuration is required');
         }
-        this.parseResultsBatch.push(parseResults);
-      } catch (error) {
-        console.error("Error processing file:", error);
-      }
-    };
+        if (!config.csv_processed) {
+            throw new Error('csv_processed configuration is required');
+        }
 
-    const fileWatcher = new FileWatcher(processFile, this.finishedBatchOfFiles.bind(this));
+        const watchDir = config.csv_watch;
+        const processedDir = config.csv_processed;
 
-    fileWatcher.startWatching(watchDir, processedDir);
-    console.log("Watching for CSV files");
+        const processFile = async (file) => {
+            try {
+                const csvParser = await csvParserFactory.chooseParser(file);
+                let parseResults = await csvParser.parse(file);
 
-    return this;
-  }
+                if (parseResults.isSuccess()) {
+                    await FileMover.moveFile(watchDir, file, processedDir);
+                }
+                this.parseResultsBatch.push(parseResults);
+            } catch (error) {
+                console.error("Error processing file:", error);
+            }
+        };
 
-  async initializeCsvParserFactory() {
-    const csvParserFactory = new CSVParserFactory();
-    await csvParserFactory.loadParsers();
-    return csvParserFactory;
-  }
+        const fileWatcher = new FileWatcher(processFile, this.finishedBatchOfFiles.bind(this));
 
-  // After some seconds have elapsed, after parsing a batch of files
-  // then at that point we want to call the classifier.
-  async finishedBatchOfFiles() {
-    let insertedIds = this.parseResultsBatch.map(result => result.inserted_ids).flat();
-    // CLASSIFY THE RECENTLY ADDED TRANSACTIONS
-    console.log("Starting classification");
-    this.classifier.applyAllRules(insertedIds);
-    console.log(`Finished processing batch of ${insertedIds.length}`);
+        fileWatcher.startWatching(watchDir, processedDir);
+        console.log("Watching for CSV files");
 
-    this.parseResultsBatch = [];
-  }
+        return this;
+    }
+
+    async initializeCsvParserFactory() {
+        const csvParserFactory = new CSVParserFactory();
+        await csvParserFactory.loadParsers();
+        return csvParserFactory;
+    }
+
+    // After some seconds have elapsed, after parsing a batch of files
+    // then at that point we want to call the classifier.
+    async finishedBatchOfFiles() {
+        let insertedIds = this.parseResultsBatch.map(result => result.inserted_ids).flat();
+        for (const pr of this.parseResultsBatch) {
+            await pr.print()
+        }
+
+        // CLASSIFY THE RECENTLY ADDED TRANSACTIONS
+        console.log("Starting classification");
+        this.classifier.applyAllRules(insertedIds);
+        console.log(`Finished processing batch of ${insertedIds.length}`);
+        // console.log(`Batch details:\n${JSON.stringify(this.parseResultsBatch, null, "\t")}`);
+
+        this.parseResultsBatch = [];
+    }
 }
 
 module.exports = TransactionFileProcessor;
