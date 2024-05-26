@@ -32,20 +32,20 @@ router.get('/rules', JWTAuthenticator.authenticateToken,
 
 router.get('/rerun_rules', JWTAuthenticator.authenticateToken,
   async (req, res) => {
-    config.load()
+    // config.load()
     let db = new BankDatabase();
     let query = "SELECT * from rule order by id desc";
 
-    
+
     try {
 
       let classifier = new RulesClassifier();
-      console.log("ready to classify")
+      console.log("Starting full classification")
       classifier.applyAllRules()
-      console.log("Finished processing");
+      console.log("   Finished processing");
 
       res.json("finished processing");
-      
+
     } catch (err) {
       console.log("error: ", err.message);
       res.status(400).json({ "error": err.message });
