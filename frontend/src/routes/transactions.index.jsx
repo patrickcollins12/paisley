@@ -1,0 +1,36 @@
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import Joi from 'joi'
+
+import { pageSizeOptions } from "@/components/data-table/Pagination.jsx"
+import TransactionPage from "@/transactions/TransactionPage.jsx"
+import { createAuthenticatedFileRoute } from "@/auth/RouteHelpers.jsx"
+
+/*
+ Setup JOI based schema for validating search parameters
+ Page must be a positive number.
+ Page size must be a positive number based on the size options in our pagination.
+ Filter must be a string (probably need some more validation)
+ Order By must be a string that matches the pattern <column name>,<sort order>
+ JOI: https://joi.dev/
+*/
+const schema = Joi.object({
+  page: Joi.number().greater(0).default(1),
+  page_size: Joi.number().valid(...pageSizeOptions.map(x => x.key)).default(100),
+  description: Joi.string().optional(),
+  order_by: Joi.string().optional().pattern(/^[a-z]*,(asc|desc)$/)
+});
+
+export const Route = createAuthenticatedFileRoute('/transactions/',{
+  component: TransactionPage,
+  validateSearch: search => {
+    const { error, value: validatedSearch } = schema.validate(search);
+    if (error) {
+      console.error('Error validating search params', error);
+      return {
+        page: 1,
+        page_size: pageSizeOptions[0].key
+      }
+    }
+    return validatedSearch;
+  }
+});
