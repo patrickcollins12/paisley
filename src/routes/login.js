@@ -1,4 +1,5 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const UserManager = require('../UserManager.js');
@@ -6,7 +7,17 @@ const jwt = require('jsonwebtoken');
 
 const config = require('../Config');
 
-router.post('/login', [
+// Set up rate limiter: maximum of five requests per minute
+const loginLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 5, // limit each IP to 5 requests per windowMs
+    message: {
+        success: false,
+        message: "Too many login attempts from this IP, please try again after a minute"
+    }
+});
+
+router.post('/login', loginLimiter, [
     body('username').isString().trim().notEmpty().withMessage('Username is required'),
     body('password').isString().trim().notEmpty().withMessage('Password is required')
 ], async (req, res) => {
