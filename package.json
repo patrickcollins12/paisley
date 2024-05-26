@@ -1,0 +1,17 @@
+{
+    "name": "paisley",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+      "frontend",
+      "backend"
+    ],
+    "scripts": {
+      "start:frontend": "npm run dev --prefix frontend",
+      "start:backend": "npm run start --prefix backend",
+      "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\""
+    },
+    "devDependencies": {
+      "concurrently": "^6.2.1"
+    }
+  }
