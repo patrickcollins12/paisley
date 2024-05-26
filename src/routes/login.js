@@ -4,6 +4,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const UserManager = require('../UserManager.js');
 const jwt = require('jsonwebtoken');
+var util = require('util')
 
 const config = require('../Config');
 
@@ -11,6 +12,11 @@ const config = require('../Config');
 const loginLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 5, // limit each IP to 5 requests per windowMs
+    handler: (req, res, next, options) => {
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || null;
+        console.log(`Login rate limit reached. From IP: ${ip}. Message: ${JSON.stringify(options.message)}.`)
+        res.status(options.statusCode).send(options.message)
+    },
     message: {
         success: false,
         message: "Too many login attempts from this IP, please try again after a minute"
