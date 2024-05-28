@@ -4,7 +4,7 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
 const JWTAuthenticator = require('../JWTAuthenticator');
 
-router.get('/parties', JWTAuthenticator.authenticateToken, async (req, res) => {
+router.get('/api/parties', JWTAuthenticator.authenticateToken, async (req, res) => {
   let db = new BankDatabase();
   let query = `
       SELECT DISTINCT json_each.value 
@@ -37,7 +37,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /parties:
+ * /api/parties:
  *   get:
  *     summary: Retrieves a list of distinct parties from all transactions
  *     description: This endpoint returns an array of distinct parties from the transactions database, sorted alphabetically.

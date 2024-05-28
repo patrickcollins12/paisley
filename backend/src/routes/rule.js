@@ -7,7 +7,7 @@ const RuleToSqlParser = require('../RuleToSqlParser');
 const JWTAuthenticator = require('../JWTAuthenticator');
 
 // Retrieve a specific rule by ID
-router.get('/rule/:id', JWTAuthenticator.authenticateToken,
+router.get('/api/rule/:id', JWTAuthenticator.authenticateToken,
     async (req, res) => {
         const db = new BankDatabase().db;
         const id = req.params.id;
@@ -23,7 +23,7 @@ router.get('/rule/:id', JWTAuthenticator.authenticateToken,
     });
 
 // Create a new rule
-router.post('/rule', async (req, res) => {
+router.post('/api/rule', async (req, res) => {
     const db = new BankDatabase().db;
     const { rule, group, tag, party, comment } = req.body;
 
@@ -49,7 +49,7 @@ router.post('/rule', async (req, res) => {
 });
 
 // Update a specific rule by ID
-router.patch('/rule/:id', async (req, res) => {
+router.patch('/api/rule/:id', async (req, res) => {
     const db = new BankDatabase().db;
     const id = req.params.id;
     const { rule, group, tag, party, comment } = req.body;
@@ -89,7 +89,7 @@ router.patch('/rule/:id', async (req, res) => {
 });
 
 // Delete a specific rule by ID
-router.delete('/rule/:id', async (req, res) => {
+router.delete('/api/rule/:id', async (req, res) => {
     const db = new BankDatabase().db;
     const id = req.params.id;
 
@@ -110,7 +110,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /rule/{id}:
+ * /api/rule/{id}:
  *   get:
  *     summary: Retrieves a specific rule by ID
  *     description: Fetch a single rule by its ID.

@@ -17,7 +17,7 @@ const JWTAuthenticator = require('../JWTAuthenticator');
 //
 // update swagger docs
 // add a "search" which searches all fields
-router.get('/transactions', JWTAuthenticator.authenticateToken, async (req, res) => {
+router.get('/api/transactions', JWTAuthenticator.authenticateToken, async (req, res) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -57,7 +57,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /transactions:
+ * /api/transactions:
  *   get:
  *     summary: Retrieve a list of transactions
  *     description: >

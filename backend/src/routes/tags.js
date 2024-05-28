@@ -5,7 +5,7 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const JWTAuthenticator = require('../JWTAuthenticator');
 // router.use(JWTAuthenticator.authenticateToken);
 
-router.get('/tags', JWTAuthenticator.authenticateToken, async (req, res) => {
+router.get('/api/tags', JWTAuthenticator.authenticateToken, async (req, res) => {
   let db = new BankDatabase();
   let query = `
       SELECT DISTINCT json_each.value 
@@ -33,7 +33,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /tags:
+ * /api/tags:
  *   get:
  *     summary: Retrieves a list of distinct tags from all transactions
  *     description: This endpoint returns an array of distinct tags from the transactions database, sorted alphabetically.

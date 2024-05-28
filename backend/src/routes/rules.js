@@ -6,7 +6,7 @@ const config = require('../Config');
 
 const JWTAuthenticator = require('../JWTAuthenticator');
 
-router.get('/rules', JWTAuthenticator.authenticateToken,
+router.get('/api/rules', JWTAuthenticator.authenticateToken,
   async (req, res) => {
     let db = new BankDatabase();
     let query = "SELECT * from rule order by id desc";
@@ -30,7 +30,7 @@ router.get('/rules', JWTAuthenticator.authenticateToken,
 
   });
 
-router.get('/rerun_rules', JWTAuthenticator.authenticateToken,
+router.get('/api/rerun_rules', JWTAuthenticator.authenticateToken,
   async (req, res) => {
     // config.load()
     let db = new BankDatabase();
@@ -57,7 +57,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /rules:
+ * /api/rules:
  *   get:
  *     summary: Retrieves all the transaction rules
  *     description: This endpoint returns a list of all transaction rules stored in the database, including their tags and related parties.
@@ -106,7 +106,7 @@ module.exports = router;
  *                 error:
  *                   type: string
  *                   example: "Error message describing the specific issue."
- * /rerun_rules:
+ * /api/rerun_rules:
  *   get:
  *     summary: Rerun all transaction rules
  *     description: This endpoint triggers the reclassification of all transactions based on the current set of rules.

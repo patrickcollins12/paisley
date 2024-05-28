@@ -23,7 +23,7 @@ const loginLimiter = rateLimit({
     }
 });
 
-router.post('/login', loginLimiter, [
+router.post('/api/login', loginLimiter, [
     body('username').isString().trim().notEmpty().withMessage('Username is required'),
     body('password').isString().trim().notEmpty().withMessage('Password is required')
 ], async (req, res) => {
@@ -58,7 +58,7 @@ module.exports = router;
 
 /**
  * @openapi
- * /login:
+ * /api/login:
  *   post:
  *     summary: Log in a user with their credentials
  *     tags:

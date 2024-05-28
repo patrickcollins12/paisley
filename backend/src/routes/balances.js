@@ -4,7 +4,7 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
 const JWTAuthenticator = require('../JWTAuthenticator');
 
-router.get('/balances', JWTAuthenticator.authenticateToken, async (req, res) => {
+router.get('/api/balances', JWTAuthenticator.authenticateToken, async (req, res) => {
   let db = new BankDatabase();
   let query = `select a.*, l.account, t.balance, l.latest_balance_date from 
   account a

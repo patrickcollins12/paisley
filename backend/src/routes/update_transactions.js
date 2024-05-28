@@ -6,7 +6,7 @@ const RulesClassifier = require('../RulesClassifier');
 
 const JWTAuthenticator = require('../JWTAuthenticator');
 
-router.post('/update_transaction', JWTAuthenticator.authenticateToken, [
+router.post('/api/update_transaction', JWTAuthenticator.authenticateToken, [
   // Validate and sanitize the ID
   body('id').trim().isLength({ min: 1 }).withMessage('ID is required.'),
   // Make 'tags' optional but validate if provided
@@ -99,7 +99,7 @@ module.exports = router;
 
 /**
  * @swagger
- * /update_transaction:
+ * /api/update_transaction:
  *   post:
  *     summary: Updates the details of an existing transaction including optional auto categorization
  *     description: >

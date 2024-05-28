@@ -3,15 +3,23 @@
     "version": "1.0.0",
     "private": true,
     "workspaces": [
-      "frontend",
-      "backend"
+        "frontend",
+        "backend"
     ],
     "scripts": {
-      "start:frontend": "npm run dev --prefix frontend",
-      "start:backend": "npm run start --prefix backend",
-      "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\""
+        "start:frontend": "npm run start --prefix frontend",
+        "start:backend": "npm run start --prefix backend",
+        "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+
+        "dev:frontend": "npm run dev --prefix frontend",
+        "dev:backend": "npm run dev --prefix backend",
+        "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\""
+
     },
     "devDependencies": {
-      "concurrently": "^6.2.1"
+        "concurrently": "^6.2.1",
+        "nodemon": "^3.1.1"
     }
-  }
+}
+
+
