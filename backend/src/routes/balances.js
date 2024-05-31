@@ -35,3 +35,56 @@ router.get('/api/balances', JWTAuthenticator.authenticateToken, async (req, res)
 });
 
 module.exports = router;
+
+
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Balance:
+ *       type: object
+ *       properties:
+ *         account:
+ *           type: string
+ *           description: The account identifier
+ *         balance:
+ *           type: number
+ *           description: The current balance of the account
+ *         latest_balance_date:
+ *           type: string
+ *           format: date-time
+ *           description: The date and time of the latest balance update
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Balances
+ *   description: API for managing bank balances
+ * /api/balances:
+ *   get:
+ *     summary: Get all account balances
+ *     tags: [Balances]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: The list of account balances
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               additionalProperties:
+ *                 $ref: '#/components/schemas/Balance'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message
+ */
