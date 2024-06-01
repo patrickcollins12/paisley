@@ -3,21 +3,9 @@ import { PlusCircleIcon, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList
-} from "@/components/ui/command.jsx"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+
+import { ReactSelect } from '@/components/ReactSelect';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 function AccountFilter() {
   const { data, error, isLoading } = useAccountData();

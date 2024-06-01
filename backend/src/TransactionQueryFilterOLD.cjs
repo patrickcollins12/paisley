@@ -1,4 +1,6 @@
-class TransactionQueryFilter {
+    // We deprecated this in favor of using rule= or s=
+
+class TransactionQueryFilterOLD {
 
     constructor(filterObj) {
         this.filter = filterObj
