@@ -19,7 +19,7 @@ export default function DateFilter({ className }) {
     const clearDates = (e) => {
         setDate(null);
         setSelectedPeriod("");
-        // e.stopPropagation();
+        e.stopPropagation();
     };
 
     const handleSelectChange = (value) => {
