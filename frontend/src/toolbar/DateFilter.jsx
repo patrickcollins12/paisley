@@ -6,7 +6,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { ChevronDown, X } from "lucide-react";
@@ -19,7 +19,7 @@ export default function DateFilter({ className }) {
     const clearDates = (e) => {
         setDate(null);
         setSelectedPeriod("");
-        e.stopPropagation();
+        // e.stopPropagation();
     };
 
     const handleSelectChange = (value) => {
@@ -164,12 +164,12 @@ export default function DateFilter({ className }) {
                     <Button
                         id="date"
                         size="sm"
-                        variant={date ? "selected" : "ghost"}
+                        variant={(date?.from||date?.to) ? "selected" : "ghost"}
                         className={cn("h-8 justify-start text-left font-normal")}
                     >
                         <div className="flex flex-row gap-2 font-semibold items-center">
                             {renderDateButtonText()}
-                            {date ? (
+                            {(date?.from||date?.to) ? (
                                 <span className="text-slate-500 hover:text-black dark:hover:text-white">
                                     <X size={16} onClick={clearDates} />
                                 </span>
@@ -182,7 +182,7 @@ export default function DateFilter({ className }) {
                 <PopoverContent className="w-auto" align="start">
 
                     <Select value={pickerMode} onValueChange={handleSelectChange}>
-                        <SelectTrigger className="border-0 text-xs mb-3 w-auto inline-flex">
+                        <SelectTrigger className="border-0 text-xs w-auto inline-flex">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -207,24 +207,36 @@ export default function DateFilter({ className }) {
                                 onSelect={handleDateSelect}
                                 numberOfMonths={1}
                             />
+                            <div className="flex flex-row gap-3 justify-end">
+                                    <Button size="sm" variant="secondary" onClick={clearDates}><PopoverClose>Clear</PopoverClose></Button>
+                                    <Button size="sm" ><PopoverClose>Select</PopoverClose></Button>
+                                
+                            </div>
+
                         </div>
                         <div className="mx-3 gap-0 flex flex-col text-xs flex-grow">
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('last7days', 'Last 7 days')}>Last 7 days</div>
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('last1month', 'Last 1 month')}>Last 1 month</div>
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('last3months', 'Last 3 months')}>Last 3 months</div>
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('last12months', 'Last 12 months')}>Last 12 months</div>
-                            <div className="h-2"></div>
+                            <PopoverClose className="text-left">
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('last7days', 'Last 7 days')}>Last 7 days</div>
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('last1month', 'Last 1 month')}>Last 1 month</div>
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('last3months', 'Last 3 months')}>Last 3 months</div>
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('last12months', 'Last 12 months')}>Last 12 months</div>
+                                <div className="h-2"></div>
 
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('thisMonth', 'This month')}>This month</div>
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('thisYear', 'This year')}>This year</div>
-                            <div className="h-2"></div>
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('thisMonth', 'This month')}>This month</div>
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('thisYear', 'This year')}>This year</div>
+                                <div className="h-2"></div>
 
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('lastWeek', 'Last week')}>Last week</div>
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('lastMonth', 'Last month')}>Last month</div>
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('lastQuarter', 'Last quarter')}>Last quarter</div>
-                            <div className={dateRangeClasses} onClick={() => setRelativeDateRange('lastYear', 'Last year')}>Last year</div>
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('lastWeek', 'Last week')}>Last week</div>
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('lastMonth', 'Last month')}>Last month</div>
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('lastQuarter', 'Last quarter')}>Last quarter</div>
+                                <div className={dateRangeClasses} onClick={() => setRelativeDateRange('lastYear', 'Last year')}>Last year</div>
+
+                            </PopoverClose>
                         </div>
+
                     </div>
+
+
                 </PopoverContent>
             </Popover>
         </div>
