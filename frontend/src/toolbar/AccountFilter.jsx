@@ -1,4 +1,4 @@
-import { X, ChevronDown } from "lucide-react"
+import { X, ChevronDown, Landmark } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
 import React, { useState, useEffect } from 'react';
@@ -116,16 +116,18 @@ function AccountFilter() {
   }
 
   function renderButtonLabel(label) {
+    const icon = (<Landmark className="h-4 w-4 mr-2" />);
 
     if (pickerMode === "isblank") {
-      return (<><span className="opacity-40">Account&nbsp;</span>is blank </>)
+      return (<>{icon}<span className="opacity-40">Account&nbsp;</span>is blank </>)
     }
     else if (pickerMode === "isnotblank") {
-      return (<><span className="opacity-40">Account&nbsp;</span> is not blank</>)
+      return (<>{icon}<span className="opacity-40">Account&nbsp;</span> is not blank</>)
     }
     else if ((pickerMode === "is" || pickerMode === "isanyof" || pickerMode === "isnotanyof") && optionCount) {
       return (
         <>
+          {icon}
           <span className="opacity-40 pr-2">{label}</span>
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-black bg-opacity-30 dark:bg-opacity-30">
             {optionCount}
@@ -170,7 +172,6 @@ function AccountFilter() {
 
   // TODO add onKeyDown escape propagates all the way up to close the popover
   return (
-
     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
       <PopoverTrigger asChild>
         {renderButtonShell("Account")}

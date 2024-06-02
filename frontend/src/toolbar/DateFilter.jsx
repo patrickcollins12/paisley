@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import { Calendar as CalendarIcon } from "lucide-react";
 
@@ -15,10 +15,15 @@ export default function DateFilter({ className }) {
     const [date, setDate] = useState();
     const [pickerMode, setPickerMode] = useState("after");
     const [selectedPeriod, setSelectedPeriod] = useState("");
+    const [popoverOpen, setPopoverOpen] = useState(false);
+    const [isFilterActive, setIsFilterActive] = useState(false);
 
-    const clearDates = (e) => {
+    const clearSelected = (e) => {
         setDate(null);
         setSelectedPeriod("");
+        setIsFilterActive(false)
+        saveValues({})
+        setPopoverOpen(false)
         e.stopPropagation();
     };
 
@@ -35,6 +40,16 @@ export default function DateFilter({ className }) {
         setSelectedPeriod("");
     };
 
+    const filterPressed = () => {
+        setPopoverOpen(false)
+        setIsFilterActive(true)
+        saveValues()
+    }
+
+    const saveValues = (obj) => {
+        console.log(`Saved: pickerMode ${pickerMode}, date ${JSON.stringify(obj ? obj : date)}`)
+    }
+
     const formatDate = (date) => {
         return date.year === DateTime.now().year ? date.toFormat("LLL dd") : date.toFormat("LLL dd, yyyy");
     };
@@ -45,43 +60,6 @@ export default function DateFilter({ className }) {
             return date1.toFormat("LLL dd") + " - " + date2.toFormat("LLL dd");
         } else {
             return date1.toFormat("LLL dd, yyyy") + " - " + date2.toFormat("LLL dd, yyyy");
-        }
-    };
-
-    const renderDateButtonText = () => {
-        const calIcon = (<CalendarIcon className="h-4 w-4" />);
-
-        if (selectedPeriod) {
-            return (
-                <>
-                    {calIcon}
-                    <span>{selectedPeriod}</span>
-                </>
-            );
-        }
-        if (!date?.from && !date?.to) {
-            return <span>Date</span>;
-        }
-        if (date?.from && date?.to) {
-            return (
-                <>
-                    {calIcon} {formatTwoDates(date.from, date.to)}
-                </>
-            );
-        }
-        if (date?.from) {
-            return (
-                <>
-                    {calIcon} &gt;&nbsp; {formatDate(date.from)}
-                </>
-            );
-        }
-        if (date?.to) {
-            return (
-                <>
-                    {calIcon} &lt;&nbsp; {formatDate(date.to)}
-                </>
-            );
         }
     };
 
@@ -147,37 +125,92 @@ export default function DateFilter({ className }) {
                 to = now.minus({ years: 1 }).endOf('year');
                 break;
             default:
+                console.log("PANIC: food fight!")
                 from = null;
                 to = null;
         }
 
-        setDate({ from, to });
+        setIsFilterActive(true)
         setSelectedPeriod(periodName);
+        setPopoverOpen(false)
+        setDate({ from, to });
+        saveValues({ from, to })
     };
+
+
+    const renderButtonLabel = (label) => {
+        const calIcon = (<CalendarIcon className="h-4 w-4 mr-2" />);
+
+        if (!isFilterActive) {
+            return (
+                <span>{label}</span>
+            );
+        } else {
+            if (selectedPeriod) {
+                return (
+                    <>{calIcon}<span>{selectedPeriod}</span></>
+                );
+            }
+            if (!date?.from && !date?.to) {
+                return (
+                    <span>{label}</span>
+                );
+            }
+            if (date?.from && date?.to) {
+                return (
+                    <> {calIcon} {formatTwoDates(date.from, date.to)} </>
+                );
+            }
+            if (date?.from) {
+                return (
+                    <> {calIcon} &gt;&nbsp; {formatDate(date.from)}</>
+                );
+            }
+            if (date?.to) {
+                return (
+                    <> {calIcon} &lt;&nbsp; {formatDate(date.to)} </>
+                );
+            }
+        }
+    };
+
+    function renderButtonShell(label) {
+        return (
+
+            <Button
+                id={label} size='sm'
+                variant={isFilterActive ? "selected" : "ghost"}
+                className="h-8 pl-3 pr-0 py-3 justify-start text-left font-normal">
+                <div className="flex flex-row font-semibold items-center">
+                    <>
+                        {isFilterActive ? (
+                            <>
+                                {renderButtonLabel(label)}
+                                <span onClick={clearSelected} className="p-2 text-slate-500 hover:text-black dark:hover:text-white">
+                                    <X size={16} />
+                                </span>
+                            </>
+                        ) : (
+                            <span className="inline-flex gap-2 pr-2 items-center">
+                                {label}
+                                <ChevronDown size={16} />
+                            </span>
+                        )}
+                    </>
+
+                </div>
+            </Button>
+        )
+    }
 
     const dateRangeClasses = "px-2 py-0 h-7 m-0 hover:bg-slate-100 dark:hover:bg-slate-900 justify-start";
 
     return (
         <div className={cn("grid gap-2", className)}>
-            <Popover>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger asChild>
-                    <Button
-                        id="date"
-                        size="sm"
-                        variant={(date?.from || date?.to) ? "selected" : "ghost"}
-                        className={cn("h-8 justify-start text-left font-normal")}
-                    >
-                        <div className="flex flex-row gap-2 font-semibold items-center">
-                            {renderDateButtonText()}
-                            {(date?.from || date?.to) ? (
-                                <span className="text-slate-500 hover:text-black dark:hover:text-white">
-                                    <X size={16} onClick={clearDates} />
-                                </span>
-                            ) : (
-                                <ChevronDown size={16} />
-                            )}
-                        </div>
-                    </Button>
+                    { renderButtonShell("Date") }
+
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-4" align="start">
 
@@ -209,12 +242,12 @@ export default function DateFilter({ className }) {
                                 numberOfMonths={1}
                             />
                             <div className="flex flex-row gap-3 justify-end">
-                                <Button size="sm" variant="secondary" onClick={clearDates}><PopoverClose>Clear</PopoverClose></Button>
-                                <div className="justify-end"><Button size="sm" ><PopoverClose>Select</PopoverClose></Button></div>
+                                <Button size="sm" variant="secondary" onClick={clearSelected}>Clear</Button>
+                                <Button size="sm" onClick={filterPressed}>Select</Button>
                             </div>
 
                         </div>
-                        <PopoverClose className="flex flex-col mx-3 gap-0">
+                        <div className="flex flex-col mx-3 gap-0">
                             <Button size="sm" variant={selectedPeriod === 'Last 7 days' ? "selected" : "ghost"} className={dateRangeClasses} onClick={() => setRelativeDateRange('last7days', 'Last 7 days')}>Last 7 days</Button>
                             <Button size="sm" variant={selectedPeriod === 'Last 1 month' ? "selected" : "ghost"} className={dateRangeClasses} onClick={() => setRelativeDateRange('last1month', 'Last 1 month')}>Last 1 month</Button>
                             <Button size="sm" variant={selectedPeriod === 'Last 3 months' ? "selected" : "ghost"} className={dateRangeClasses} onClick={() => setRelativeDateRange('last3months', 'Last 3 months')}>Last 3 months</Button>
@@ -229,7 +262,7 @@ export default function DateFilter({ className }) {
                             <Button size="sm" variant={selectedPeriod === 'Last month' ? "selected" : "ghost"} className={dateRangeClasses} onClick={() => setRelativeDateRange('lastMonth', 'Last month')}>Last month</Button>
                             <Button size="sm" variant={selectedPeriod === 'Last quarter' ? "selected" : "ghost"} className={dateRangeClasses} onClick={() => setRelativeDateRange('lastQuarter', 'Last quarter')}>Last quarter</Button>
                             <Button size="sm" variant={selectedPeriod === 'Last year' ? "selected" : "ghost"} className={dateRangeClasses} onClick={() => setRelativeDateRange('lastYear', 'Last year')}>Last year</Button>
-                        </PopoverClose>
+                        </div>
 
                     </div>
 
