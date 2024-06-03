@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ReactSelect } from '@/components/ReactSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-function AccountFilter() {
+function AccountFilter({ dataTable }) {
   const { data, error, isLoading } = useAccountData()
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [optionCount, setOptionCount] = useState(0);
@@ -47,13 +47,23 @@ function AccountFilter() {
 
   }, [selectedOptions]);
 
-    // when isFilterActive changes
+  // when isFilterActive changes
   useEffect(() => {
     saveValues()
   }, [isFilterActive]);
 
+  const saveValues = () => {
+    const vals = _retrieveSelectedValues()
 
-  const saveValues = () => { 
+    if (pickerMode === "is") {
+      if (vals.length > 0) {
+        const val = vals[0]
+        console.log(`Setting account to ${val}`)
+        dataTable.getColumn('account').setFilterValue(val);
+      }
+
+    }
+
     console.log(`Saving: isFilterActive: ${isFilterActive}, pickerMode: \"${pickerMode}\", selectedOptions: ${JSON.stringify(_retrieveSelectedValues())}`)
   }
 
@@ -69,7 +79,7 @@ function AccountFilter() {
       setPopoverOpen(false)
       // saveSelected()
     }
-    
+
   };
 
 
@@ -189,9 +199,9 @@ function AccountFilter() {
                 <SelectItem value="isanyof">Is any of</SelectItem>
                 <SelectItem value="isnotanyof">Is not any of</SelectItem>
 
-                <SelectItem value="contains">Contains</SelectItem>
+                {/* <SelectItem value="contains">Contains</SelectItem>
                 <SelectItem value="startsWith">Starts With</SelectItem>
-                <SelectItem value="regex">Regex</SelectItem>
+                <SelectItem value="regex">Regex</SelectItem> */}
 
                 <SelectItem value="isblank">Is Blank</SelectItem>
                 <SelectItem value="isnotblank">Is Not Blank</SelectItem>

@@ -16,17 +16,8 @@ function Toolbar({ dataTable }) {
 
         <DescriptionFilter dataTable={dataTable} />
 
-        <Button variant='selected' size='sm' className="h-8">
-          <div className="flex flex-row gap-2 items-center">
-            <div className=" ">
-              <span className="opacity-40">Description </span>
-              Chemist
-            </div>  
-            <X size={16} className='opacity-50' />
-          </div>
-        </Button>
 
-        {/* 
+{/*         
         <Button variant='secondary' size='sm' className='h-8 bg-blue-200 hover:bg-blue-300 dark:bg-sky-900 font-semibold'>
           <div className="flex flex-row gap-2 items-center">
             <div className=" ">
@@ -45,28 +36,17 @@ function Toolbar({ dataTable }) {
             </div>
             <X size={16} className='opacity-50' />
           </div>
-        </Button>
-
-        <Button variant='secondary' size='sm' className='h-8 bg-blue-200 hover:bg-blue-300 dark:bg-sky-900 font-semibold'>
-          <div className="flex flex-row gap-2 items-center">
-            <div>
-              <span className="opacity-40">Description </span>
-              is blank
-            </div>
-            <X size={16} className='opacity-50' />
-          </div>
-        </Button>
-
-        <Button variant='secondary' size='sm' className='h-8 bg-blue-200 hover:bg-blue-300 dark:bg-sky-900 font-semibold'>
-          <div className="flex flex-row gap-2 items-center">
-            <div>
-              <span className="opacity-40">Description </span>
-              not blank
-            </div>
-            <X size={16} className='opacity-50' />
-          </div>
         </Button> */}
 
+        <Button variant='selected' size='sm' className="h-8">
+          <div className="flex flex-row gap-2 items-center">
+            <div className=" ">
+              <span className="opacity-40">Description </span>
+              Chemist
+            </div>
+            <X size={16} className='opacity-50' />
+          </div>
+        </Button>
 
         <DateFilter dataTable={dataTable} />
         <AccountFilter dataTable={dataTable} />
