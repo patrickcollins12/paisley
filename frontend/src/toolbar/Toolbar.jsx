@@ -17,7 +17,7 @@ function Toolbar({ dataTable }) {
         <DescriptionFilter dataTable={dataTable} />
 
 
-{/*         
+        {/*         
         <Button variant='secondary' size='sm' className='h-8 bg-blue-200 hover:bg-blue-300 dark:bg-sky-900 font-semibold'>
           <div className="flex flex-row gap-2 items-center">
             <div className=" ">
@@ -39,12 +39,14 @@ function Toolbar({ dataTable }) {
         </Button> */}
 
         <Button variant='selected' size='sm' className="h-8">
-          <div className="flex flex-row gap-2 items-center">
+          <div className="flex flex-row items-center">
             <div className=" ">
               <span className="opacity-40">Description </span>
               Chemist
             </div>
-            <X size={16} className='opacity-50' />
+            <span className="p-2 text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white">
+              <X size={16} />
+            </span>
           </div>
         </Button>
 
@@ -52,17 +54,16 @@ function Toolbar({ dataTable }) {
         <AccountFilter dataTable={dataTable} />
 
         <Button variant='selected' size='sm' className="h-8">
-          <div className="flex flex-row gap-2 items-center">
+          <div className="flex flex-row items-center">
             <div className="">
               <span className="opacity-40">Amount </span>
               &lt;$50</div>
 
-            <X size={16} className='opacity-50' />
-
+            <span className="p-2 text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white">
+              <X size={16} />
+            </span>
           </div>
         </Button>
-
-
 
         <Button variant='ghost' size='sm' className='h-8'>
           <div className="flex flex-row gap-2 items-center">

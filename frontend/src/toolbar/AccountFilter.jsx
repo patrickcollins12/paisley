@@ -139,7 +139,7 @@ function AccountFilter({ dataTable }) {
         <>
           {icon}
           <span className="opacity-40 pr-2">{label}</span>
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-black bg-opacity-30 dark:bg-opacity-30">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-black bg-opacity-60 dark:bg-opacity-30">
             {optionCount}
           </span>
         </>
@@ -163,7 +163,7 @@ function AccountFilter({ dataTable }) {
             {isFilterActive ? (
               <>
                 {renderButtonLabel(label)}
-                <span onClick={clearSelected} className="p-2 text-slate-500 hover:text-black dark:hover:text-white">
+                <span onClick={clearSelected} className="p-2 text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white">
                   <X size={16} />
                 </span>
               </>
