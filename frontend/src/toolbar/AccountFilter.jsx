@@ -1,11 +1,14 @@
-import { X, ChevronDown, Landmark } from "lucide-react"
+import { Landmark } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
 
 import { ReactSelect } from '@/components/ReactSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import FilterButton from "./FilterButton.jsx"
+// import FilterButton from './FilterButton'; // Adjust the path as necessary
 
 function AccountFilter({ dataTable }) {
   const { data, error, isLoading } = useAccountData()
@@ -21,6 +24,7 @@ function AccountFilter({ dataTable }) {
     if (pickerMode === "isblank" || pickerMode === "isnotblank") {
       setIsFilterActive(true)
       setPopoverOpen(false)
+      saveValues(`From ${pickerMode}`)
     }
     if (pickerMode === "isanyof" || pickerMode === "isnotanyof") {
       setIsFilterActive(false)
@@ -34,37 +38,20 @@ function AccountFilter({ dataTable }) {
 
   }, [pickerMode]);
 
-  // when selectedOptions changes by React Select
+
+  // When using react-select we need to listen to and capture the Escape.
   useEffect(() => {
-    let save = false
-    if (pickerMode === "isanyof" || pickerMode === "isnotanyof") {
-      if (isFilterActive) save = true
-    } else {
-      save = true
-    }
+    const handleEscape = (event) => event.key === 'Escape' && setPopoverOpen(false);
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [popoverOpen]);
 
-    if (save) saveValues()
 
-  }, [selectedOptions]);
-
-  // when isFilterActive changes
-  useEffect(() => {
-    saveValues()
-  }, [isFilterActive]);
-
-  const saveValues = () => {
+  const saveValues = (source) => {
     const vals = _retrieveSelectedValues()
 
-    if (pickerMode === "is") {
-      if (vals.length > 0) {
-        const val = vals[0]
-        console.log(`Setting account to ${val}`)
-        dataTable.getColumn('account').setFilterValue(val);
-      }
-
-    }
-
-    console.log(`Saving: isFilterActive: ${isFilterActive}, pickerMode: \"${pickerMode}\", selectedOptions: ${JSON.stringify(_retrieveSelectedValues())}`)
+    console.log(`Saving from ${source}`)
+    // : isFilterActive: ${isFilterActive}, pickerMode: \"${pickerMode}\", selectedOptions: ${JSON.stringify(_retrieveSelectedValues())}`)
   }
 
   const handleReactSelectChange = (selected) => {
@@ -77,6 +64,7 @@ function AccountFilter({ dataTable }) {
     if (pickerMode === "is" && itemCount > 0) {
       setIsFilterActive(true)
       setPopoverOpen(false)
+      saveValues(`Single value save ${JSON.stringify(_retrieveSelectedValues(selected))}`)
       // saveSelected()
     }
 
@@ -92,12 +80,14 @@ function AccountFilter({ dataTable }) {
     _clearValues()
     setIsFilterActive(false)
     setPopoverOpen(false)
+    saveValues("cleared")
     e.stopPropagation();
   };
 
   const saveSelections = () => {
     setIsFilterActive(optionCount > 0 ? true : false)
     setPopoverOpen(false)
+    saveValues(`From multi-select filter ${JSON.stringify(_retrieveSelectedValues())}`)
   }
 
   // When changing between modes
@@ -117,11 +107,12 @@ function AccountFilter({ dataTable }) {
     }
   }, [data]);
 
-  const _retrieveSelectedValues = () => {
-    if (Array.isArray(selectedOptions)) {
-      return selectedOptions.map(obj => obj.value);
+  const _retrieveSelectedValues = (selected) => {
+    const s = (selected) ? selected : selectedOptions
+    if (Array.isArray(s)) {
+      return s.map(obj => obj.value);
     } else {
-      return [selectedOptions?.value]
+      return [s?.value]
     }
   }
 
@@ -150,41 +141,17 @@ function AccountFilter({ dataTable }) {
     }
   }
 
-  function renderButtonShell(label) {
-    return (
-
-      <Button
-        id={label} size='sm'
-        variant={isFilterActive ? "selected" : "ghost"}
-        className="h-8 pl-3 pr-0 py-3 justify-start text-left font-normal">
-
-        <div className="flex flex-row font-semibold items-center">
-          <>
-            {isFilterActive ? (
-              <>
-                {renderButtonLabel(label)}
-                <span onClick={clearSelected} className="p-2 text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white">
-                  <X size={16} />
-                </span>
-              </>
-            ) : (
-              <span className="inline-flex gap-2 pr-2 items-center">
-                {label}
-                <ChevronDown size={16} />
-              </span>
-            )}
-          </>
-
-        </div>
-      </Button>
-    )
-  }
-
   // TODO add onKeyDown escape propagates all the way up to close the popover
   return (
     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
       <PopoverTrigger asChild>
-        {renderButtonShell("Account")}
+        <div><FilterButton
+          isFilterActive={isFilterActive}
+          label="Account"
+          onClear={clearSelected}
+          activeRenderer={renderButtonLabel}
+        /></div>
+
       </PopoverTrigger>
       <PopoverContent align='start' className="w-[350px]">
         <div className="text-xs">

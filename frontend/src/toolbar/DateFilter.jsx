@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-import { ChevronDown, X } from "lucide-react";
+import FilterButton from "./FilterButton.jsx"
 
 export default function DateFilter({ className }) {
     const [date, setDate] = useState();
@@ -65,6 +64,8 @@ export default function DateFilter({ className }) {
 
     const handleDateSelect = (selectedDate) => {
         setSelectedPeriod("");
+        setIsFilterActive(false)
+
         if (pickerMode === "after") {
             setDate({ from: DateTime.fromJSDate(selectedDate), to: null });
         } else if (pickerMode === "before") {
@@ -174,42 +175,22 @@ export default function DateFilter({ className }) {
         }
     };
 
-    function renderButtonShell(label) {
-        return (
-
-            <Button
-                id={label} size='sm'
-                variant={isFilterActive ? "selected" : "ghost"}
-                className="h-8 pl-3 pr-0 py-3 justify-start text-left font-normal">
-                <div className="flex flex-row font-semibold items-center">
-                    <>
-                        {isFilterActive ? (
-                            <>
-                                {renderButtonLabel(label)}
-                                <span onClick={clearSelected} className="p-2 text-slate-500 hover:text-black dark:hover:text-white">
-                                    <X size={16} />
-                                </span>
-                            </>
-                        ) : (
-                            <span className="inline-flex gap-2 pr-2 items-center">
-                                {label}
-                                <ChevronDown size={16} />
-                            </span>
-                        )}
-                    </>
-
-                </div>
-            </Button>
-        )
-    }
-
     const dateRangeClasses = "px-2 py-0 h-7 m-0 hover:bg-slate-100 dark:hover:bg-slate-900 justify-start";
 
     return (
         <div className={cn("grid gap-2", className)}>
             <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                 <PopoverTrigger asChild>
-                    { renderButtonShell("Date") }
+                    {/* {renderButtonShell("Date")} */}
+                    <div>
+                        <FilterButton
+                            isFilterActive={isFilterActive}
+                            label="Date"
+                            onClear={clearSelected}
+                            activeRenderer={renderButtonLabel}
+                        />
+                    </div>
+
 
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-4" align="start">
