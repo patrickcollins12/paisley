@@ -8,7 +8,7 @@ import useDebounce from './useDebounce.jsx'; // Adjust the import path as necess
 
 // import FilterButton from './FilterButton'; // Adjust the path as necessary
 
-function DescriptionFilter({ dataTable }) {
+function DescriptionFilter({ dataTable, operators, onFilterUpdate }) {
 
   const [value, setValue] = useState("");
   const debouncedValue = useDebounce(value, 700);
@@ -17,26 +17,22 @@ function DescriptionFilter({ dataTable }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [pickerMode, setPickerMode] = useState("contains");
 
-  const selectItems = {
-    contains: { label: "contains", short: null },
-    doesnotcontain: { label: "does not contain", short: "not" },
-    regex: { label: "regex", short: null, surround: "/" },
-    matchesword: { label: "matches word", short: null, surround: "'" },
-    isblank: { label: "is blank", short: "is blank" },
-    isnotblank: { label: "is not blank", short: "not blank" },
-    isedited: { label: "is edited", short: "is edited" }
-  };
-
   useEffect(() => {
     // Perform any action using the debounced value
     // This will be triggered only after the specified delay (500ms in this example)
     console.log('Debounced value:', debouncedValue);
+
+    onFilterUpdate({
+      field: 'description',
+      operator: '=',
+      value: debouncedValue
+    });
   }, [debouncedValue]);
   
   
   function renderButtonLabel(label) {
     const icon = (<DescriptionIcon className="h-4 w-4 mr-2" />);
-    const selectedItem = selectItems[pickerMode];
+    const selectedItem = operators[pickerMode];
     const ch = selectedItem.surround
     const sh = selectedItem.short
 
@@ -160,7 +156,7 @@ function DescriptionFilter({ dataTable }) {
               </SelectTrigger>
               <SelectContent>
 
-                {Object.entries(selectItems).map(([value, obj]) => (
+                {Object.entries(operators).map(([value, obj]) => (
                   <SelectItem key={value} value={value}>{obj.label}</SelectItem>
                 ))}
 

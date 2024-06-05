@@ -6,9 +6,13 @@ import DateFilter from "@/toolbar/DateFilter.jsx"
 import ColumnSelector from "@/toolbar/ColumnSelector.jsx"
 import { Button } from "@/components/ui/button.jsx"
 import { ChevronDown, X } from "lucide-react"
-
+import { stringOperators } from "@/toolbar/RuleCreator.jsx"
 
 function Toolbar({ dataTable }) {
+
+  const handleFilterUpdate = (filterExpression) => {
+    console.log(filterExpression);
+  }
 
   return (
     <div className="flex flex-row mb-4">
@@ -17,7 +21,7 @@ function Toolbar({ dataTable }) {
 
         <AllFilter dataTable={dataTable} />
 
-        <DescriptionFilter dataTable={dataTable} />
+        <DescriptionFilter dataTable={dataTable} operators={stringOperators} onFilterUpdate={handleFilterUpdate} />
 
         {/*         
         <Button variant='secondary' size='sm' className='h-8 bg-blue-200 hover:bg-blue-300 dark:bg-sky-900 font-semibold'>
@@ -54,6 +58,7 @@ function Toolbar({ dataTable }) {
 
         <DateFilter dataTable={dataTable} />
         <AccountFilter dataTable={dataTable} />
+
 {/* 
         <Button variant='selected' size='sm' className="h-8">
           <div className="flex flex-row items-center">
