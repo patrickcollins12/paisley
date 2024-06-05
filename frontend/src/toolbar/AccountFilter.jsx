@@ -24,7 +24,7 @@ function AccountFilter({ dataTable }) {
     if (pickerMode === "isblank" || pickerMode === "isnotblank") {
       setIsFilterActive(true)
       setPopoverOpen(false)
-      saveValues(`From ${pickerMode}`)
+      saveValues({field:"account", op: pickerMode, val:null })
     }
     if (pickerMode === "isanyof" || pickerMode === "isnotanyof") {
       setIsFilterActive(false)
@@ -64,8 +64,7 @@ function AccountFilter({ dataTable }) {
     if (pickerMode === "is" && itemCount > 0) {
       setIsFilterActive(true)
       setPopoverOpen(false)
-      saveValues(`Single value save ${JSON.stringify(_retrieveSelectedValues(selected))}`)
-      // saveSelected()
+      saveValues({"field": "account","op":"in", "val":_retrieveSelectedValues(selected)})
     }
 
   };
@@ -80,7 +79,9 @@ function AccountFilter({ dataTable }) {
     _clearValues()
     setIsFilterActive(false)
     setPopoverOpen(false)
-    saveValues("cleared")
+    // saveValues("cleared")
+    saveValues({"field": "account","op":"clear", "val":null})
+
     e.stopPropagation();
   };
 

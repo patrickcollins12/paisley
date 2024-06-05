@@ -1,6 +1,7 @@
-import DescriptionFilter from "@/toolbar/DescriptionFilter.jsx"
+import AllFilter from "@/toolbar/AllFilter.jsx"
 import TagsFilter from "@/toolbar/TagsFilter.jsx"
 import AccountFilter from "@/toolbar/AccountFilter.jsx"
+import DescriptionFilter from "@/toolbar/DescriptionFilter.jsx"
 import DateFilter from "@/toolbar/DateFilter.jsx"
 import ColumnSelector from "@/toolbar/ColumnSelector.jsx"
 import { Button } from "@/components/ui/button.jsx"
@@ -14,8 +15,9 @@ function Toolbar({ dataTable }) {
 
       <div className="flex flex-row space-x-2">
 
-        <DescriptionFilter dataTable={dataTable} />
+        <AllFilter dataTable={dataTable} />
 
+        <DescriptionFilter dataTable={dataTable} />
 
         {/*         
         <Button variant='secondary' size='sm' className='h-8 bg-blue-200 hover:bg-blue-300 dark:bg-sky-900 font-semibold'>
