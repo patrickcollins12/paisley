@@ -1,20 +1,18 @@
 import { NotepadText as DescriptionIcon } from "lucide-react"
-
-import { Button } from "@/components/ui/button.jsx"
-import React, { useState, useRef, useEffect } from 'react';
-
+import React, { useState, useEffect } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
-
 import { Input } from "@/components/ui/input.jsx"
-
-import { ReactSelect } from '@/components/ReactSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FilterButton from "./FilterButton.jsx"
+import useDebounce from './useDebounce.jsx'; // Adjust the import path as necessary
+
 // import FilterButton from './FilterButton'; // Adjust the path as necessary
 
 function DescriptionFilter({ dataTable }) {
 
   const [value, setValue] = useState("");
+  const debouncedValue = useDebounce(value, 700);
+
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [pickerMode, setPickerMode] = useState("contains");
@@ -29,6 +27,13 @@ function DescriptionFilter({ dataTable }) {
     isedited: { label: "is edited", short: "is edited" }
   };
 
+  useEffect(() => {
+    // Perform any action using the debounced value
+    // This will be triggered only after the specified delay (500ms in this example)
+    console.log('Debounced value:', debouncedValue);
+  }, [debouncedValue]);
+  
+  
   function renderButtonLabel(label) {
     const icon = (<DescriptionIcon className="h-4 w-4 mr-2" />);
     const selectedItem = selectItems[pickerMode];
@@ -52,11 +57,11 @@ function DescriptionFilter({ dataTable }) {
           <span className="inline-flex gap-1 w-auto text-nowrap">
             <span className="opacity-40">{label}</span>
             {ch ? (
-              <span>{ch}{value}{ch}</span>
+              <span>{ch}{debouncedValue}{ch}</span>
             ) : (
               <>
                 {sh && <span>{sh}</span>}
-                <span>{value}</span>
+                <span>{debouncedValue}</span>
               </>
             )}
           </span>
@@ -98,13 +103,12 @@ function DescriptionFilter({ dataTable }) {
     // : isFilterActive: ${isFilterActive}, pickerMode: \"${pickerMode}\", selectedOptions: ${JSON.stringify(_retrieveSelectedValues())}`)
   }
 
+
+  // TODO: needs a debounce
   const handleInputFilterBlur = (evt) => {
-    console.log(evt.target.value)
     setValue(evt.target.value)
     setIsFilterActive(true)
-    // setPopoverOpen(false)
   }
-
 
   const _clearValues = () => {
     setSelectedOptions([]);
@@ -150,8 +154,8 @@ function DescriptionFilter({ dataTable }) {
       <PopoverContent align='start' className="w-auto">
         <div className="text-xs">
           <div className="flex flex-col gap-3 items-start mb-3">
-            <Select value={pickerMode} onValueChange={handlePickerModeChange}>
-              <SelectTrigger className="border-0 h-6 text-xs w-[150px] inline-flex">
+            <Select value={pickerMode} className="border border-3" onValueChange={handlePickerModeChange}>
+              <SelectTrigger className="border h-8 text-xs w-[150px] inline-flex">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
