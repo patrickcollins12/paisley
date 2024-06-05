@@ -39,7 +39,7 @@ function Toolbar({ dataTable }) {
             <X size={16} className='opacity-50' />
           </div>
         </Button> */}
-
+{/* 
         <Button variant='selected' size='sm' className="h-8">
           <div className="flex flex-row items-center">
             <div className=" ">
@@ -50,11 +50,11 @@ function Toolbar({ dataTable }) {
               <X size={16} />
             </span>
           </div>
-        </Button>
+        </Button> */}
 
         <DateFilter dataTable={dataTable} />
         <AccountFilter dataTable={dataTable} />
-
+{/* 
         <Button variant='selected' size='sm' className="h-8">
           <div className="flex flex-row items-center">
             <div className="">
@@ -75,7 +75,7 @@ function Toolbar({ dataTable }) {
         </Button>
 
         <TagsFilter dataTable={dataTable} />
-
+ */}
 
 
       </div>
