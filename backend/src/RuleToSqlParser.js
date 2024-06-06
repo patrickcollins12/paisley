@@ -18,13 +18,31 @@ const lexer = moo.compile({
     startsWith: /starts with/,
     isblank: /is blank/,
     notisblank: /not is blank|notisblank/,
+    'in': ['in', 'IN'], // Recognize the IN keyword
+    comma: ',',
     field: /[a-zA-Z_][a-zA-Z0-9_]*/,
     NL: { match: /\n/, lineBreaks: true },
 });
 
+// Custom next function to skip whitespace
+lexer.nextToken = function() {
+    let token;
+    do {
+        token = lexer.next();
+    } while (token && token.type === 'WS');
+    return token;
+}
+
 class RuleToSqlParser {
     constructor() {
-        this.allowedFieldList = ['description', 'revised_description', 'account', 'type', 'amount', 'credit', 'debit'];
+        this.allowedFieldList = [
+            'description', 'revised_description', 'orig_description',
+            'account', 
+            'manual_tags', 'auto_tags', 'tags', 
+            'party', 'manual_party', 'auto_party', 
+            'type', 
+            'amount', 'credit', 'debit'
+        ];
 
         this.setup();
     }
@@ -44,8 +62,7 @@ class RuleToSqlParser {
         lexer.reset(input);
         let token;
 
-        while (token = lexer.next()) {
-            if (token.type === 'WS' || token.type === 'NL') continue;
+        while (token = lexer.nextToken()) {
             this.handleToken(token);
         }
 
@@ -73,6 +90,9 @@ class RuleToSqlParser {
             case 'notisblank':
                 this.handleNotIsBlank();
                 break;
+            case 'in':
+                this.handleInCondition();
+                break;
             case 'string':
                 this.handleString(token);
                 break;
@@ -88,6 +108,8 @@ class RuleToSqlParser {
             case 'lparen':
             case 'rparen':
                 this.sql += token.value;
+                break;
+            case 'NL':
                 break;
             default:
                 throw new Error(`Unhandled token type: ${token.type}`);
@@ -141,12 +163,39 @@ class RuleToSqlParser {
     }
 
     handleIsBlank() {
-        this.sql += `(${this.lastField}="" OR ${this.lastField} IS NULL)`;
+        const f = this.lastField;
+        this.sql += `(${f} IS NULL OR ${f} = '' OR ${f} = '[]')`;
         this.lastOperator = null;
     }
 
     handleNotIsBlank() {
-        this.sql += `NOT (${this.lastField}="" OR ${this.lastField} IS NULL)`;
+        const f = this.lastField;
+        this.sql += `NOT (${f} IS NULL OR ${f} = '' OR ${f} = '[]')`;
+        this.lastOperator = null;
+    }
+
+    handleInCondition() {
+        let values = [];
+        let token;
+
+        // Expect '(' after 'IN'
+        token = lexer.nextToken();
+        if (token.type !== 'lparen') {
+            throw new Error(`Expected '(' after 'IN', found ${token.type}`);
+        }
+
+        // Collect values until ')'
+        while ((token = lexer.nextToken()).type !== 'rparen') {
+            if (token.type === 'comma') continue;
+            if (token.type === 'string') {
+                values.push(token.value.slice(1, -1)); // Remove the surrounding quotes
+            } else {
+                throw new Error(`Unexpected token type ${token.type} in 'IN' condition`);
+            }
+        }
+
+        this.sql += `${this.lastField} IN (${values.map(() => '?').join(', ')})`;
+        this.params.push(...values);
         this.lastOperator = null;
     }
 

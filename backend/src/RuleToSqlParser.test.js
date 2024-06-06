@@ -92,15 +92,33 @@ describe('SQL WHERE Clause Parser', () => {
   test('parses is blank condition', () => {
     const input = "description is blank";
     const result = parser.parse(input);
-    expect(result.sql).toBe("(description=\"\" OR description IS NULL)");
+    // expect(result.sql).toBe("(description=\"\" OR description IS NULL)");
+    expect(result.sql).toBe("(description IS NULL OR description = '' OR description = '[]')");
     expect(result.params).toEqual([]);
   });
 
+  test('parses tags is blank condition', () => {
+    const input = "manual_tags is blank";
+    const result = parser.parse(input);
+    // expect(result.sql).toBe("(description=\"\" OR description IS NULL)");
+    expect(result.sql).toBe("(manual_tags IS NULL OR manual_tags = '' OR manual_tags = '[]')");
+    expect(result.params).toEqual([]);
+  });
   // New test case for not is blank
   test('parses not is blank condition', () => {
     const input = "description not is blank";
     const result = parser.parse(input);
-    expect(result.sql).toBe("NOT (description=\"\" OR description IS NULL)");
+    // expect(result.sql).toBe("NOT (description IS NULL OR description=\"\")");
+    expect(result.sql).toBe("NOT (description IS NULL OR description = '' OR description = '[]')");
     expect(result.params).toEqual([]);
   });
+
+
+  test('parses IN condition', () => {
+    const input = "account IN ('a', 'b', 'c', 'd')";
+    const result = parser.parse(input);
+    expect(result.sql).toBe("account IN (?, ?, ?, ?)");
+    expect(result.params).toEqual(['a', 'b', 'c', 'd']);
+  });
+
 });

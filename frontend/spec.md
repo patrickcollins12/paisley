@@ -1,8 +1,11 @@
  # Querying Transactions
 ```
 /rule='description REGEX /amazon/i' <-- see rule patterns
+OR
+/filter='description REGEX /amazon/i' <-- same as rule patterns
+
 /ruleid=4       <-- load a rule and filter the transactions based on this rule
-/filter[][]     <-- see JSON API filters below
+
 
 ```
 
@@ -113,7 +116,7 @@ filter[description][empty]=
 valid lists: `manual_tags`, `auto_tags` or `tags` (both)
 
 ```
-in            performs query: is in ['option', 'list']
+in            performs query: field in ['a', 'b']
 empty         performs query: is null or field = ''
 not empty     performs query: is null or field = ''
 ```

@@ -1,5 +1,7 @@
 # TODO
-- [ ] Add new operators to the backend. isblank, notisblank, isedited.
+- [x] Add new operators to the backend. isblank, notisblank, isedited. done.
+       - abs(number)
+       
 - [ ] Once and for all fix ReactSelect and make it the new class on Rules, Transactions and the Filter. Make it a new class created for the Account Toolbar panel. Let's make that the standard for everything as it has some nice abstractions including options for coloredPills and isCreatable.
 - [ ] Add string (contains/regex) to Account Filter
 - [ ] Editable input is saving on blur even when nothing has changed (15m)
