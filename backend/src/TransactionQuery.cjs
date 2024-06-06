@@ -1,6 +1,6 @@
 const RuleToSqlParser = require('./RuleToSqlParser')
 const BankDatabase = require('./BankDatabase')
-// const TransactionQueryFilter = require('./TransactionQueryFilter.cjs')
+const TransactionQueryFilter = require('./TransactionQueryFilter.cjs')
 
 class TransactionQuery {
 
@@ -27,7 +27,7 @@ class TransactionQuery {
         this._resetQueries(); // Reset queries to handle new request cleanly
         this._processRuleParams()
         this._processDescriptionAndTagsParams()
-        // this._processFilterParams()
+        this._processFilterParams()
         this._processOrderByParams()
         this._processPaginationParams()
         this._processLimitOffsetParams()
@@ -133,14 +133,13 @@ class TransactionQuery {
         }
     }
 
-    // We deprecated this in favor of using rule= or s=
-    // _processFilterParams() {
-    //     if (this.queryParams.filter) {
-    //         let tqf = new TransactionQueryFilter(this.queryParams.filter)
-    //         this.where += tqf.where
-    //         this.params.push(...tqf.params)
-    //     }
-    // }
+    _processFilterParams() {
+        if (this.queryParams.filter) {
+            let tqf = new TransactionQueryFilter(this.queryParams.filter)
+            this.where += tqf.where
+            this.params.push(...tqf.params)
+        }
+    }
 
     // NEED TO DEPRECATE THIS
     _processDescriptionAndTagsParams() {
@@ -173,9 +172,6 @@ class TransactionQuery {
         // we assume it is already decoded
         if (this.queryParams.rule) {
             rule = this.queryParams.rule
-        }
-        if (this.queryParams.filter) {
-            rule = this.queryParams.filter
         }
 
         if (rule) {

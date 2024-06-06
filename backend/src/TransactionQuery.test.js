@@ -1,7 +1,9 @@
 const TransactionQuery = require('./TransactionQuery.cjs');
+const TransactionQueryFilter = require('./TransactionQueryFilter.cjs');
 
 describe('Test TransactionQuery', () => {
   let tq;
+  let tqf;
 
   function clean(str){
     var regex = new RegExp("[\n\s]+", "g");
@@ -12,7 +14,7 @@ describe('Test TransactionQuery', () => {
   });
 
   test('test _addSqlConditionField 1', () => {
-    tq = new TransactionQuery();
+    tq = new TransactionQueryFilter();
     tq._addSqlConditionField(`%% ${''} LIKE ?`, ["tags", "manual_tags"], [`startsWif%`])
     expect(clean(tq.where)).toBe(clean(' AND (tags  LIKE ? OR manual_tags  LIKE ?)\n'));
   });
