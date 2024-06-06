@@ -16,6 +16,8 @@ const lexer = moo.compile({
     lte: /<=/,  // This needs to come before 'lt'
     lt: /</,
     startsWith: /starts with/,
+    isblank: /is blank/,
+    notisblank: /not is blank|notisblank/,
     field: /[a-zA-Z_][a-zA-Z0-9_]*/,
     NL: { match: /\n/, lineBreaks: true },
 });
@@ -24,10 +26,10 @@ class RuleToSqlParser {
     constructor() {
         this.allowedFieldList = ['description', 'account', 'type', 'amount', 'credit', 'debit'];
 
-        this.setup()
+        this.setup();
     }
 
-    setup () {
+    setup() {
         this.sql = '';
         this.input = '';
         this.params = [];
@@ -36,9 +38,9 @@ class RuleToSqlParser {
     }
 
     parse(input) {
-        this.setup()
+        this.setup();
 
-        this.input = input
+        this.input = input;
         lexer.reset(input);
         let token;
 
@@ -64,6 +66,12 @@ class RuleToSqlParser {
             case 'lte':
             case 'startsWith':
                 this.handleComparisonOperators(token);
+                break;
+            case 'isblank':
+                this.handleIsBlank();
+                break;
+            case 'notisblank':
+                this.handleNotIsBlank();
                 break;
             case 'string':
                 this.handleString(token);
@@ -115,13 +123,9 @@ class RuleToSqlParser {
         this.lastOperator = null;
     }
 
-    // could be /blah\.stuff\/morestuff/is
-    // where is is a modifier
     handleRegex(regex) {
-
-        // Turn '/regex/i' into 'regex/i'
         const flagMatch = /\/(.*)\/([a-z]*)$/.exec(regex);
-        let regexContent = ""
+        let regexContent = "";
         regexContent += flagMatch ? flagMatch[1] : regex;
         regexContent += flagMatch[2] ? "/" + flagMatch[2] : ''; // add the modifier
 
@@ -133,6 +137,16 @@ class RuleToSqlParser {
 
         this.params.push(regexContent);
         this.lastField = null;
+        this.lastOperator = null;
+    }
+
+    handleIsBlank() {
+        this.sql += `(${this.lastField}="" OR ${this.lastField} IS NULL)`;
+        this.lastOperator = null;
+    }
+
+    handleNotIsBlank() {
+        this.sql += `NOT (${this.lastField}="" OR ${this.lastField} IS NULL)`;
         this.lastOperator = null;
     }
 
