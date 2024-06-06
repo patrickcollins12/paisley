@@ -24,7 +24,7 @@ const lexer = moo.compile({
 
 class RuleToSqlParser {
     constructor() {
-        this.allowedFieldList = ['description', 'account', 'type', 'amount', 'credit', 'debit'];
+        this.allowedFieldList = ['description', 'revised_description', 'account', 'type', 'amount', 'credit', 'debit'];
 
         this.setup();
     }
