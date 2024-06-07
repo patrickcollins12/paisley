@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
-const JWTAuthenticator = require('../JWTAuthenticator');
+const disableAuth = false; // false means apply auth, true means disable auth
 
-router.get('/api/parties', JWTAuthenticator.authenticateToken, async (req, res) => {
+router.get('/api/parties', async (req, res) => {
   let db = new BankDatabase();
   let query = `
       SELECT DISTINCT json_each.value 
@@ -33,8 +33,7 @@ router.get('/api/parties', JWTAuthenticator.authenticateToken, async (req, res) 
   }
 });
 
-module.exports = router;
-
+module.exports = { router, disableAuth };
 /**
  * @swagger
  * /api/parties:

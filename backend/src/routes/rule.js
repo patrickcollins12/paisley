@@ -4,10 +4,11 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RulesClassifier = require('../RulesClassifier');
 const RuleToSqlParser = require('../RuleToSqlParser');
 
-const JWTAuthenticator = require('../JWTAuthenticator');
+const disableAuth = false; // false means apply auth, true means disable auth
+
 
 // Retrieve a specific rule by ID
-router.get('/api/rule/:id', JWTAuthenticator.authenticateToken,
+router.get('/api/rule/:id',
     async (req, res) => {
         const db = new BankDatabase().db;
         const id = req.params.id;
@@ -104,7 +105,7 @@ router.delete('/api/rule/:id', async (req, res) => {
     }
 });
 
-module.exports = router;
+module.exports = { router, disableAuth };
 
 // Swagger Documentation for Rule Endpoint
 

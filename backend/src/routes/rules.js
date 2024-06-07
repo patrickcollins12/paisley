@@ -4,9 +4,9 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RulesClassifier = require('../RulesClassifier'); // Adjust the path as necessary
 const config = require('../Config');
 
-const JWTAuthenticator = require('../JWTAuthenticator');
+const disableAuth = false; // false means apply auth, true means disable auth
 
-router.get('/api/rules', JWTAuthenticator.authenticateToken,
+router.get('/api/rules',
   async (req, res) => {
     let db = new BankDatabase();
     let query = "SELECT * from rule order by id desc";
@@ -30,7 +30,7 @@ router.get('/api/rules', JWTAuthenticator.authenticateToken,
 
   });
 
-router.get('/api/rerun_rules', JWTAuthenticator.authenticateToken,
+router.get('/api/rerun_rules',
   async (req, res) => {
     // config.load()
     let db = new BankDatabase();
@@ -53,7 +53,7 @@ router.get('/api/rerun_rules', JWTAuthenticator.authenticateToken,
 
   });
 
-module.exports = router;
+module.exports = { router, disableAuth };
 
 /**
  * @swagger

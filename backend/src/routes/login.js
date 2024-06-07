@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 var util = require('util')
 
 const config = require('../Config');
+const disableAuth = true; // false means apply auth, true means disable auth
 
 // Set up rate limiter: maximum of five requests per minute
 const loginLimiter = rateLimit({
@@ -53,8 +54,7 @@ router.post('/api/login', loginLimiter, [
     }
 });
 
-module.exports = router;
-
+module.exports = { router, disableAuth };
 
 /**
  * @openapi

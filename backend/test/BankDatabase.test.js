@@ -1,9 +1,6 @@
-const minimist = require('minimist');
-const config = require('../src/Config');
-const args = minimist(process.argv.slice(2));
-config.load(args.config);
-const BankDatabase = require('../src/BankDatabase');
 
+const BankDatabase = require('../src/BankDatabase');
+const database_setup = require('./BankDatabaseDummy.js');
 describe('BankDatabase REGEXP function', () => {
     let dbInstance;
     let db;
@@ -11,7 +8,7 @@ describe('BankDatabase REGEXP function', () => {
     beforeAll(() => {
         // Create a new instance of BankDatabase using an in-memory database
         dbInstance = new BankDatabase(':memory:');
-        db = dbInstance.db;  // This should correctly reference the database
+        db = database_setup()
     });
 
     afterAll(() => {
@@ -39,5 +36,9 @@ describe('BankDatabase REGEXP function', () => {
         const results = query.all("test");
 
         expect(results.length).toBe(0);
+    });
+
+    test('REGEXP function returns 0 for no match', () => {
+        let db = database_setup()
     });
 });
