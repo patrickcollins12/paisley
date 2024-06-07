@@ -8,10 +8,14 @@ import { Button } from "@/components/ui/button.jsx"
 import { ChevronDown, X } from "lucide-react"
 import { stringOperators } from "@/toolbar/RuleCreator.jsx"
 
-function Toolbar({ dataTable }) {
+function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
 
   const handleFilterUpdate = (filterExpression) => {
-    console.log(filterExpression);
+    console.log('handleFilterUpdate', filterExpression);
+  }
+
+  const handleFilterClear = () => {
+    console.log('handleFilterClear');
   }
 
   return (
@@ -21,7 +25,11 @@ function Toolbar({ dataTable }) {
 
         <AllFilter dataTable={dataTable} />
 
-        <DescriptionFilter dataTable={dataTable} operators={stringOperators} onFilterUpdate={handleFilterUpdate} />
+        <DescriptionFilter
+          dataTable={dataTable}
+          operators={stringOperators}
+          onFilterUpdate={onFilterUpdate}
+          onFilterClear={onFilterClear} />
 
         {/*         
         <Button variant='secondary' size='sm' className='h-8 bg-blue-200 hover:bg-blue-300 dark:bg-sky-900 font-semibold'>
