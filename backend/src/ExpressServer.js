@@ -1,0 +1,132 @@
+// express_server.js
+const path = require('path');
+const fs = require('fs');
+const cors = require('cors');
+const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+// const conditionalAuth = require('./ConditionalAuth');
+const JWTAuthenticator = require('./JWTAuthenticator');
+
+class ExpressServer {
+    constructor({ enableApiDocs = true, port = 4000, globalDisableAuth = false }) {
+        this.routeDirs = [
+            path.join(__dirname, 'src', 'routes'),
+            path.join(__dirname, 'routes')
+        ];
+
+        this.enableApiDocs = enableApiDocs;
+        this.port = port;
+        this.globalDisableAuth = globalDisableAuth;
+        this.app = express();
+        this.configureMiddleware();
+        this.loadRoutes();
+        if (this.enableApiDocs) {
+            this.setupSwaggerDocs();
+        }
+
+        // start the server
+        // this.start()
+
+    }
+
+    configureMiddleware() {
+        this.app.use(cors());
+        this.app.use(express.json());
+    }
+
+    loadRoutes() {
+
+        if (this.globalDisableAuth) {
+            console.warn("Warning: Disabling auth globally for express.")
+        }
+
+        const routes = this.getRoutes();
+
+        for (const routePath of routes) {
+            const routeModule = require(routePath);
+            const router = routeModule.router || routeModule; // Use the module directly if it doesn't have a router property
+            const disableAuth = routeModule.disableAuth ?? false; // Default to false if not defined
+
+            if (disableAuth || this.globalDisableAuth) {
+                // console.log(`${routePath}. Auth disabled`)
+                this.app.use(router);
+            } else {
+                // console.log(`${routePath}. Auth enabled`)
+                // this.app.use(conditionalAuth(!this.disableAuth), router);
+                this.app.use(JWTAuthenticator.authenticateToken, router);
+            }
+        }
+    }
+
+    getRoutes() {
+        let routes = [];
+        for (const dir of this.routeDirs) {
+            if (fs.existsSync(dir)) {
+                const files = fs.readdirSync(dir);
+                for (const file of files) {
+                    if (file.endsWith('.js')) {
+                        routes.push(path.join(dir, file));
+                    }
+                }
+            }
+        }
+        return routes;
+    }
+
+    setupSwaggerDocs() {
+        const swaggerOptions = {
+            swaggerDefinition: {
+                openapi: '3.0.0',
+                info: {
+                    title: 'Paisley API',
+                    version: '1.0.0',
+                    description: 'The official API for interacting with Paisley Finance',
+                },
+                components: {
+                    securitySchemes: {
+                        BearerAuth: {
+                            type: 'http',
+                            scheme: 'bearer',
+                            bearerFormat: 'JWT',
+                        },
+                    },
+                },
+                security: [
+                    {
+                        BearerAuth: [],
+                    },
+                ],
+            },
+            apis: [...this.getRoutes()],
+        };
+
+        const swaggerDocs = swaggerJsdoc(swaggerOptions);
+        this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+    }
+    async start() {
+        return new Promise((resolve, reject) => {
+            this.server = this.app.listen(this.port, () => {
+                console.log(`Server is running on port ${this.port}`);
+                resolve();
+            }).on('error', reject);
+        });
+    }
+
+    async stop() {
+        if (this.server) {
+            return new Promise((resolve, reject) => {
+                this.server.close(err => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    console.log(`Server on port ${this.port} has been stopped.`);
+                    resolve();
+                });
+            });
+        }
+    }
+
+}
+
+module.exports = ExpressServer;
