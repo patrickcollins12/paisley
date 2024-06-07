@@ -50,8 +50,10 @@ class ExpressServer {
 
             if (disableAuth || this.globalDisableAuth) {
                 // console.log(`${routePath}. Auth disabled`)
+                // console.log(`${routePath}. Auth disabled`)
                 this.app.use(router);
             } else {
+                // console.log(`${routePath}. Auth enabled`)
                 // console.log(`${routePath}. Auth enabled`)
                 // this.app.use(conditionalAuth(!this.disableAuth), router);
                 this.app.use(JWTAuthenticator.authenticateToken, router);
