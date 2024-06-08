@@ -8,7 +8,7 @@ class TransactionQueryFilter {
     }
 
     _processFilterParams() {
-        console.log("FILTER!", JSON.stringify(this.filter, null, "\t"))
+        // console.log("FILTER!", JSON.stringify(this.filter, null, "\t"))
 
         for (const [field, filter] of Object.entries(this.filter)) {
 
@@ -83,7 +83,7 @@ class TransactionQueryFilter {
     }
     _validateFilterField(field, operator, value) {
         const validFields = [
-            'all', 'description', 'revised_description', 'new_description',
+            'all', 'description', 'revised_description', 'orig_description',
             'tags', 'manual_tags', 'auto_tags',
             'type', 'debit', 'credit', 'amount', 'balance',
             'account', 'datetime'
@@ -119,16 +119,16 @@ class TransactionQueryFilter {
 
         let fields = [field]
 
-        if (field === "description") {
-            fields = ["description", "revised_description"]
-        }
+        // if (field === "description") {
+        //     fields = ["orig_description", "revised_description"]
+        // }
 
         if (field === "tags") {
             fields = ["auto_tags", "manual_tags"]
         }
 
         if (field === "all") {
-            fields = ["description", "revised_description", "tags", "manual_tags", "type", "party"]
+            fields = ["description", "tags", "manual_tags", "type", "party"]
         }
 
 

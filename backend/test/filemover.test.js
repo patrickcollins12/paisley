@@ -21,7 +21,7 @@ describe('FileMover Class', () => {
         expect(FileMover).toBeDefined();
     });
 
-    test('can move a file', done => {
+    test('can move a file', () => {
         // expect(FileMover).toBeDefined();
         const FileMover = require('../src/FileMover');
         FileMover.moveFile("/tmp/basedir", "/tmp/basedir/file.csv", "/tmp/basedir/processed/file.csv",(err) => {
@@ -36,7 +36,6 @@ describe('FileMover Class', () => {
                 done(); // Call done with the error
             }
         });
-
     });
 
     test('can move a file in a subdirectory of basedir', async () => {

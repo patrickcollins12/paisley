@@ -91,7 +91,8 @@ class TransactionQuery {
             pages: this.pages,
             count: this.count,
             pageSize: this.pageSize,
-            page: this.pageNumber
+            page: this.pageNumber,
+            where: this.where
         };
     }
 

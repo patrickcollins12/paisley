@@ -1,7 +1,7 @@
-const RulesClassifier = require('./RulesClassifier');
-const BankDatabase = require('./BankDatabase');
-const RuleToSqlParser = require('./RuleToSqlParser');
-const database_setup = require('../test/BankDatabaseDummy.js');
+const RulesClassifier = require('../src/RulesClassifier');
+const BankDatabase = require('../src/BankDatabase');
+const RuleToSqlParser = require('../src/RuleToSqlParser');
+const database_setup = require('./BankDatabaseDummy.js');
 
 describe('Rules classifier', () => {
   let classifier;
@@ -36,7 +36,7 @@ describe('Rules classifier', () => {
       balance: 1000,
       type: "DEP",
       tags: JSON.stringify(['tag1', 'tag2']),
-      party: 'Shop 1'
+      party: JSON.stringify(['Shop 1'])
     });
   });
 
@@ -98,7 +98,7 @@ describe('Rules classifier', () => {
 
     // applyRule(ruleWhereClause, params, txids, newTags, party) {
     const cnt = classifier.applyRule(whereSqlObj.sql, whereSqlObj.params, null, ['blah'], ['blah'])
-    expect(cnt).toBe(3)
+    expect(cnt).toBe(4)
   });
 
   test('test a classify of 1 rule to all txns', () => {

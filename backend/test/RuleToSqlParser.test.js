@@ -1,4 +1,4 @@
-const RuleToSqlParser = require('./RuleToSqlParser');
+const RuleToSqlParser = require('../src/RuleToSqlParser');
 
 describe('SQL WHERE Clause Parser', () => {
   let parser;

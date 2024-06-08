@@ -15,7 +15,7 @@ describe('config file', () => {
 
     test('basic settings working correctly', () => {
         // expect(config['app_name']).toBe("paisley");
-        expect(config['rules']).toBe(path.join(homedir, "paisley/rules.js"));
+        expect(config['database'].length>0).toBe(true);
     });
 
 

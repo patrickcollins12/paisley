@@ -41,7 +41,7 @@ description starts with 'amazon'  <-- LIKE 'amazon%'
 &filter[party][in][0]=Bunnings
 &filter[party][in][1]=Kmart
 &filter[date][>=]=2023-03-01
-&filter[date][<=>]=2023-03-31
+&filter[date][<=]=2023-03-31
 &filter[amount][=]=50 OR just &filter[amount]=50
 &filter[amount][>]=50
 &filter[amount][>=]=100
@@ -72,7 +72,7 @@ these operators work on numerics and dates
 =             
 <>         
 empty
-not empty
+not_empty
 ```
 
 prepend `abs` to use the absolute of value, e.g. `filter[amount][abs>]=10`.
