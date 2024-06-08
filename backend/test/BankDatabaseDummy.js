@@ -1,9 +1,4 @@
-// const minimist = require('minimist');
-// const config = require('../src/Config');
-// const args = minimist(process.argv.slice(2));
-// config.load(args.config);
 const BankDatabase = require('../src/BankDatabase');
-
 
 function database_setup() {
   let db = new BankDatabase(':memory:').db
