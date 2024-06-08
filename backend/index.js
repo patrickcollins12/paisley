@@ -47,3 +47,4 @@ const expressServer = new ExpressServer({
     port: port,
     globalDisableAuth: globalDisableAuth
 });
+expressServer.start()

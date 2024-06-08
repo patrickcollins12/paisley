@@ -25,18 +25,21 @@ class ExpressServer {
             this.setupSwaggerDocs();
         }
 
-        // start the server
-        // this.start()
-
     }
 
     configureMiddleware() {
         this.app.use(cors());
         this.app.use(express.json());
+
+        this.app.use((req, res, next) => {
+            console.log(`${req.method} ${req.path}`);
+            next();
+        });
     }
 
     loadRoutes() {
 
+        
         if (this.globalDisableAuth) {
             console.warn("Warning: Disabling auth globally for express.")
         }
@@ -49,14 +52,12 @@ class ExpressServer {
             const disableAuth = routeModule.disableAuth ?? false; // Default to false if not defined
 
             if (disableAuth || this.globalDisableAuth) {
-                // console.log(`${routePath}. Auth disabled`)
-                // console.log(`${routePath}. Auth disabled`)
+                console.log(`${routePath}. Auth disabled`)
                 this.app.use(router);
             } else {
-                // console.log(`${routePath}. Auth enabled`)
-                // console.log(`${routePath}. Auth enabled`)
-                // this.app.use(conditionalAuth(!this.disableAuth), router);
-                this.app.use(JWTAuthenticator.authenticateToken, router);
+                console.log(`${routePath}. Auth enabled`)
+                router.use(JWTAuthenticator.authenticateToken);
+                this.app.use(router);
             }
         }
     }

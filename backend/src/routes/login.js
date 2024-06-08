@@ -10,7 +10,7 @@ const config = require('../Config');
 const disableAuth = true; // false means apply auth, true means disable auth
 
 // Set up rate limiter: maximum of five requests per minute
-const loginLimiter = rateLimit({
+const rateLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 5, // limit each IP to 5 requests per windowMs
     handler: (req, res, next, options) => {
@@ -24,11 +24,12 @@ const loginLimiter = rateLimit({
     }
 });
 
-router.post('/api/login', loginLimiter, [
+router.post('/api/login', rateLimiter, [
     body('username').isString().trim().notEmpty().withMessage('Username is required'),
     body('password').isString().trim().notEmpty().withMessage('Password is required')
 ], async (req, res) => {
 
+    console.log("here")
     const JWT_SECRET = config['jwt'] || 'not_sec';
     const manager = new UserManager(config['users_file'])
 
