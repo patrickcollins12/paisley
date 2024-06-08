@@ -41,7 +41,7 @@ router.post('/api/signup', [
     }
 });
 
-module.exports = { router, disableAuth };
+module.exports = router;
 
 /**
  * @openapi

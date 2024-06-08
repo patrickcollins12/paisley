@@ -55,7 +55,7 @@ router.post('/api/login', rateLimiter, [
     }
 });
 
-module.exports = { router, disableAuth };
+module.exports = router;
 
 /**
  * @openapi

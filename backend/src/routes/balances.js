@@ -34,8 +34,7 @@ router.get('/api/balances', async (req, res) => {
   }
 });
 
-module.exports = { router, disableAuth };
-
+module.exports = router;
 
 /**
  * @swagger

@@ -29,7 +29,7 @@ router.get('/api/tags', async (req, res) => {
   }
 });
 
-module.exports = { router, disableAuth };
+module.exports = router;
 
 /**
  * @swagger

@@ -1,11 +1,11 @@
 const express = require('express');
-const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RulesClassifier = require('../RulesClassifier');
 const RuleToSqlParser = require('../RuleToSqlParser');
 
 const disableAuth = false; // false means apply auth, true means disable auth
 
+const router = express.Router();
 
 // Retrieve a specific rule by ID
 router.get('/api/rule/:id',
@@ -40,7 +40,7 @@ router.post('/api/rule', async (req, res) => {
 
         // // Classify this new rule across all transactions
         // const cnt = new RulesClassifier().applyOneRule(id)
-        let cnt=0
+        let cnt = 0
         cnt = new RulesClassifier().applyOneRuleDirectly(rule)
 
         res.status(201).send({ id: id, classified: cnt, message: `Rule created and classified ${cnt} txns` });
@@ -105,7 +105,9 @@ router.delete('/api/rule/:id', async (req, res) => {
     }
 });
 
-module.exports = { router, disableAuth };
+
+// module.exports = { loadRouter };
+module.exports = router;
 
 // Swagger Documentation for Rule Endpoint
 

@@ -30,16 +30,16 @@ class ExpressServer {
     configureMiddleware() {
         this.app.use(cors());
         this.app.use(express.json());
+        this.app.use(JWTAuthenticator.authenticateToken(this.globalDisableAuth));
 
-        this.app.use((req, res, next) => {
-            console.log(`${req.method} ${req.path}`);
-            next();
-        });
+        // Logger
+        // this.app.use((req, res, next) => {
+        //     console.log(`${req.method} ${req.path}`);
+        //     next();
+        // });
     }
 
-    loadRoutes() {
-
-        
+    loadRoutes() {  
         if (this.globalDisableAuth) {
             console.warn("Warning: Disabling auth globally for express.")
         }
@@ -49,16 +49,7 @@ class ExpressServer {
         for (const routePath of routes) {
             const routeModule = require(routePath);
             const router = routeModule.router || routeModule; // Use the module directly if it doesn't have a router property
-            const disableAuth = routeModule.disableAuth ?? false; // Default to false if not defined
-
-            if (disableAuth || this.globalDisableAuth) {
-                console.log(`${routePath}. Auth disabled`)
-                this.app.use(router);
-            } else {
-                console.log(`${routePath}. Auth enabled`)
-                router.use(JWTAuthenticator.authenticateToken);
-                this.app.use(router);
-            }
+            this.app.use(router);
         }
     }
 

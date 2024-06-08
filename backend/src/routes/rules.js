@@ -53,7 +53,7 @@ router.get('/api/rerun_rules',
 
   });
 
-module.exports = { router, disableAuth };
+module.exports = router;
 
 /**
  * @swagger
