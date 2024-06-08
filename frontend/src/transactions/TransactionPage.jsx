@@ -15,6 +15,7 @@ import { useFetchTransactions, useUpdateTransaction } from "@/transactions/Trans
 import { useTransactionSearchParams } from "@/transactions/TransactionSearchParamsHooks.jsx"
 
 function TransactionPage() {
+  const [customFilterState, setCustomFilterState] = useState([]);
   const {
     filterState, setFilterState,
     sortState, setSortState,
@@ -27,7 +28,7 @@ function TransactionPage() {
   const { data } = useFetchTransactions({
     pageIndex: pageState.pageIndex,
     pageSize: pageState.pageSize,
-    descriptionFilter: filterState.find(f => f.id === 'description') ? filterState.find(f => f.id === 'description').value : null,
+    filters: customFilterState,
     orderBy: sortState.length > 0 ? { field: sortState[0].id, dir: sortState[0].desc ? 'desc' : 'asc' } : null,
   });
   const { update: updateTransaction } = useUpdateTransaction();
@@ -37,6 +38,29 @@ function TransactionPage() {
     updateTransaction(id, transactionData).then(result => {
       console.log('update transaction result', result);
     });
+  }
+
+  function handleFilterUpdate(filterExpression) {
+    console.log('handleFilterUpdate', filterExpression);
+
+    setCustomFilterState((prevState) => {
+      // find any previous matching entries by field
+      const existingFieldFilter = prevState.find(filter => filter.field === filterExpression.field);
+
+      if (existingFieldFilter) {
+        return [filterExpression, ...prevState.filter(filter => filter.field !== filterExpression.field)];
+      }
+
+      return [filterExpression, ...prevState];
+    });
+  }
+
+  function handleFilterClear(fieldName) {
+    console.log('handleFilterClear', fieldName);
+
+    setCustomFilterState(prevState => {
+      return [...prevState.filter(filter => filter.field !== fieldName)];
+    })
   }
 
   const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate), []);
@@ -62,7 +86,11 @@ function TransactionPage() {
 
   return (
     <>
-      <Toolbar dataTable={table} />
+      <Toolbar
+        dataTable={table}
+        onFilterUpdate={handleFilterUpdate}
+        onFilterClear={handleFilterClear}
+      />
 
       <DataTable
         paginated

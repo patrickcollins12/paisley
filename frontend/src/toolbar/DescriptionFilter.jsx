@@ -1,44 +1,149 @@
+import { NotepadText as DescriptionIcon } from "lucide-react"
+import React, { useState, useEffect } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
 import { Input } from "@/components/ui/input.jsx"
-import { X } from "lucide-react"
-import React, { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import FilterButton from "./FilterButton.jsx"
+import useDebounce from './useDebounce.jsx';
+import { defaultOperator, filterExpression, stringOperators } from "@/toolbar/RuleCreator.jsx"
+import { useUpdateEffect } from "react-use" // Adjust the import path as necessary
 
-function DescriptionFilter({ dataTable }) {
-  const defaultInputValue = dataTable.getColumn('description').getFilterValue() ?? ''
-  const [inputValue, setInputValue] = useState(defaultInputValue);
+// import FilterButton from './FilterButton'; // Adjust the path as necessary
 
-  const handleChange = (evt) => {
-    const value = evt.target.value;
-    dataTable.getColumn('description').setFilterValue(value);
-    setInputValue(value);
-    dataTable.resetPageIndex();
-  };
+function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
 
-  const clearInput = () => {
-    dataTable.getColumn('description').setFilterValue('');
-    setInputValue('');
-    dataTable.resetPageIndex();
-  };
+  const fieldName = 'description';
+  const [value, setValue] = useState("");
+  const debouncedValue = useDebounce(value, 700);
 
+  const [isFilterActive, setIsFilterActive] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [operator, setOperator] = useState(defaultOperator(operators));
+  const [operatorOnly, setOperatorOnly] = useState(operators[defaultOperator(operators)]?.operatorOnly ?? false);
+  const operatorDef = operators[operator];
+
+  // handle changes to the debounced input value
+  useUpdateEffect(() => {
+    // perform any action using the debounced value
+    // this will be triggered only after the specified delay (500ms in this example)
+    // console.log('Debounced value:', debouncedValue);
+
+    onFilterUpdate(filterExpression(fieldName, operatorDef, debouncedValue));
+  }, [debouncedValue]);
+
+  // handle change to the selected operator
+  useEffect(() => {
+    // check whether the operator that has been selected is "operatorOnly"
+    // this essentially means the user does not need to select a value
+    if (operatorDef?.operatorOnly) {
+      setValue('');
+      setIsFilterActive(true);
+      setPopoverOpen(false);
+      setOperatorOnly(true);
+
+      onFilterUpdate(filterExpression(fieldName, operatorDef, null));
+    } else {
+      setOperatorOnly(false);
+
+      onFilterUpdate(filterExpression(fieldName, operatorDef, debouncedValue));
+    }
+  }, [operator]);
+
+  function renderButtonLabel(label) {
+    const icon = (<DescriptionIcon className="h-4 w-4 mr-2" />);
+    const selectedItem = operators[operator];
+    const ch = selectedItem.surround
+    const sh = selectedItem.short
+
+    if (operator.startsWith("is")) {
+      return (
+        <span className="inline-flex w-auto text-nowrap">
+        {icon}
+          <span className="opacity-40">{label}&nbsp;</span>
+          {selectedItem?.short}
+        </span>
+      );
+    }
+
+    else {
+      return (
+        <>
+          <span>{icon}</span>
+          <span className="inline-flex gap-1 w-auto text-nowrap">
+            <span className="opacity-40">{label}</span>
+            {ch ? (
+              <span>{ch}{debouncedValue}{ch}</span>
+            ) : (
+              <>
+                {sh && <span>{sh}</span>}
+                <span>{debouncedValue}</span>
+              </>
+            )}
+          </span>
+        </>
+      );
+    }
+  }
+
+  // TODO: needs a debounce
+  const handleInputFilterBlur = (evt) => {
+    setValue(evt.target.value)
+    setIsFilterActive(true)
+  }
+
+  const handleClear = (event) => {
+    event.stopPropagation();
+
+    setValue('');
+    setIsFilterActive(false);
+    setPopoverOpen(false);
+
+    // reset to default option
+    setOperator(defaultOperator(operators));
+    setOperatorOnly(operators[defaultOperator(operators)]?.operatorOnly ?? false);
+
+    onFilterClear(fieldName);
+  }
+
+  // TODO add onKeyDown escape propagates all the way up to close the popover
   return (
-    <div className="relative block">
-      {inputValue.length > 1 && ( // Show X only if inputValue has more than one character
-        <button
-          className="absolute top-1/2 transform -translate-y-1/2 right-2"
-          onClick={clearInput} // Clear input on click
-          aria-label="Clear input"
-        >
-          <X size={16} className="text-slate-400 hover:text-black dark:hover:text-white" />
-        </button>
-      )}
+    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+      <PopoverTrigger asChild>
+        <div><FilterButton
+          isFilterActive={isFilterActive}
+          label="Description"
+          onClear={handleClear}
+          activeRenderer={renderButtonLabel}
+        /></div>
 
-      <Input
-        placeholder="Filter..."
-        onChange={handleChange}
-        value={inputValue}
-        className="h-8 w-[150px] lg:w-[250px] pr-6"
-      />
-    </div>
-  );
+      </PopoverTrigger>
+      <PopoverContent align='start' className="w-auto">
+        <div className="text-xs">
+          <div className="flex flex-col gap-3 items-start mb-3">
+            <Select value={operator} className="border border-3" onValueChange={operatorValue => setOperator(operatorValue)}>
+              <SelectTrigger className="border h-8 text-xs w-[200px] inline-flex">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(operators).map(([value, obj]) => (
+                  <SelectItem key={value} value={value}>{obj.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {!operatorOnly && <Input
+              placeholder="description..."
+              autoFocus
+              onChange={handleInputFilterBlur}
+              // onChange = { (e) => {setValue(e.target.value)} }
+              value={value}
+              className="h-8 w-[150px] lg:w-[250px] pr-6"
+            />}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover >
+  )
 }
 
 export default DescriptionFilter;

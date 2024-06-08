@@ -8,6 +8,8 @@ const config = require('../Config');
 const manager = new UserManager(config['users_file'])
 const JWT_SECRET = config['jwt'] || 'not_sec'; 
 
+const disableAuth = true; // false means apply auth, true means disable auth
+
 router.post('/api/signup', [
     body('username').isString().trim().notEmpty(),
     body('password').isLength({ min: 8 }).trim()

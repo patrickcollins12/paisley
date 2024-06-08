@@ -1,11 +1,12 @@
 {
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
+    "compilerOptions": {
+      "paths": {
+        "@/*": ["./src/*"]
+      }
     }
   }
-}
-
-// TODO FIX:
-// No inputs were found in config file 'paisley_frontend/tsconfig.json'. 
-// Specified 'include' paths were '["**/*"]' and 'exclude' paths were '[]'.ts
+  
+  // This file is needed by shadcn for some reason
+  // TODO FIX:
+  // No inputs were found in config file 'paisley_frontend/tsconfig.json'. 
+  // Specified 'include' paths were '["**/*"]' and 'exclude' paths were '[]'.ts

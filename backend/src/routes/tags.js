@@ -2,10 +2,10 @@ const express = require('express');
 const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
-const JWTAuthenticator = require('../JWTAuthenticator');
-// router.use(JWTAuthenticator.authenticateToken);
+// const JWTAuthenticator = require('../JWTAuthenticator');
+const disableAuth = false; // false means apply auth, true means disable auth
 
-router.get('/api/tags', JWTAuthenticator.authenticateToken, async (req, res) => {
+router.get('/api/tags', async (req, res) => {
   let db = new BankDatabase();
   let query = `
       SELECT DISTINCT json_each.value 

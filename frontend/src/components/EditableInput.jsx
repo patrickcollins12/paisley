@@ -12,7 +12,6 @@ export function EditableInput({ value, className, onFocus, ...props }) {
   }, [inputValue]);
 
   const handleFocus = (event) => {
-    console.log('Textarea focused'); // Add logging to check if this is called
     if (textAreaRef.current) {
       textAreaRef.current.select();
     }

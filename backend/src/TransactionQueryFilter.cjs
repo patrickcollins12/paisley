@@ -8,7 +8,7 @@ class TransactionQueryFilter {
     }
 
     _processFilterParams() {
-        console.log(JSON.stringify(this.filter, null, "\t"))
+        console.log("FILTER!", JSON.stringify(this.filter, null, "\t"))
 
         for (const [field, filter] of Object.entries(this.filter)) {
 

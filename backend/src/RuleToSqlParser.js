@@ -16,18 +16,38 @@ const lexer = moo.compile({
     lte: /<=/,  // This needs to come before 'lt'
     lt: /</,
     startsWith: /starts with/,
+    isblank: /is blank/,
+    notisblank: /not is blank|notisblank/,
+    'in': ['in', 'IN'], // Recognize the IN keyword
+    comma: ',',
     field: /[a-zA-Z_][a-zA-Z0-9_]*/,
     NL: { match: /\n/, lineBreaks: true },
 });
 
+// Custom next function to skip whitespace
+lexer.nextToken = function() {
+    let token;
+    do {
+        token = lexer.next();
+    } while (token && token.type === 'WS');
+    return token;
+}
+
 class RuleToSqlParser {
     constructor() {
-        this.allowedFieldList = ['description', 'account', 'type', 'amount', 'credit', 'debit'];
+        this.allowedFieldList = [
+            'description', 'revised_description', 'orig_description',
+            'account', 
+            'manual_tags', 'auto_tags', 'tags', 
+            'party', 'manual_party', 'auto_party', 
+            'type', 
+            'amount', 'credit', 'debit'
+        ];
 
-        this.setup()
+        this.setup();
     }
 
-    setup () {
+    setup() {
         this.sql = '';
         this.input = '';
         this.params = [];
@@ -36,14 +56,13 @@ class RuleToSqlParser {
     }
 
     parse(input) {
-        this.setup()
+        this.setup();
 
-        this.input = input
+        this.input = input;
         lexer.reset(input);
         let token;
 
-        while (token = lexer.next()) {
-            if (token.type === 'WS' || token.type === 'NL') continue;
+        while (token = lexer.nextToken()) {
             this.handleToken(token);
         }
 
@@ -65,6 +84,15 @@ class RuleToSqlParser {
             case 'startsWith':
                 this.handleComparisonOperators(token);
                 break;
+            case 'isblank':
+                this.handleIsBlank();
+                break;
+            case 'notisblank':
+                this.handleNotIsBlank();
+                break;
+            case 'in':
+                this.handleInCondition();
+                break;
             case 'string':
                 this.handleString(token);
                 break;
@@ -80,6 +108,8 @@ class RuleToSqlParser {
             case 'lparen':
             case 'rparen':
                 this.sql += token.value;
+                break;
+            case 'NL':
                 break;
             default:
                 throw new Error(`Unhandled token type: ${token.type}`);
@@ -115,13 +145,9 @@ class RuleToSqlParser {
         this.lastOperator = null;
     }
 
-    // could be /blah\.stuff\/morestuff/is
-    // where is is a modifier
     handleRegex(regex) {
-
-        // Turn '/regex/i' into 'regex/i'
         const flagMatch = /\/(.*)\/([a-z]*)$/.exec(regex);
-        let regexContent = ""
+        let regexContent = "";
         regexContent += flagMatch ? flagMatch[1] : regex;
         regexContent += flagMatch[2] ? "/" + flagMatch[2] : ''; // add the modifier
 
@@ -133,6 +159,43 @@ class RuleToSqlParser {
 
         this.params.push(regexContent);
         this.lastField = null;
+        this.lastOperator = null;
+    }
+
+    handleIsBlank() {
+        const f = this.lastField;
+        this.sql += `(${f} IS NULL OR ${f} = '' OR ${f} = '[]')`;
+        this.lastOperator = null;
+    }
+
+    handleNotIsBlank() {
+        const f = this.lastField;
+        this.sql += `NOT (${f} IS NULL OR ${f} = '' OR ${f} = '[]')`;
+        this.lastOperator = null;
+    }
+
+    handleInCondition() {
+        let values = [];
+        let token;
+
+        // Expect '(' after 'IN'
+        token = lexer.nextToken();
+        if (token.type !== 'lparen') {
+            throw new Error(`Expected '(' after 'IN', found ${token.type}`);
+        }
+
+        // Collect values until ')'
+        while ((token = lexer.nextToken()).type !== 'rparen') {
+            if (token.type === 'comma') continue;
+            if (token.type === 'string') {
+                values.push(token.value.slice(1, -1)); // Remove the surrounding quotes
+            } else {
+                throw new Error(`Unexpected token type ${token.type} in 'IN' condition`);
+            }
+        }
+
+        this.sql += `${this.lastField} IN (${values.map(() => '?').join(', ')})`;
+        this.params.push(...values);
         this.lastOperator = null;
     }
 

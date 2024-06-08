@@ -52,18 +52,22 @@ async function updater(id, data) {
 }
 
 async function fetcher([url, options]) {
-  // console.log('fetcher', query);
+  // console.log('fetcher', options);
+
+  const filters = options.filters?.reduce((accumulator, filter) => {
+    const filterKey = `filter[${filter.field}][${filter.operatorDefinition.operator}]`;
+    accumulator[filterKey] = filter.operatorDefinition.operatorOnly ? '' : filter.value;
+    return accumulator;
+  }, {});
+
   const response = await httpClient.get(url, {
     params: {
       page: options?.pageIndex + 1,
       page_size: options?.pageSize,
       order_by: options?.orderBy ? `${options.orderBy.field},${options.orderBy.dir}` : null,
       description: options?.descriptionFilter,
-      // order_by: options.sortState.length > 0 ?
-      //   `${query.options.sortState[0].id},${query.options.sortState[0].desc ? 'desc' : 'asc'}` : null,
-      // description: query.options.filterState.find(f => f.id === 'description') ?
-      //   query.options.filterState.find(f => f.id === 'description').value : null,
-      rule: options?.ruleFilter
+      rule: options?.ruleFilter,
+      ...filters
     }
   })
   const resp = response.data;

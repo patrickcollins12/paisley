@@ -12,7 +12,7 @@ function ColumnSelector({ dataTable }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className='h-8'>
+        <Button variant="ghost" className='h-8'>
           Columns <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>

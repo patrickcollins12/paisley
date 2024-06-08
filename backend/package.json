@@ -2,11 +2,11 @@
   "name": "paisley",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "scrape": "npx playwright test",
     "postinstall": "node install.js"
   },
@@ -15,7 +15,7 @@
   "dependencies": {
     "@playwright/test": "^1.40.1",
     "axios": "^1.6.3",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "better-queue": "^3.8.12",
     "better-sqlite3": "^9.2.2",
     "chalk": "^5.3.0",
@@ -37,7 +37,6 @@
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
-    "@faker-js/faker": "^8.4.1",
     "@types/node": "^20.10.5",
     "jest": "^29.7.0",
     "nodemon": "^3.1.1"
