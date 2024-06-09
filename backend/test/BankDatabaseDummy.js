@@ -59,7 +59,7 @@ function database_setup() {
       JSON.stringify(['tag2', 'tag3']), JSON.stringify(['Shop 3'])],
 
     ['tx4', '2023-04-04 12:00:00', 'A345', 'Hardware Store', 0, 5, 500, "TXN",
-      JSON.stringify([]), JSON.stringify(['Shop 4'])]
+      JSON.stringify([]), JSON.stringify([])]
   ];
 
   // id, description, tags, party, auto_categorize

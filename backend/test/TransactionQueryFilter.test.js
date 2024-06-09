@@ -284,13 +284,56 @@ describe('Test TransactionQuery', () => {
     });
 
 
-    // TODO. Logic bug... should be AND not OR between the two main terms here
-    test('/transactions manual_tags in v2', async () => {
+    test('/transactions tags in x', async () => {
+        const url = `http://localhost:${port}/api/transactions/?` +
+                    `filter[tags][in][0]=tag3&` +
+                    `filter[tags][in][1]=tag9&`
+        const res = await axios.get(url);
+        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND ( EXISTS (SELECT 1 FROM json_each(main.auto_tags) WHERE value IN (?,?)) OR EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?,?)) )"))
+        expect(res.data?.resultSummary?.count).toBe(2)
+    });
+
+    test('/transactions tags in x v2', async () => {
+        const url = `http://localhost:${port}/api/transactions/?` +
+                    `filter[tags][in][0]=tag2&` +
+                    `filter[tags][in][1]=tag8&`
+        const res = await axios.get(url);
+        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND ( EXISTS (SELECT 1 FROM json_each(main.auto_tags) WHERE value IN (?,?)) OR EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?,?)) )"))
+        expect(res.data?.resultSummary?.count).toBe(3)
+    });
+
+
+    test('/transactions tags not_in x', async () => {
+        const url = `http://localhost:${port}/api/transactions/?` +
+                    `filter[tags][not_in][0]=tag2&` +
+                    `filter[tags][not_in][1]=tag8&`
+        const res = await axios.get(url);
+        expect(res.data?.resultSummary?.count).toBe(1)
+    });
+
+    /////////////
+    // list empty/not_empty
+    test('/transactions tags empty', async () => {
         const url = `http://localhost:${port}/api/transactions/?` +
                     `filter[tags][empty]`
         const res = await axios.get(url);
-        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND (( (auto_tags IS NULL OR auto_tags = '' OR auto_tags = '[]') OR (manual_tags IS NULL OR manual_tags = '' OR manual_tags = '[]')) )"))
-        expect(res.data?.resultSummary?.count).toBe(2)
+        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND (( (auto_tags IS NULL OR auto_tags = '' OR auto_tags = '[]') AND (manual_tags IS NULL OR manual_tags = '' OR manual_tags = '[]')) )"))
+        expect(res.data?.resultSummary?.count).toBe(1)
+    });
+
+    test('/transactions tags not empty', async () => {
+        const url = `http://localhost:${port}/api/transactions/?` +
+                    `filter[tags][not_empty]`
+        const res = await axios.get(url);
+        expect(res.data?.resultSummary?.count).toBe(3)
+    });
+
+    test('/transactions party empty', async () => {
+        const url = `http://localhost:${port}/api/transactions/?` +
+                    `filter[party][empty]`
+        const res = await axios.get(url);
+        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND (( (auto_party IS NULL OR auto_party = '' OR auto_party = '[]') AND (manual_party IS NULL OR manual_party = '' OR manual_party = '[]')) )"))
+        expect(res.data?.resultSummary?.count).toBe(1)
     });
 
 });

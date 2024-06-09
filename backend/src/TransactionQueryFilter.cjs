@@ -50,7 +50,7 @@ class TransactionQueryFilter {
     // Helper method to add SQL conditions
     // 'field LIKE ?'
 
-    _addSqlConditionField(condition, fields, paramsToAdd, not = '') {
+    _addSqlConditionField(condition, fields, paramsToAdd, not = '', andOr) {
         var conditions = []
         for (const field of fields) {
 
@@ -61,17 +61,13 @@ class TransactionQueryFilter {
             this.params.push(...paramsToAdd)
         }
 
-        // TODO
-        // this line needs to always be AND for tags
-        // and be AND/OR for everything else.
-        // I think, clearer minds needed. tomorrow
-
-        // // for tags
-        // const condstr = this._andOrJoin(conditions,"AND")
-
-        // for description
-        const condstr = this._andOrJoin(conditions, not ? " AND " : " OR ")
-
+        let condstr
+        if (andOr) {
+            condstr = this._andOrJoin(conditions, andOr)
+        } else {
+            condstr = this._andOrJoin(conditions, not ? " AND " : " OR ")
+        }
+         
         this.where += ` AND ${not} (${condstr})\n`
 
         // this.params.push(...paramsToAdd)
@@ -81,10 +77,12 @@ class TransactionQueryFilter {
     isNumeric(str) {
         return /^[\+\-]?\d*\.?\d+$/.test(str);
     }
+
     _validateFilterField(field, operator, value) {
         const validFields = [
             'all', 'description', 'revised_description', 'orig_description',
             'tags', 'manual_tags', 'auto_tags',
+            'party', 'manual_party', 'auto_party',
             'type', 'debit', 'credit', 'amount', 'balance',
             'account', 'datetime'
         ]
@@ -127,8 +125,12 @@ class TransactionQueryFilter {
             fields = ["auto_tags", "manual_tags"]
         }
 
+        if (field === "party") {
+            fields = ["auto_party", "manual_party"]
+        }
+
         if (field === "all") {
-            fields = ["description", "tags", "manual_tags", "type", "party"]
+            fields = ["description", "auto_tags", "manual_tags", "type", "auto_party", "manual_party"]
         }
 
 
@@ -175,12 +177,13 @@ class TransactionQueryFilter {
 
                 break;
             case 'empty':
-                this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '[]')`, fields, [], NOT)
+                if (fields.length > 1) {
+                    this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '[]')`, fields, [], NOT, "AND")
+                } else {
+                    this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '[]')`, fields, [], NOT, "OR")
+                }
 
                 break;
-            // case 'is not null':
-            //     this._addSqlConditionField(`(%% IS NOT NULL AND %% <> '')`, fields, [])
-            //     break;
 
             default:
                 throw new Error(`Invalid operator: "${operator}". Expected, startsWith, in, not null, <,>, etc`)
