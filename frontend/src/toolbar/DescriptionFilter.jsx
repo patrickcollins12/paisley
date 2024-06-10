@@ -51,38 +51,26 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
 
   function renderButtonLabel(label) {
     const icon = (<DescriptionIcon className="h-4 w-4 mr-2" />);
-    const selectedItem = operators[operator];
-    const ch = selectedItem.surround
-    const sh = selectedItem.short
 
-    if (operator.startsWith("is")) {
-      return (
-        <span className="inline-flex w-auto text-nowrap">
-        {icon}
-          <span className="opacity-40">{label}&nbsp;</span>
-          {selectedItem?.short}
+    return (
+      <>
+        <span>{icon}</span>
+        <span className="inline-flex gap-1 w-auto text-nowrap">
+          <span className="opacity-40">{label}</span>
+
+          {'short' in operatorDef ?
+            <span>{operatorDef.short}</span>
+            :
+            <span>{operatorDef.label}</span>
+          }
+          {'formatValue' in operatorDef ?
+            <span>{operatorDef.formatValue(debouncedValue)}</span>
+            :
+            <span>{debouncedValue}</span>
+          }
         </span>
-      );
-    }
-
-    else {
-      return (
-        <>
-          <span>{icon}</span>
-          <span className="inline-flex gap-1 w-auto text-nowrap">
-            <span className="opacity-40">{label}</span>
-            {ch ? (
-              <span>{ch}{debouncedValue}{ch}</span>
-            ) : (
-              <>
-                {sh && <span>{sh}</span>}
-                <span>{debouncedValue}</span>
-              </>
-            )}
-          </span>
-        </>
-      );
-    }
+      </>
+    )
   }
 
   // TODO: needs a debounce

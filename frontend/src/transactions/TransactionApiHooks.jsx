@@ -56,7 +56,8 @@ async function fetcher([url, options]) {
 
   const filters = options.filters?.reduce((accumulator, filter) => {
     const filterKey = `filter[${filter.field}][${filter.operatorDefinition.operator}]`;
-    accumulator[filterKey] = filter.operatorDefinition.operatorOnly ? '' : filter.value;
+    const filterValue = filter.operatorDefinition.formatValue?.(filter.value) ?? filter.value;
+    accumulator[filterKey] = filter.operatorDefinition.operatorOnly ? '' : filterValue;
     return accumulator;
   }, {});
 
