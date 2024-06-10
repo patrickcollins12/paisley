@@ -14,7 +14,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
 
   const fieldName = 'description';
   const [value, setValue] = useState("");
-  const debouncedValue = useDebounce(value, 700);
+  const debouncedValue = useDebounce(value, 7);
 
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);

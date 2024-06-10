@@ -46,17 +46,16 @@ function Root() {
               Rules
             </Link>
           </nav>
-          <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+          <div className="flex flex-row w-full items-center gap-3 md:ml-auto md:gap-2 lg:gap-2">
             <form className="ml-auto flex-1 sm:flex-initial">
             </form>
-            <div />
             <ModeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" size="icon_sm" className="rounded-full">
-                  <CircleUser className="h-5 w-5" />
-                  <span className="sr-only">Toggle user menu</span>
-                </Button>
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
+                    <CircleUser size={20}/>
+                    <span className="sr-only">Toggle user menu</span>
+                  </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Account ({authContext.username})</DropdownMenuLabel>
