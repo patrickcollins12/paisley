@@ -5,8 +5,10 @@ import DescriptionFilter from "@/toolbar/DescriptionFilter.jsx"
 import DateFilter from "@/toolbar/DateFilter.jsx"
 import ColumnSelector from "@/toolbar/ColumnSelector.jsx"
 import { Button } from "@/components/ui/button.jsx"
-import { ChevronDown, X } from "lucide-react"
+import { ChevronDown, NotepadText as DescriptionIcon, X } from "lucide-react"
 import { stringOperators } from "@/toolbar/RuleCreator.jsx"
+import React from "react"
+import DescriptionFilterAlt from "@/toolbar/DescriptionFilterAlt.jsx"
 
 function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
 
@@ -22,8 +24,12 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
     <div className="flex flex-row mb-4">
 
       <div className="flex flex-row space-x-2">
-
         <AllFilter dataTable={dataTable} />
+
+        <DescriptionFilterAlt
+          operators={stringOperators}
+          onFilterUpdate={onFilterUpdate}
+          onFilterClear={onFilterClear} />
 
         <DescriptionFilter
           dataTable={dataTable}

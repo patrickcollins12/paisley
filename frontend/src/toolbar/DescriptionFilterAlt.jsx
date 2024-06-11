@@ -1,22 +1,21 @@
 import { NotepadText as DescriptionIcon } from "lucide-react"
-import React, { useState, useEffect } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
+import React, { useEffect, useState } from 'react';
 import { Input } from "@/components/ui/input.jsx"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import FilterButton from "./FilterButton.jsx"
 import useDebounce from './useDebounce.jsx';
-import { defaultOperator, filterExpression, stringOperators } from "@/toolbar/RuleCreator.jsx"
+import { defaultOperator, filterExpression } from "@/toolbar/RuleCreator.jsx"
 import { useUpdateEffect } from "react-use"
-import { FilterButtonAlt, FilterButtonAltLabel } from "@/toolbar/FilterButtonAlt.jsx" // Adjust the import path as necessary
+import { FilterButtonAlt, FilterButtonAltContent, FilterButtonAltLabel } from "@/toolbar/FilterButtonAlt.jsx" // Adjust the import path as necessary
 
 // import FilterButton from './FilterButton'; // Adjust the path as necessary
 
-function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
+function DescriptionFilterAlt({operators, onFilterUpdate, onFilterClear}) {
 
   const fieldName = 'description';
   const [value, setValue] = useState("");
   const debouncedValue = useDebounce(value, 7);
 
+  const [isActive, setIsActive] = useState(false);
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [operator, setOperator] = useState(defaultOperator(operators));
@@ -39,6 +38,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
     if (operatorDef?.operatorOnly) {
       setValue('');
       setIsFilterActive(true);
+      setIsActive(true);
       setPopoverOpen(false);
       setOperatorOnly(true);
 
@@ -50,34 +50,11 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
     }
   }, [operator]);
 
-  function renderButtonLabel(label) {
-    const icon = (<DescriptionIcon className="h-4 w-4 mr-2" />);
-
-    return (
-      <>
-        <span>{icon}</span>
-        <span className="inline-flex gap-1 w-auto text-nowrap">
-          <span className="opacity-40">{label}</span>
-
-          {'short' in operatorDef ?
-            <span>{operatorDef.short}</span>
-            :
-            <span>{operatorDef.label}</span>
-          }
-          {'formatValue' in operatorDef ?
-            <span>{operatorDef.formatValue(debouncedValue)}</span>
-            :
-            <span>{debouncedValue}</span>
-          }
-        </span>
-      </>
-    )
-  }
-
   // TODO: needs a debounce
   const handleInputFilterBlur = (evt) => {
     setValue(evt.target.value)
-    setIsFilterActive(true)
+    setIsFilterActive(true);
+    setIsActive(true);
   }
 
   const handleClear = (event) => {
@@ -85,6 +62,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
 
     setValue('');
     setIsFilterActive(false);
+    setIsActive(false);
     setPopoverOpen(false);
 
     // reset to default option
@@ -96,22 +74,38 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
 
   // TODO add onKeyDown escape propagates all the way up to close the popover
   return (
-    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-      <PopoverTrigger asChild>
-        <div><FilterButton
-          isFilterActive={isFilterActive}
-          label="Description"
-          onClear={handleClear}
-          activeRenderer={renderButtonLabel}
-        /></div>
+    <FilterButtonAlt active={isActive} onClear={handleClear}>
+      <FilterButtonAltLabel>
+        {
+          !isActive ?
+            "Description"
+            :
+            <>
+              <DescriptionIcon className="h-4 w-4 mr-2"/>
+              <span className="inline-flex gap-1 w-auto text-nowrap">
+                <span className="opacity-40">Description</span>
 
-      </PopoverTrigger>
-      <PopoverContent align='start' className="w-auto">
+                {'short' in operatorDef ?
+                  <span>{operatorDef.short}</span>
+                  :
+                  <span>{operatorDef.label}</span>
+                }
+                {'formatValue' in operatorDef ?
+                  <span>{operatorDef.formatValue(debouncedValue)}</span>
+                  :
+                  <span>{debouncedValue}</span>
+                }
+              </span>
+            </>
+        }
+      </FilterButtonAltLabel>
+      <FilterButtonAltContent>
         <div className="text-xs">
           <div className="flex flex-col gap-3 items-start mb-3">
-            <Select value={operator} className="border border-3" onValueChange={operatorValue => setOperator(operatorValue)}>
+            <Select value={operator} className="border border-3"
+                    onValueChange={operatorValue => setOperator(operatorValue)}>
               <SelectTrigger className="border h-8 text-xs w-[200px] inline-flex">
-                <SelectValue />
+                <SelectValue/>
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(operators).map(([value, obj]) => (
@@ -130,9 +124,9 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
             />}
           </div>
         </div>
-      </PopoverContent>
-    </Popover >
+      </FilterButtonAltContent>
+    </FilterButtonAlt>
   )
 }
 
-export default DescriptionFilter;
+export default DescriptionFilterAlt;
