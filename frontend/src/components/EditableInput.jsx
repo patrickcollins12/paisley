@@ -1,9 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { cn } from "@/lib/utils";
 
 export function EditableInput({ value, className, onFocus, ...props }) {
   const [inputValue, setInputValue] = useState(value);
   const textAreaRef = useRef(null);
   
+  // adjust the size of the text area based on the number of lines, while 
+  // still keeping the scrollbars off.
   useEffect(() => {
     if (textAreaRef.current) {
       textAreaRef.current.style.height = 'auto';
@@ -11,6 +14,8 @@ export function EditableInput({ value, className, onFocus, ...props }) {
     }
   }, [inputValue]);
 
+  // select all the text select'ed when 
+  // focussed
   const handleFocus = (event) => {
     if (textAreaRef.current) {
       textAreaRef.current.select();
@@ -18,15 +23,16 @@ export function EditableInput({ value, className, onFocus, ...props }) {
     onFocus && onFocus(event)
   };
 
-  var cn = className || "";
-  cn += " p-1 w-full rounded-md transition-all grow bg-transparent hover:bg-background";
-  cn += " hover:ring-1 hover:ring-gray-300 hover:dark:ring-gray-700 ";
-  cn += " focus:outline-none focus:ring-2 focus:ring-gray-700 focus:dark:ring-gray-300 resize-none";
+  var c = className || "";
+  c += " p-1 w-full rounded-md transition-all grow bg-transparent hover:bg-background";
+  c += " hover:ring-1 hover:ring-gray-300 hover:dark:ring-gray-700 ";
+  c += " focus:outline-none focus:ring-2 focus:ring-gray-700 focus:dark:ring-gray-300";
+  c += " overflow-hidden resize-none"; // remove scrolling and scrollbars in the textarea
 
   return (
     <textarea
       ref={textAreaRef}
-      className={cn}
+      className={cn(c,className)}
       value={inputValue}
       onFocus={handleFocus}
       onChange={(e) => setInputValue(e.target.value)}
