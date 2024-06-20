@@ -3,6 +3,7 @@ const os = require('os');
 const path = require('path');
 const hd = os.homedir()
 
+
 const sourceDir = path.join(__dirname, 'demo');
 const demoPath = path.join(hd, 'paisley/demo');
 const csvPath = path.join(hd, 'paisley/demo/bank_statements/processed');
