@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="100mm"
+   height="100mm"
+   viewBox="0 0 100 100"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   sodipodi:docname="paisley_small_logo_orig.svg"
+   inkscape:export-filename="paisley_small_logo_orig.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.37692455"
+     inkscape:cx="161.8361"
+     inkscape:cy="156.53"
+     inkscape:window-width="800"
+     inkscape:window-height="555"
+     inkscape:window-x="0"
+     inkscape:window-y="38"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1"
+     inkscape:export-bgcolor="#ffffff05"
+     inkscape:clip-to-page="false" />
+  <defs
+     id="defs1">
+    <linearGradient
+       id="linearGradient4"
+       inkscape:collect="always">
+      <stop
+         style="stop-color:#ff5b00;stop-opacity:1;"
+         offset="0"
+         id="stop4" />
+      <stop
+         style="stop-color:#ffb600;stop-opacity:0.89626557;"
+         offset="1"
+         id="stop5" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient547"
+       inkscape:label="2ndrev">
+      <stop
+         style="stop-color:#ff0012;stop-opacity:1;"
+         offset="0"
+         id="stop547" />
+      <stop
+         style="stop-color:#ffed00;stop-opacity:1;"
+         offset="1"
+         id="stop546" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4"
+       id="linearGradient5"
+       x1="18.257093"
+       y1="50.606371"
+       x2="83.634161"
+       y2="50.606371"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2">
+    <ellipse
+       style="fill:#ffffff;fill-opacity:1;stroke:#ffffff;stroke-width:2.113;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="path1"
+       cx="50.52951"
+       cy="50.384323"
+       rx="45.708752"
+       ry="47.547607" />
+  </g>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="display:inline;fill:url(#linearGradient5);fill-opacity:1;stroke:none;stroke-width:0.797158;stroke-dasharray:none;stroke-opacity:1"
+       d="M 41.13443,89.896072 C 31.304206,89.241774 23.087102,81.477266 19.859328,72.465744 16.136974,62.373252 19.440982,51.315686 24.244231,42.196154 28.65909,33.344593 35.136891,25.559653 43.176377,19.770385 c 7.217251,-5.249534 16.076063,-9.703891 25.252217,-8.226067 8.632081,1.334274 16.202091,9.541655 15.098142,18.527786 -0.547698,4.357357 -3.31273,8.900417 -7.41689,10.642009 -1.031099,0.437534 -2.146713,0.698254 -3.332919,0.734794 -5.188938,0.599481 -6.818001,-5.902481 -6.265146,-11.426084 l 2.376567,2.512744 c 2.371092,3.031366 5.888284,2.117758 6.949628,-1.528696 1.475669,-3.709462 -1.126232,-7.997503 -5.02605,-8.55603 -5.511469,-1.455967 -10.67265,3.372794 -11.781029,8.507932 -1.695498,7.161782 2.428487,13.78759 4.913444,20.220403 3.836917,8.831554 4.410264,19.894671 -1.312691,28.050966 -4.448441,7.321332 -13.061654,11.263318 -21.49722,10.66593 z"
+       id="path352-9"
+       inkscape:label="path352"
+       sodipodi:nodetypes="ccccccsccccccccc"
+       inkscape:export-filename="../software-projects/paisley/docs/static/img/paisley_small_logo.svg"
+       inkscape:export-xdpi="15.29"
+       inkscape:export-ydpi="15.29" />
+    <circle
+       style="fill:#ff007d;fill-opacity:1;stroke:none;stroke-width:2.052;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       id="path2"
+       cx="42.731007"
+       cy="66.201172"
+       r="15.434185" />
+  </g>
+</svg>
