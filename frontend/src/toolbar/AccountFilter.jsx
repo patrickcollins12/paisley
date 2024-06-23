@@ -1,43 +1,70 @@
 import { Landmark } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
 
 import { ReactSelect } from '@/components/ReactSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FilterButton from "./FilterButton.jsx"
+import { defaultOperator, filterExpression } from "@/toolbar/RuleCreator.jsx"
 // import FilterButton from './FilterButton'; // Adjust the path as necessary
 
-function AccountFilter({ dataTable }) {
-  const { data, error, isLoading } = useAccountData()
+function AccountFilter({ operators, onFilterUpdate, onFilterClear }) {
+
+  const fieldName = 'account';
+  const { data: accountsData, error: accountsDataError, isLoading: accountsDataLoading } = useAccountData()
+  const selectData = useMemo(() => {
+    if (!accountsData) return [];
+
+    return Object.values(accountsData).map(account => ({
+      label: `${account.institution} ${account.name}`,
+      value: account.accountid
+    }));
+  }, [accountsData]);
+
   const [selectedOptions, setSelectedOptions] = useState([]);
-  const [optionCount, setOptionCount] = useState(0);
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [pickerMode, setPickerMode] = useState("is");
-  const [transformedData, setTransformedData] = useState([]);
+  const [operator, setOperator] = useState(defaultOperator(operators));
+  const [operatorOnly, setOperatorOnly] = useState(operators[defaultOperator(operators)]?.operatorOnly ?? false);
+  const operatorDef = operators[operator];
 
-  // when pickerMode changes from the top options
+  // console.log('operator', operator);
+  // console.log('selected options', selectedOptions);
+
+  // handle when a SINGLE selection is made while the IS operator is active
+  // when this happens we should close the filter popover and update the filter immediately
   useEffect(() => {
-    if (pickerMode === "isblank" || pickerMode === "isnotblank") {
-      setIsFilterActive(true)
-      setPopoverOpen(false)
-      saveValues({field:"account", op: pickerMode, val:null })
-    }
-    if (pickerMode === "isanyof" || pickerMode === "isnotanyof") {
-      setIsFilterActive(false)
-    }
-    if (pickerMode === "is") {
-      if (optionCount > 1) {
-        _clearValues()
-        // setIsFilterActive(false)
-      }
+    if (operator !== 'is' || selectedOptions.length === 0) return;
+
+    setIsFilterActive(true);
+    setPopoverOpen(false);
+
+    onFilterUpdate(filterExpression(fieldName, operatorDef, selectedOptions.map(option => option.value)));
+  }, [selectedOptions]);
+
+  useEffect(() => {
+    // handle operator definitions that don't have a "value" per se
+    // e.g. blank / empty
+    if (operatorDef?.operatorOnly) {
+      setIsFilterActive(true);
+      setPopoverOpen(false);
+      setOperatorOnly(true);
+
+      onFilterUpdate(filterExpression(fieldName, operatorDef, null));
+    } else {
+      setOperatorOnly(false);
     }
 
-  }, [pickerMode]);
-
+    // handle switching from multi to single select when multiple options are still selected
+    // the selection options are cleared in this case
+    if (operator === 'is' && selectedOptions.length > 1) {
+      setSelectedOptions([]);
+      setIsFilterActive(false);
+    }
+  }, [operator]);
 
   // When using react-select we need to listen to and capture the Escape.
   useEffect(() => {
@@ -46,100 +73,45 @@ function AccountFilter({ dataTable }) {
     return () => document.removeEventListener('keydown', handleEscape);
   }, [popoverOpen]);
 
-
-  const saveValues = (source) => {
-    const vals = _retrieveSelectedValues()
-
-    console.log(`Saving from ${source}`)
-    // : isFilterActive: ${isFilterActive}, pickerMode: \"${pickerMode}\", selectedOptions: ${JSON.stringify(_retrieveSelectedValues())}`)
+  const saveSelection = () => {
+    setIsFilterActive(selectedOptions.length > 0);
+    setPopoverOpen(false);
+    onFilterUpdate(filterExpression(fieldName, operatorDef, selectedOptions));
   }
 
-  const handleReactSelectChange = (selected) => {
+  const clearSelection = (event) => {
+    event.stopPropagation();
 
-    setSelectedOptions(selected);
-    const itemCount = Array.isArray(selected) ? selected?.length : 1
-    setOptionCount(itemCount)
-
-    // for a single select, close the popover once selected
-    if (pickerMode === "is" && itemCount > 0) {
-      setIsFilterActive(true)
-      setPopoverOpen(false)
-      saveValues({"field": "account","op":"in", "val":_retrieveSelectedValues(selected)})
-    }
-
-  };
-
-
-  const _clearValues = () => {
     setSelectedOptions([]);
-    setOptionCount(0)
-  }
+    setIsFilterActive(false);
+    setPopoverOpen(false);
 
-  const clearSelected = (e) => {
-    _clearValues()
-    setIsFilterActive(false)
-    setPopoverOpen(false)
-    // saveValues("cleared")
-    saveValues({"field": "account","op":"clear", "val":null})
-
-    e.stopPropagation();
+    onFilterClear(fieldName);
   };
-
-  const saveSelections = () => {
-    setIsFilterActive(optionCount > 0 ? true : false)
-    setPopoverOpen(false)
-    saveValues(`From multi-select filter ${JSON.stringify(_retrieveSelectedValues())}`)
-  }
-
-  // When changing between modes
-  const handlePickerModeChange = (value) => {
-    setPickerMode(value)
-
-  }
-
-  useEffect(() => {
-    if (data) {
-      const transformed = Object.values(data).map(item => ({
-        label: `${item.institution} ${item.name}`,
-        value: item.accountid
-      }));
-
-      setTransformedData(transformed);
-    }
-  }, [data]);
-
-  const _retrieveSelectedValues = (selected) => {
-    const s = (selected) ? selected : selectedOptions
-    if (Array.isArray(s)) {
-      return s.map(obj => obj.value);
-    } else {
-      return [s?.value]
-    }
-  }
 
   function renderButtonLabel(label) {
     const icon = (<Landmark className="h-4 w-4 mr-2" />);
 
-    if (pickerMode === "isblank") {
-      return (<>{icon}<span className="opacity-40">Account&nbsp;</span>is blank </>)
-    }
-    else if (pickerMode === "isnotblank") {
-      return (<>{icon}<span className="opacity-40">Account&nbsp;</span> is not blank</>)
-    }
-    else if ((pickerMode === "is" || pickerMode === "isanyof" || pickerMode === "isnotanyof") && optionCount) {
-      return (
-        <>
-          {icon}
-          <span className="opacity-40 pr-2">{label}</span>
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-black bg-opacity-60 dark:bg-opacity-30">
-            {optionCount}
-          </span>
-        </>
-      )
-    }
-    else {
-      // handle strings etc
-    }
+    return (
+      <>
+        <span>{icon}</span>
+        <span className="inline-flex gap-1 w-auto text-nowrap">
+          <span className="opacity-40">{label}</span>
+
+          {'short' in operatorDef ?
+            <span>{operatorDef.short}</span>
+            :
+            <span>{operatorDef.label}</span>
+          }
+
+          {['is', 'anyof', 'notanyof'].includes(operator) && selectedOptions.length > 0 &&
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-black bg-opacity-60 dark:bg-opacity-30">
+              {selectedOptions.length}
+            </span>
+          }
+        </span>
+      </>
+    )
   }
 
   // TODO add onKeyDown escape propagates all the way up to close the popover
@@ -149,7 +121,7 @@ function AccountFilter({ dataTable }) {
         <div><FilterButton
           isFilterActive={isFilterActive}
           label="Account"
-          onClear={clearSelected}
+          onClear={clearSelection}
           activeRenderer={renderButtonLabel}
         /></div>
 
@@ -157,53 +129,39 @@ function AccountFilter({ dataTable }) {
       <PopoverContent align='start' className="w-[350px]">
         <div className="text-xs">
           <div className="flex flex-row gap-3 items-center mb-3">
-            <Select value={pickerMode} onValueChange={handlePickerModeChange}>
+            <Select value={operator} onValueChange={operatorValue => setOperator(operatorValue)}>
               <SelectTrigger className="border-0 h-6 text-xs w-auto inline-flex">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="is">Is</SelectItem>
-
-                <SelectItem value="isanyof">Is any of</SelectItem>
-                <SelectItem value="isnotanyof">Is not any of</SelectItem>
-
-                {/* <SelectItem value="contains">Contains</SelectItem>
-                <SelectItem value="startsWith">Starts With</SelectItem>
-                <SelectItem value="regex">Regex</SelectItem> */}
-
-                <SelectItem value="isblank">Is Blank</SelectItem>
-                <SelectItem value="isnotblank">Is Not Blank</SelectItem>
+                {Object.entries(operators).map(([value, obj]) => (
+                  <SelectItem key={value} value={value}>{obj.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
             {/* Display the Clear | Filter buttons */}
-            {(pickerMode === "isanyof" || pickerMode === "isnotanyof") && (
+            {['anyof', 'notanyof'].includes(operator) && (
               <>
-                <Button size="sm" className="ml-auto justify-end" variant="secondary" onClick={clearSelected}>Clear</Button>
-                <Button size="sm" className="justify-end" disabled={optionCount > 0 ? false : true} onClick={saveSelections}>Filter</Button>
+                <Button size="sm" className="ml-auto justify-end" variant="secondary" onClick={clearSelection}>Clear</Button>
+                <Button size="sm" className="justify-end" disabled={selectedOptions.length === 0} onClick={saveSelection}>Filter</Button>
               </>
             )}
           </div>
 
-          {(pickerMode === "is" || pickerMode === "isanyof" || pickerMode === "isnotanyof") &&
-            !isLoading && !error && (
-              <ReactSelect
-                onChange={handleReactSelectChange}
-                options={transformedData}
-                value={selectedOptions}
-                isMulti={pickerMode === "is" ? false : true}
-                isClearable={false}
-                closeMenuOnSelect={false}
-                autoFocus
-                components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
-                defaultMenuIsOpen
-              />
-            )}
-
-          {(pickerMode === "contains" || pickerMode === "startsWith" || pickerMode === "regex") && (
-            <>string</>
-          )}
-
+          {!operatorOnly && !accountsDataLoading && !accountsDataError &&
+            <ReactSelect
+              onChange={selected => setSelectedOptions(Array.isArray(selected) ? [...selected] : [selected])}
+              options={selectData}
+              value={selectedOptions}
+              isMulti={operator !== 'is'}
+              isClearable={false}
+              closeMenuOnSelect={false}
+              autoFocus
+              components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
+              defaultMenuIsOpen
+            />
+          }
         </div>
       </PopoverContent>
     </Popover >

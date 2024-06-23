@@ -46,6 +46,35 @@ export const stringOperators = {
   },
 }
 
+export const lookupOperators = {
+  is: {
+    label: "is",
+    operator: 'in',
+    short: '',
+    default: true
+  },
+  anyof: {
+    label: "is any of",
+    operator: 'anyof',
+    short: ''
+  },
+  notanyof: {
+    label: "is not any of",
+    operator: 'not_anyof',
+    short: 'not'
+  },
+  blank: {
+    label: "is blank",
+    operator: 'empty',
+    operatorOnly: true,
+  },
+  notblank: {
+    label: "is not blank",
+    operator: 'not_empty',
+    operatorOnly: true,
+  }
+}
+
 export function filterExpression(field, operatorDefinition, value) {
   return {
     field,
