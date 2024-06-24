@@ -31,9 +31,6 @@ function AccountFilter({ operators, onFilterUpdate, onFilterClear }) {
   const [operatorOnly, setOperatorOnly] = useState(operators[defaultOperator(operators)]?.operatorOnly ?? false);
   const operatorDef = operators[operator];
 
-  // console.log('operator', operator);
-  // console.log('selected options', selectedOptions);
-
   // handle when a SINGLE selection is made while the IS operator is active
   // when this happens we should close the filter popover and update the filter immediately
   useEffect(() => {
@@ -76,7 +73,7 @@ function AccountFilter({ operators, onFilterUpdate, onFilterClear }) {
   const saveSelection = () => {
     setIsFilterActive(selectedOptions.length > 0);
     setPopoverOpen(false);
-    onFilterUpdate(filterExpression(fieldName, operatorDef, selectedOptions));
+    onFilterUpdate(filterExpression(fieldName, operatorDef, selectedOptions.map(option => option.value)));
   }
 
   const clearSelection = (event) => {
