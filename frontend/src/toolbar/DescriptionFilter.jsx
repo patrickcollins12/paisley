@@ -7,7 +7,6 @@ import FilterButton from "./FilterButton.jsx"
 import useDebounce from './useDebounce.jsx';
 import { defaultOperator, filterExpression, stringOperators } from "@/toolbar/RuleCreator.jsx"
 import { useUpdateEffect } from "react-use"
-import { FilterButtonAlt, FilterButtonAltLabel } from "@/toolbar/FilterButtonAlt.jsx" // Adjust the import path as necessary
 
 // import FilterButton from './FilterButton'; // Adjust the path as necessary
 

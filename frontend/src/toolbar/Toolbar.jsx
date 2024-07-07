@@ -1,24 +1,18 @@
 import AllFilter from "@/toolbar/AllFilter.jsx"
-import TagsFilter from "@/toolbar/TagsFilter.jsx"
-import AccountFilter from "@/toolbar/AccountFilter.jsx"
 import DescriptionFilter from "@/toolbar/DescriptionFilter.jsx"
 import DateFilter from "@/toolbar/DateFilter.jsx"
 import ColumnSelector from "@/toolbar/ColumnSelector.jsx"
-import { Button } from "@/components/ui/button.jsx"
-import { ChevronDown, NotepadText as DescriptionIcon, X } from "lucide-react"
 import { lookupOperators, stringOperators } from "@/toolbar/RuleCreator.jsx"
 import React from "react"
-import DescriptionFilterAlt from "@/toolbar/DescriptionFilterAlt.jsx"
+import LookupFilter from "@/toolbar/LookupFilter.jsx"
+import useAccountData from "@/accounts/AccountApiHooks.js"
+import { useFetchTags } from "@/tags/TagApiHooks.js"
 
 function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
 
-  const handleFilterUpdate = (filterExpression) => {
-    console.log('handleFilterUpdate', filterExpression);
-  }
-
-  const handleFilterClear = () => {
-    console.log('handleFilterClear');
-  }
+  const accounts = useAccountData();
+  const tags = useFetchTags('tags');
+  const parties = useFetchTags('parties');
 
   return (
     <div className="flex flex-row mb-4">
@@ -26,16 +20,59 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
       <div className="flex flex-row space-x-2">
         <AllFilter dataTable={dataTable} />
 
-        {/*<DescriptionFilterAlt*/}
-        {/*  operators={stringOperators}*/}
-        {/*  onFilterUpdate={onFilterUpdate}*/}
-        {/*  onFilterClear={onFilterClear} />*/}
-
         <DescriptionFilter
           dataTable={dataTable}
           operators={stringOperators}
           onFilterUpdate={onFilterUpdate}
           onFilterClear={onFilterClear} />
+
+        <DateFilter dataTable={dataTable} />
+
+        <LookupFilter
+          label="Account"
+          field="account"
+          options={() => {
+            if (!accounts.data) return [];
+
+            return Object.values(accounts.data).map(account => ({
+              label: `${account.institution} ${account.name}`,
+              value: account.accountid
+            }));
+          }}
+          operators={lookupOperators}
+          onFilterUpdate={onFilterUpdate}
+          onFilterClear={onFilterClear}
+        />
+        <LookupFilter
+          label="Tags"
+          field="tags"
+          options={() => {
+            if (!tags.data) return [];
+
+            return tags.data?.map(tag => ({
+              label: tag,
+              value: tag
+            }));
+          }}
+          operators={lookupOperators}
+          onFilterUpdate={onFilterUpdate}
+          onFilterClear={onFilterClear}
+        />
+        <LookupFilter
+          label="Party"
+          field="party"
+          options={() => {
+            if (!parties.data) return [];
+
+            return parties.data?.map(party => ({
+              label: party,
+              value: party
+            }));
+          }}
+          operators={lookupOperators}
+          onFilterUpdate={onFilterUpdate}
+          onFilterClear={onFilterClear}
+        />
 
         {/*         
         <Button variant='secondary' size='sm' className='h-8 bg-blue-200 hover:bg-blue-300 dark:bg-sky-900 font-semibold'>
@@ -70,12 +107,7 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
           </div>
         </Button> */}
 
-        <DateFilter dataTable={dataTable} />
-        <AccountFilter
-          operators={lookupOperators}
-          onFilterUpdate={onFilterUpdate}
-          onFilterClear={onFilterClear}
-        />
+
 
 {/* 
         <Button variant='selected' size='sm' className="h-8">

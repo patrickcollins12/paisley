@@ -1,7 +1,7 @@
 import { Landmark } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
 
@@ -9,9 +9,8 @@ import { ReactSelect } from '@/components/ReactSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FilterButton from "./FilterButton.jsx"
 import { defaultOperator, filterExpression } from "@/toolbar/RuleCreator.jsx"
-// import FilterButton from './FilterButton'; // Adjust the path as necessary
 
-function AccountFilter({ label, field, options, operators, onFilterUpdate, onFilterClear }) {
+function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilterClear }) {
 
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [isFilterActive, setIsFilterActive] = useState(false);
@@ -69,6 +68,7 @@ function AccountFilter({ label, field, options, operators, onFilterUpdate, onFil
   const clearSelection = (event) => {
     event.stopPropagation();
 
+    setOperator(defaultOperator(operators));
     setSelectedOptions([]);
     setIsFilterActive(false);
     setPopoverOpen(false);
@@ -155,4 +155,4 @@ function AccountFilter({ label, field, options, operators, onFilterUpdate, onFil
   )
 }
 
-export default AccountFilter;
+export default LookupFilter;
