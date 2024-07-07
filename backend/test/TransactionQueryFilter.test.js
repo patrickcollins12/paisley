@@ -236,6 +236,18 @@ describe('Test TransactionQuery', () => {
         expect(res.data?.resultSummary?.count).toBe(1)
     });
 
+    test('/transactions abs amount is between', async () => {
+        const url = `http://localhost:${port}/api/transactions/?filter[amount][abs<=]=300&filter[amount][abs>=]=50`
+        const res = await axios.get(url);
+        expect(res.data?.resultSummary?.count).toBe(2)
+    });
+
+    test('/transactions debit is between', async () => {
+        const url = `http://localhost:${port}/api/transactions/?filter[debit][<=]=300&filter[debit][>=]=50`
+        const res = await axios.get(url);
+        expect(res.data?.resultSummary?.count).toBe(2)
+    });
+
 
     test('/transactions amount is empty', async () => {
         const url = `http://localhost:${port}/api/transactions/?filter[amount][empty]`
