@@ -286,8 +286,8 @@ describe('Test TransactionQuery', () => {
 
     test('/transactions tags in x', async () => {
         const url = `http://localhost:${port}/api/transactions/?` +
-                    `filter[tags][in][0]=tag3&` +
-                    `filter[tags][in][1]=tag9&`
+                    `filter[tags][in][]=tag3&` +
+                    `filter[tags][in][]=tag9&`
         const res = await axios.get(url);
         expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND ( EXISTS (SELECT 1 FROM json_each(main.auto_tags) WHERE value IN (?,?)) OR EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?,?)) )"))
         expect(res.data?.resultSummary?.count).toBe(2)
@@ -295,8 +295,8 @@ describe('Test TransactionQuery', () => {
 
     test('/transactions tags in x v2', async () => {
         const url = `http://localhost:${port}/api/transactions/?` +
-                    `filter[tags][in][0]=tag2&` +
-                    `filter[tags][in][1]=tag8&`
+                    `filter[tags][in][0]=tag2&`
+                  + `filter[tags][in][1]=tag8&`
         const res = await axios.get(url);
         expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND ( EXISTS (SELECT 1 FROM json_each(main.auto_tags) WHERE value IN (?,?)) OR EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?,?)) )"))
         expect(res.data?.resultSummary?.count).toBe(3)

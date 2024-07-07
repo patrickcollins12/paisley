@@ -10,3 +10,9 @@
 - [x] Change columns to use ghost button
 - [x] Account Filter is saving on load: "Saving: isFilterActive: false, pickerMode: "is", selectedOptions: []" (15m)
 - [x] Add onKeyDown escape propagates all the way up to close the popover (30m)
+
+
+tags in ['a','b'] => 
+tags empty        =>      (manual_tags = '' [] null) and (auto_tags = '' [] null)
+tags not_empty    => NOT ((manual_tags = '' [] null) and (auto_tags = '' [] null))
+tags contains transfer => (manual_tags = like '%transfer%') OR (auto_tags like '%transfer%')

@@ -87,12 +87,15 @@ class TransactionQuery {
         this.count = summaryrows[0].cnt
         this.pages = Math.ceil(this.count / this.pageSize)
 
+        const cln = (str) => str.replace(/\s+/g, ' ').replace(/\n/g, '').trim()
+
         return {
             pages: this.pages,
             count: this.count,
             pageSize: this.pageSize,
             page: this.pageNumber,
-            where: this.where
+            // TODO: remove this soon for prod
+            where: cln(this.where)
         };
     }
 
