@@ -1,8 +1,9 @@
 import { Badge } from "@/components/ui/badge"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import { Switch } from "@/components/ui/switch.jsx"
 import { TagEditorPopover } from "@/components/TagEditorPopover"
+import { useUpdateEffect } from "react-use"
 
 export function TransactionTagsDisplay({ type, data, manual, auto, full, updateHandler, ...props }) {
     const id = data.id;
@@ -13,12 +14,20 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
     }
 
     const [autoCategorize, setAutoCategorize] = useState(data.auto_categorize);
-    const [autoTags] = useState(auto);
+    const [autoTags, setAutoTags] = useState(auto);
     const [manualTags, setManualTags] = useState(manual);
     const [tags, setTags] = useState(full);
 
     // const displayedTags = autoCategorize ? [...new Set([...manualTags, ...autoTags])] : [...manualTags];
     const { data: allTags } = useFetchTags(type); // for the select dropdown
+
+    // handle props updates
+    useEffect(() => {
+        setAutoTags(auto);
+        setManualTags(manual);
+        setTags(full);
+        setAutoCategorize(autoCategorize);
+    }, [manual, auto, autoCategorize]);
 
     // handle the logic when autocatorization is switched on and off
     function handleAutoCategorizeChange(_autoCategorize) {
