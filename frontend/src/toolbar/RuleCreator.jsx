@@ -50,13 +50,13 @@ export const lookupOperators = {
   is: {
     label: "is",
     operator: 'in',
-    short: '',
-    default: true
+    short: ''
   },
   anyof: {
     label: "is any of",
     operator: 'anyof',
-    short: ''
+    short: '',
+    default: true
   },
   notanyof: {
     label: "is not any of",
