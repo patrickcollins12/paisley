@@ -34,7 +34,7 @@ class ChaseCardsCSVParser extends BaseCSVParser {
         processed.account = this.accountid
         processed.description = [l['Description'], l['Memo']].join(" ");
         // processed.amount =  (l['Details'] === "DEBIT") ? -l['Amount'] : l['Amount']
-        if (l['Amount'] <0 ) {
+        if (l['Amount'] >0 ) {
             processed.credit =  Math.abs(l['Amount'])
         } else {
             processed.debit  =  Math.abs(l['Amount'])
