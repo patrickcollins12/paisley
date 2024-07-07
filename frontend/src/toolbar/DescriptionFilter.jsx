@@ -82,7 +82,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
   const handleClear = (event) => {
     event.stopPropagation();
 
-    setValue(null);
+    setValue('');
     setIsFilterActive(false);
     setPopoverOpen(false);
 
