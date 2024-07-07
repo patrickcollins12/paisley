@@ -32,7 +32,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
   }, [debouncedValue]);
 
   // handle change to the selected operator
-  useEffect(() => {
+  useUpdateEffect(() => {
     // check whether the operator that has been selected is "operatorOnly"
     // this essentially means the user does not need to select a value
     if (operatorDef?.operatorOnly) {
@@ -82,7 +82,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
   const handleClear = (event) => {
     event.stopPropagation();
 
-    setValue('');
+    setValue(null);
     setIsFilterActive(false);
     setPopoverOpen(false);
 
