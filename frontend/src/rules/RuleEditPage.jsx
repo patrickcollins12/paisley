@@ -9,7 +9,8 @@ import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 import TransactionCard from "@/transactions/TransactionCard.jsx"
 import { useEffect, useRef, useState } from "react"
 import { Input } from "@/components/ui/input.jsx"
-import { TagEditor } from "@/components/TagEditor.jsx"
+// import { TagEditor } from "@/components/TagEditor.jsx"
+import { ReactSelect } from "@/components/ReactSelect.jsx"
 
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import { Button } from "@/components/ui/button.jsx"
@@ -32,11 +33,9 @@ export default function RuleEditPage() {
   const id = Number.parseInt(ruleId) ? Number(ruleId) : null;
 
   // keep track of the form state
-  const [ruleData, setRuleData] = useState({
-    rule: null,
-    tag: [],
-    party: []
-  });
+  const [ruleData, setRuleData] = useState({rule: null, tag: [], party: []});
+  const [tagData, setTagData] = useState([]);
+  const [partyData, setPartyData] = useState([]);
 
   // "raw" state for keeping track of just the rule string so we can debounce it
   const [ruleString, setRuleString] = useState('')
@@ -68,6 +67,8 @@ export default function RuleEditPage() {
   // and then it will update data with the actual results from the API.
   useEffect(() => {
     setRuleData(data);
+    setTagData(data?.tag)
+    setPartyData(data?.party)
     setRuleString(data?.rule ?? '');
   }, [data]);
 
@@ -76,19 +77,33 @@ export default function RuleEditPage() {
   useDebounce(() => {
     setRuleData(prevState => ({ ...prevState, rule: ruleString }));
     if (firstUpdateCompleted.current) {
-      updateRule(id, {rule: ruleString});
+      updateRule(id, { rule: ruleString });
     }
     firstUpdateCompleted.current = true;
   }, 500, [ruleString]);
 
+  // tags
   const handleTagChange = selectedValues => {
-    setRuleData(prevState => ({...prevState, tag: selectedValues}));
-    updateRule(id, { tag: selectedValues });
+    const values = selectedValues.map(obj => obj.value);
+    setTagData(values)
+    setRuleData(prevState => ({ ...prevState, tag: values }));
   };
+
+  const handleTagBlur = e => {
+    updateRule(id, { tag: tagData});
+  };
+
+  // parties
   const handlePartyChange = selectedValues => {
-    setRuleData(prevState => ({...prevState, party: selectedValues}));
-    updateRule(id, { party: selectedValues });
+    const values = selectedValues.map(obj => obj.value);
+    setPartyData(values)
+    setRuleData(prevState => ({ ...prevState, party: values }));
   };
+
+  const handlePartyBlur = e => {
+    updateRule(id, { party: partyData});
+  };
+
 
   async function createRule(evt) {
     evt.preventDefault();
@@ -103,7 +118,7 @@ export default function RuleEditPage() {
         await navigate({ to: '/rules/$ruleId', params: { ruleId: newId } });
       }
     } catch (error) {
-      setError( error?.response?.data?.error ?? null);
+      setError(error?.response?.data?.error ?? null);
       console.error('Error creating rule:', error);
     }
   }
@@ -117,7 +132,7 @@ export default function RuleEditPage() {
       toast({ description: 'Rule saved successfully', duration: 1000 });
       setError(null);
     } catch (error) {
-      setError( error?.response?.data?.error ?? null);
+      setError(error?.response?.data?.error ?? null);
       console.error('Error saving rule:', error);
     }
   }
@@ -170,31 +185,38 @@ export default function RuleEditPage() {
                 <div className="py-2 text-sm text-muted-foreground">
                   Add these tags
                 </div>
-                {/* <TagEditorPopover */}
-                <TagEditor
-                  values={ruleData?.tag}
-                  allValues={useFetchTags("tags").data}
+                <ReactSelect
                   onChange={handleTagChange}
-                  placeholder="Add a tag..."
-                  isClearable={true}
+                  onBlur={handleTagBlur}
+                  options={useFetchTags('tags').data?.map(tag => ({ label: tag, value: tag}))}
+                  value={ tagData?.map(tag => ({ label: tag, value: tag})) }
                   isMulti={true}
+                  isCreatable={true}
+                  coloredPills={true}
+                  isClearable={true}
+                  closeMenuOnSelect={false}
+                  placeholder="Add a tag..."
                 />
+
               </div>
               <div>
                 <div className="py-2 text-sm text-muted-foreground">
                   Add this counterparty / merchant
                 </div>
-                <TagEditor
-                  values={ruleData?.party}
-                  allValues={useFetchTags("parties").data}
+                <ReactSelect
                   onChange={handlePartyChange}
-                  placeholder="Add a party..."
+                  onBlur={handlePartyBlur}
+                  options={useFetchTags('parties').data?.map(party => ({ label: party, value: party}))}
+                  value={ partyData?.map(party => ({ label: party, value: party})) }
+                  isMulti={true}
+                  isCreatable={true}
+                  coloredPills={true}
                   isClearable={true}
-                // maxMenuHeight={200}
-                // autoFocus={true}
-                // openMenuOnFocus={true}
+                  closeMenuOnSelect={false}
+                  placeholder="Add a party..."
                 />
-              </div>
+
+              </div> 
 
               {/* only show the save button when we are creating a new rule */}
               {/* rule data is saved automatically when editing an existing rule */}

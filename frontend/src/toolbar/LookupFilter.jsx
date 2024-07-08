@@ -144,6 +144,7 @@ function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilt
               isMulti={operator !== 'is'}
               isClearable={false}
               closeMenuOnSelect={false}
+              coloredPills={true}
               autoFocus
               components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
               defaultMenuIsOpen
