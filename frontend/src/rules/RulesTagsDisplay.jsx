@@ -14,17 +14,20 @@ export function RulesTagsDisplay({ id, values, onUpdate, resource }) {
   const { data: allTags } = useFetchTags(resource); // for the select dropdown
 
   function onChange(selectedValues) {
-    setTags(selectedValues);
+    const values = selectedValues.map(obj => obj.value);
+    setTags(values);
     const resourceToUpdate = (resource=="tags")?"tag":"party"
-    var postObj = { [resourceToUpdate]: selectedValues}
+    var postObj = { [resourceToUpdate]: values}
     onUpdate(id, postObj).catch(error => {
       console.error('Tag Edit Error: ', error);
       setTags(data.tag);
     });
   }
 
+  const placeholderType = (resource=="tags")?"tag":"party"
+  const placeholder = `Select a ${placeholderType}. Type to create a ${placeholderType}...`
   return (
-    <TagEditorPopover values={values} allValues={allTags} onChange={onChange} inputPlaceholder="Add a tag..." />
+    <TagEditorPopover values={values} allValues={allTags} onChange={onChange} placeholder={placeholder} />
   );
 
 }

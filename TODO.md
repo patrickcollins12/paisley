@@ -1,6 +1,10 @@
 # TODO
 - [ ] do tests for in and not in lists. try it with tags, party and account.
 - [ ] do tests for regex/contains on lists like tags, party and account.
+- [ ] Ruledit needs a save button.
+- [ ] Ruleedit should clear old values before running again
+- [ ] Rules applied should save the ruleid as well
+- [ ] Ruleedit needs some helper text temporarily
 - [ ] Once and for all fix ReactSelect and make it the new class on Rules, Transactions and the Filter. Make it a new class created for the Account Toolbar panel. Let's make that the standard for everything as it has some nice abstractions including options for coloredPills and isCreatable.
 - [ ] Add string (contains/regex) to Account Filter
 - [ ] Editable input is saving on blur even when nothing has changed (15m)

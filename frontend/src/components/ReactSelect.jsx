@@ -1,6 +1,6 @@
 import CreatableSelect from 'react-select/creatable';
 import Select from 'react-select';
-import { Badge, generateColoredClassNames, generateDismissableColoredClassNames } from "@/components/ui/badge"
+import { generateColoredClassNames, generateDismissableColoredClassNames } from "@/components/ui/badge"
 import { clsx } from 'clsx';
 
 /** Styling **/
@@ -15,10 +15,10 @@ const controlStyles = {
 // for some reason this value container has flex grow applied, don't know why.
 // doesn't exist in the multie value one
 const valueContainerStyles = "px-2 py-1 gap-1";
-let singleValueStyles = "py-0.5 px-2.5 text-xs mb-0 ";
+let singleValueStyles = "py-0.5 px-2.5 text-xs mb-0 font-semibold ";
 
-let multiValueStyles = "inline-flex items-center pl-2 pr-1 py-0.5 text-xs mb-0 ";
-let multiValueRemoveStyles = "inline-flex items-center ml-2 px-0.25 py-0.25 text-sm rounded-full bg-transparent ";
+let multiValueStyles = "inline-flex items-center pl-2 pr-1 py-0.5 text-xs mb-0 font-semibold";
+let multiValueRemoveStyles = "inline-flex items-center ml-2 px-0.25 py-0.25 text-sm rounded-full bg-transparent font-semibold ";
 
 const indicatorsContainerStyles = "p-1 gap-1 ";
 const indicatorSeparatorStyles = "bg-gray-300 dark:bg-gray-700";

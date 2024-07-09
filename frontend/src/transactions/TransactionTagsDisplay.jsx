@@ -84,26 +84,35 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
 
     function _localUpdateHandler(selectedValues) {
 
+        console.log(JSON.stringify(selectedValues, null, "\t"))
+        let values = []
+        if (Array.isArray(selectedValues)) {
+            values = selectedValues.map(obj => obj.value);
+        } else if (typeof selectedValues === 'object' && selectedValues !== null) {
+            values = [selectedValues.value];
+        }
+
+        console.log(values);
         // build up new transaction state and call onUpdate handler
         // new transaction state should only contain the things that have actually changed
         let updatedTransaction
 
         if (type == "tags") {
-            updatedTransaction = { manual_tags: [...selectedValues] };
+            updatedTransaction = { manual_tags: [...values] };
         } else {
-            updatedTransaction = { manual_party: [...selectedValues] };
+            updatedTransaction = { manual_party: [...values] };
         }
 
         updateHandler(id, updatedTransaction);
 
         if (autoCategorize) {
-            const displayTags = [...new Set([...selectedValues, ...autoTags])];
+            const displayTags = [...new Set([...values, ...autoTags])];
             setTags(displayTags)
         } else {
-            setTags(selectedValues)
+            setTags(values)
         }
 
-        setManualTags(selectedValues);
+        setManualTags(values);
     }
 
     const contentHeader = (

@@ -1,7 +1,7 @@
 import { Badge, generateColoredClassNames, generateDismissableColoredClassNames } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
 // import { useFetchTags } from "@/tags/TagApiHooks.js"
-import { TagEditor } from "@/components/TagEditor.jsx"
+import { ReactSelect } from "@/components/ReactSelect.jsx"
 
 
 export function TagEditorPopover({ values, allValues, updateHandler, cellValues, contentHeader, ...props }) {
@@ -37,25 +37,18 @@ export function TagEditorPopover({ values, allValues, updateHandler, cellValues,
       <PopoverContent className='w-[450px] p-3 ' align='start'>
         {contentHeader || ""}
 
-        <TagEditor
-          values={values}
-          allValues={allValues}
-          updateHandler={updateHandler}
+        <ReactSelect
+          onChange={updateHandler}
+          options={allValues?.map(item => ({ value: item, label: item }))}
+          value={values?.map(item => ({ label: item, value: item }))}
+          isMulti={true}
+          isCreatable={true}
+          coloredPills={true}
+          isClearable={true}
+          defaultMenuIsOpen={true}
+          closeMenuOnSelect={false}
           {...props}
         />
-
-        {/* 
-        placeholder
-        isClearable={true}
-        maxMenuHeight={200}
-        // autoFocus={true}
-        openMenuOnFocus={true} 
-        isDisabled="true"
-        autoFocus={true}
-        openMenuOnFocus={true}
-        placeholder={inputPlaceholder || "Add a tag..."}
-        maxMenuHeight={200}
-        */}
 
       </PopoverContent>
     </Popover>

@@ -9,7 +9,6 @@ import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 import TransactionCard from "@/transactions/TransactionCard.jsx"
 import { useEffect, useRef, useState } from "react"
 import { Input } from "@/components/ui/input.jsx"
-// import { TagEditor } from "@/components/TagEditor.jsx"
 import { ReactSelect } from "@/components/ReactSelect.jsx"
 
 import { useFetchTags } from "@/tags/TagApiHooks.js"
