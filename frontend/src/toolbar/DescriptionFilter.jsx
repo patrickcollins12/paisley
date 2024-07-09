@@ -5,16 +5,14 @@ import { Input } from "@/components/ui/input.jsx"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FilterButton from "./FilterButton.jsx"
 import useDebounce from './useDebounce.jsx';
-import { defaultOperator, filterExpression, stringOperators } from "@/toolbar/RuleCreator.jsx"
+import { defaultOperator, filterExpression } from "@/toolbar/RuleCreator.jsx"
 import { useUpdateEffect } from "react-use"
-
-// import FilterButton from './FilterButton'; // Adjust the path as necessary
 
 function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
 
   const fieldName = 'description';
   const [value, setValue] = useState("");
-  const debouncedValue = useDebounce(value, 7);
+  const debouncedValue = useDebounce(value, 500);
 
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
@@ -25,7 +23,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
   // handle changes to the debounced input value
   useUpdateEffect(() => {
     // perform any action using the debounced value
-    // this will be triggered only after the specified delay (500ms in this example)
+    // this will be triggered only after the specified delay (500mßs in this example)
     // console.log('Debounced value:', debouncedValue);
 
     onFilterUpdate(filterExpression(fieldName, operatorDef, debouncedValue));

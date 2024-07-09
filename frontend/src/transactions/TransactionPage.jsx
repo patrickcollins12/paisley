@@ -41,18 +41,14 @@ function TransactionPage() {
     });
   }
 
-  function handleFilterUpdate(filterExpression) {
-    console.log('handleFilterUpdate', filterExpression);
+  function handleFilterUpdate(...filterExpressions) {
+    console.log('handleFilterUpdate', filterExpressions);
+
+    // build up a set of field keys to remove from the set of active filters
+    const filtersToReset = [...new Set(filterExpressions.map(expression => expression.field))];
 
     setCustomFilterState((prevState) => {
-      // find any previous matching entries by field
-      const existingFieldFilter = prevState.find(filter => filter.field === filterExpression.field);
-
-      if (existingFieldFilter) {
-        return [filterExpression, ...prevState.filter(filter => filter.field !== filterExpression.field)];
-      }
-
-      return [filterExpression, ...prevState];
+      return [...filterExpressions, ...prevState.filter(filter => !(filtersToReset.includes(filter.field)))];
     });
   }
 

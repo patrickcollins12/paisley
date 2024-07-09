@@ -75,6 +75,19 @@ export const lookupOperators = {
   }
 }
 
+export const dateOperators = {
+  after: {
+    label: 'On or after',
+    operator: '>=',
+    short: '>'
+  },
+  before: {
+    label: 'On or before',
+    operator: '<=',
+    short: '<'
+  }
+}
+
 export function filterExpression(field, operatorDefinition, value) {
   return {
     field,
