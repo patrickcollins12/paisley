@@ -21,12 +21,14 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
         <AllFilter dataTable={dataTable} />
 
         <DescriptionFilter
-          dataTable={dataTable}
           operators={stringOperators}
           onFilterUpdate={onFilterUpdate}
           onFilterClear={onFilterClear} />
 
-        <DateFilter dataTable={dataTable} />
+        <DateFilter
+          onFilterUpdate={onFilterUpdate}
+          onFilterClear={onFilterClear}
+        />
 
         <LookupFilter
           label="Account"

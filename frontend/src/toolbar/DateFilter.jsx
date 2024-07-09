@@ -9,21 +9,26 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FilterButton from "./FilterButton.jsx"
+import { dateOperators, filterExpression } from "@/toolbar/RuleCreator.jsx"
 
-export default function DateFilter({ className }) {
+export default function DateFilter({ className, onFilterClear, onFilterUpdate }) {
+
+    const fieldName = 'datetime';
     const [date, setDate] = useState();
     const [pickerMode, setPickerMode] = useState("after");
     const [selectedPeriod, setSelectedPeriod] = useState("");
     const [popoverOpen, setPopoverOpen] = useState(false);
     const [isFilterActive, setIsFilterActive] = useState(false);
 
-    const clearSelected = (e) => {
+    const clearSelected = (event) => {
+        event.stopPropagation();
+
         setDate(null);
         setSelectedPeriod("");
-        setIsFilterActive(false)
-        saveValues({})
-        setPopoverOpen(false)
-        e.stopPropagation();
+        setIsFilterActive(false);
+        setPopoverOpen(false);
+
+        onFilterClear(fieldName);
     };
 
     const handleSelectChange = (value) => {
@@ -45,8 +50,20 @@ export default function DateFilter({ className }) {
         saveValues()
     }
 
-    const saveValues = (obj) => {
-        console.log(`Saved: pickerMode ${pickerMode}, date ${JSON.stringify(obj ? obj : date)}`)
+    const saveValues = (filterValues) => {
+        console.log(`Saved: pickerMode ${pickerMode}, date ${JSON.stringify(filterValues ? filterValues : date)}`);
+        const dateRange = {
+            ...date,
+            ...filterValues
+        };
+        const filters = []
+        if (dateRange?.from) {
+            filters.push(filterExpression(fieldName, dateOperators.after, dateRange?.from.toISODate()));
+        }
+        if (dateRange?.to) {
+            filters.push(filterExpression(fieldName, dateOperators.before, dateRange?.to.toISODate()));
+        }
+        onFilterUpdate(...filters);
     }
 
     const formatDate = (date) => {
