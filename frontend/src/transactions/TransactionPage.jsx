@@ -24,6 +24,7 @@ function TransactionPage() {
   const [columnVisibilityState, setColumnVisibilityState] = useState({
     debit: false,
     credit: false,
+    account_number: false,
   });
   const { data } = useFetchTransactions({
     pageIndex: pageState.pageIndex,

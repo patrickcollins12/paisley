@@ -83,9 +83,9 @@ export default function RuleEditPage() {
 
   // tags
   const handleTagChange = selectedValues => {
-    const values = selectedValues.map(obj => obj.value);
-    setTagData(values)
-    setRuleData(prevState => ({ ...prevState, tag: values }));
+    // const values = selectedValues.map(obj => obj.value);
+    setTagData(selectedValues)
+    setRuleData(prevState => ({ ...prevState, tag: selectedValues }));
   };
 
   const handleTagBlur = e => {
@@ -94,9 +94,9 @@ export default function RuleEditPage() {
 
   // parties
   const handlePartyChange = selectedValues => {
-    const values = selectedValues.map(obj => obj.value);
-    setPartyData(values)
-    setRuleData(prevState => ({ ...prevState, party: values }));
+    // const values = selectedValues.map(obj => obj.value);
+    setPartyData(selectedValues)
+    setRuleData(prevState => ({ ...prevState, party: selectedValues }));
   };
 
   const handlePartyBlur = e => {
@@ -187,8 +187,8 @@ export default function RuleEditPage() {
                 <ReactSelect
                   onChange={handleTagChange}
                   onBlur={handleTagBlur}
-                  options={useFetchTags('tags').data?.map(tag => ({ label: tag, value: tag}))}
-                  value={ tagData?.map(tag => ({ label: tag, value: tag})) }
+                  optionsAsArray={useFetchTags('tags').data}
+                  valueAsArray={ tagData }
                   isMulti={true}
                   isCreatable={true}
                   coloredPills={true}
@@ -205,9 +205,11 @@ export default function RuleEditPage() {
                 <ReactSelect
                   onChange={handlePartyChange}
                   onBlur={handlePartyBlur}
-                  options={useFetchTags('parties').data?.map(party => ({ label: party, value: party}))}
-                  value={ partyData?.map(party => ({ label: party, value: party})) }
-                  isMulti={true}
+                  // options={useFetchTags('parties').data?.map(party => ({ label: party, value: party}))}
+                  // value={ partyData?.map(party => ({ label: party, value: party})) }
+                  optionsAsArray={useFetchTags('parties').data}
+                  valueAsArray={ partyData }
+                  isMulti={false}
                   isCreatable={true}
                   coloredPills={true}
                   isClearable={true}

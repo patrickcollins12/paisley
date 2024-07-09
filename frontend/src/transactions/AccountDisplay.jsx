@@ -3,13 +3,13 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/h
 import useAccountData from "@/accounts/AccountApiHooks.js"
 import { Skeleton } from "@/components/ui/skeleton.jsx"
 
-export function AccountDisplay({account}) {
+export function AccountDisplay({account, display}) {
   const {data, error, isLoading} = useAccountData(account);
 
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <a className='text-xs font-normal hover:cursor-pointer'>{account}</a>
+        <a className='text-xs font-normal hover:cursor-pointer'>{display}</a>
       </HoverCardTrigger>
       <HoverCardContent align="start">
         {isLoading &&

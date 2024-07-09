@@ -208,7 +208,8 @@ class TransactionQuery {
         SELECT 
         t.id,
         t.datetime,
-        t.account,
+        t.account AS account_number,
+        a.shortname AS account_shortname,
 
         t.description as orig_description,
         te.description as revised_description,
@@ -255,6 +256,7 @@ class TransactionQuery {
         te.auto_categorize 
         FROM 'transaction' t
         LEFT JOIN 'transaction_enriched' te ON t.id = te.id
+        LEFT JOIN 'account' a ON t.account = a.accountid
     `
 
     static allTransactionsSizeQuery = `

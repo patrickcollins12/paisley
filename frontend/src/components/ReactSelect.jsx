@@ -36,7 +36,7 @@ const optionStyles = {
 };
 /** End Styling **/
 
-export function ReactSelect({ coloredPills, isCreatable, ...props }) {
+export function ReactSelect({ coloredPills, value, options, onChange, valueAsArray, optionsAsArray, isCreatable, ...props }) {
 
   multiValueStyles += (coloredPills) ? " rounded-full font-semibold " : " rounded-md bg-secondary "
   singleValueStyles += (coloredPills) ? " rounded-full " : " "
@@ -97,9 +97,26 @@ export function ReactSelect({ coloredPills, isCreatable, ...props }) {
     }
   }
 
+  // // react-select returns an object of value=>option test.
+  // // in our instance these are all the same
+  // ReactSelect({ ... onChange, valueAsArray, optionsAsArray ... })
+  function _localOnChangeHandler(selectedValues) {
+    // const selectedValues = selectedOptions.map(item => item.value);
+    let values = []
+    if (Array.isArray(selectedValues)) {
+      values = selectedValues.map(obj => obj.value);
+    } else if (typeof selectedValues === 'object' && selectedValues !== null) {
+      values = [selectedValues.value];
+    }
+
+    onChange(values)
+  }
 
   return isCreatable ? (
     <CreatableSelect
+      onChange={_localOnChangeHandler}
+      options={options || optionsAsArray?.map(item => ({ value: item, label: item }))}
+      value={value || valueAsArray?.map(item => ({ label: item, value: item }))}
       unstyled={true}
       styles={manualStyles}
       classNames={styles}
@@ -107,6 +124,9 @@ export function ReactSelect({ coloredPills, isCreatable, ...props }) {
     />
   ) : (
     <Select
+      onChange={_localOnChangeHandler}
+      options={options || optionsAsArray?.map(item => ({ value: item, label: item }))}
+      value={value || valueAsArray?.map(item => ({ label: item, value: item }))}
       unstyled={true}
       styles={manualStyles}
       classNames={styles}

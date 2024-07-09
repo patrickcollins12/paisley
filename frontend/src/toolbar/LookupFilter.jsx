@@ -1,6 +1,6 @@
 import { Landmark } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
-import useAccountData from "@/accounts/AccountApiHooks.js"
+// import useAccountData from "@/accounts/AccountApiHooks.js"
 import React, { useState, useEffect, useMemo } from 'react';
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import FilterButton from "./FilterButton.jsx"
 import { defaultOperator, filterExpression } from "@/toolbar/RuleCreator.jsx"
 
-function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilterClear }) {
+function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilterClear, coloredPills }) {
 
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [isFilterActive, setIsFilterActive] = useState(false);
@@ -28,7 +28,7 @@ function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilt
     setIsFilterActive(true);
     setPopoverOpen(false);
 
-    onFilterUpdate(filterExpression(field, operatorDef, selectedOptions.map(option => option.value)));
+    onFilterUpdate(filterExpression(field, operatorDef, selectedOptions));
   }, [selectedOptions]);
 
   useEffect(() => {
@@ -62,7 +62,7 @@ function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilt
   const saveSelection = () => {
     setIsFilterActive(selectedOptions.length > 0);
     setPopoverOpen(false);
-    onFilterUpdate(filterExpression(field, operatorDef, selectedOptions.map(option => option.value)));
+    onFilterUpdate(filterExpression(field, operatorDef, selectedOptions));
   }
 
   const clearSelection = (event) => {
@@ -139,12 +139,12 @@ function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilt
           {!operatorOnly && options &&
             <ReactSelect
               onChange={selected => setSelectedOptions(Array.isArray(selected) ? [...selected] : [selected])}
-              options={selectOptions}
-              value={selectedOptions}
+              optionsAsArray={selectOptions}
+              valueAsArray={selectedOptions}
               isMulti={operator !== 'is'}
               isClearable={false}
               closeMenuOnSelect={false}
-              coloredPills={true}
+              coloredPills={coloredPills}
               autoFocus
               components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
               defaultMenuIsOpen

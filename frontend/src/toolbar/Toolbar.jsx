@@ -30,30 +30,23 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
 
         <LookupFilter
           label="Account"
-          field="account"
-          options={() => {
+          field="account_shortname"
+          options={ () => {
             if (!accounts.data) return [];
-
-            return Object.values(accounts.data).map(account => ({
-              label: `${account.institution} ${account.name}`,
-              value: account.accountid
-            }));
+            return Object.keys(accounts.data).map(key => accounts.data[key].shortname)  
+          
           }}
+          coloredPills={false}
           operators={lookupOperators}
           onFilterUpdate={onFilterUpdate}
           onFilterClear={onFilterClear}
         />
+
         <LookupFilter
           label="Tags"
           field="tags"
-          options={() => {
-            if (!tags.data) return [];
-
-            return tags.data?.map(tag => ({
-              label: tag,
-              value: tag
-            }));
-          }}
+          options={tags.data}
+          coloredPills={true}
           operators={lookupOperators}
           onFilterUpdate={onFilterUpdate}
           onFilterClear={onFilterClear}
@@ -61,14 +54,8 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
         <LookupFilter
           label="Party"
           field="party"
-          options={() => {
-            if (!parties.data) return [];
-
-            return parties.data?.map(party => ({
-              label: party,
-              value: party
-            }));
-          }}
+          options={parties.data}
+          coloredPills={true}
           operators={lookupOperators}
           onFilterUpdate={onFilterUpdate}
           onFilterClear={onFilterClear}

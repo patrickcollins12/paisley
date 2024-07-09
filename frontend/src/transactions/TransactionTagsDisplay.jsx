@@ -82,17 +82,17 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
         setManualTags(updatedManualTags);
     }
 
-    function _localUpdateHandler(selectedValues) {
+    function _localUpdateHandler(values) {
 
-        console.log(JSON.stringify(selectedValues, null, "\t"))
-        let values = []
-        if (Array.isArray(selectedValues)) {
-            values = selectedValues.map(obj => obj.value);
-        } else if (typeof selectedValues === 'object' && selectedValues !== null) {
-            values = [selectedValues.value];
-        }
+        // console.log(JSON.stringify(selectedValues, null, "\t"))
+        // let values = selectedValues
+        // if (Array.isArray(selectedValues)) {
+        //     values = selectedValues.map(obj => obj.value);
+        // } else if (typeof selectedValues === 'object' && selectedValues !== null) {
+        //     values = [selectedValues.value];
+        // }
 
-        console.log(values);
+        // console.log(values);
         // build up new transaction state and call onUpdate handler
         // new transaction state should only contain the things that have actually changed
         let updatedTransaction

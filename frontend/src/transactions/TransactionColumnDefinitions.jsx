@@ -10,16 +10,24 @@ export function createColumnDefinitions(onTransactionUpdate) {
     {
       accessorKey: 'datetime',
       header: props => <HeaderCell {...props} />,
-      cell: ({ row }) => <DateTimeDisplay account={row.getValue("account")} datetime={row.getValue("datetime")} />,
+      cell: ({ row }) => <DateTimeDisplay account={row.getValue("account_number")} datetime={row.getValue("datetime")} />,
       meta: {
         displayName: 'Date'
       }
     },
 
     {
-      accessorKey: 'account',
+      accessorKey: 'account_number',
       header: props => <HeaderCell {...props} />,
-      cell: ({ row }) => <AccountDisplay account={row.getValue("account")} />,
+      cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_number")} />,
+      meta: {
+        displayName: 'Account Number'
+      }
+    },
+    {
+      accessorKey: 'account_shortname',
+      header: props => <HeaderCell {...props} />,
+      cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_shortname")} />,
       meta: {
         displayName: 'Account'
       }

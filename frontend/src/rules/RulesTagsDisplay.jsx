@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import { TagEditorPopover } from "@/components/TagEditorPopover"
 
-export function RulesTagsDisplay({ id, values, onUpdate, resource }) {
+export function RulesTagsDisplay({ id, values, onUpdate, resource, ...props }) {
   // const id = data.id;
 
   // bail if it is not an array
@@ -13,8 +13,8 @@ export function RulesTagsDisplay({ id, values, onUpdate, resource }) {
   const [tags, setTags] = useState(values);
   const { data: allTags } = useFetchTags(resource); // for the select dropdown
 
-  function onChange(selectedValues) {
-    const values = selectedValues.map(obj => obj.value);
+  function _localChangeHandler(values) {
+    // const values = selectedValues.map(obj => obj.value);
     setTags(values);
     const resourceToUpdate = (resource=="tags")?"tag":"party"
     var postObj = { [resourceToUpdate]: values}
@@ -27,7 +27,7 @@ export function RulesTagsDisplay({ id, values, onUpdate, resource }) {
   const placeholderType = (resource=="tags")?"tag":"party"
   const placeholder = `Select a ${placeholderType}. Type to create a ${placeholderType}...`
   return (
-    <TagEditorPopover values={values} allValues={allTags} onChange={onChange} placeholder={placeholder} />
+    <TagEditorPopover values={values} allValues={allTags} onChange={_localChangeHandler} placeholder={placeholder} {...props} />
   );
 
 }

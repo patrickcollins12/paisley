@@ -84,7 +84,7 @@ class TransactionQueryFilter {
             'tags', 'manual_tags', 'auto_tags',
             'party', 'manual_party', 'auto_party',
             'type', 'debit', 'credit', 'amount', 'balance',
-            'account', 'datetime'
+            'account', 'account_shortname', 'datetime'
         ]
         // const validOperators = ['>=', '>', '<', '<=', '=',]
 
@@ -168,7 +168,7 @@ class TransactionQueryFilter {
                 this._addSqlConditionField(`(%% REGEXP ? ${IS_NULL})`, fields, [value], NOT)
                 break;
             case 'in':
-                if (/tags/.test(field)) {
+                if (/(tags|party)/.test(field)) {
                     this._addSqlTagsWhere(fields, value, NOT)
 
                 } else {

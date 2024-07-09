@@ -39,8 +39,10 @@ export function TagEditorPopover({ values, allValues, updateHandler, cellValues,
 
         <ReactSelect
           onChange={updateHandler}
-          options={allValues?.map(item => ({ value: item, label: item }))}
-          value={values?.map(item => ({ label: item, value: item }))}
+          // options={allValues?.map(item => ({ value: item, label: item }))}
+          // value={values?.map(item => ({ label: item, value: item }))}
+          optionsAsArray={allValues}
+          valueAsArray={values}
           isMulti={true}
           isCreatable={true}
           coloredPills={true}

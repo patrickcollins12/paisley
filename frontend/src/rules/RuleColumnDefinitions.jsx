@@ -42,7 +42,7 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
     {
       accessorKey: 'tag',
       header: props => <HeaderCell {...props} />,
-      cell: props => <RulesTagsDisplay resource="tags" id={props.row.original.id} onUpdate={updaterFunc} values={props.row.original.tag} />,
+      cell: props => <RulesTagsDisplay resource="tags" id={props.row.original.id} onUpdate={updaterFunc} values={props.row.original.tag} isMulti={true}/>,
       meta: {
         displayName: 'Tags'
       }
@@ -50,7 +50,7 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
     {
       accessorKey: 'party',
       header: props => <HeaderCell {...props} />,
-      cell: props => <RulesTagsDisplay resource="parties" id={props.row.original.id} onUpdate={updaterFunc} values={props.row.original.party} />,
+      cell: props => <RulesTagsDisplay resource="parties" id={props.row.original.id} onUpdate={updaterFunc} values={props.row.original.party} isMulti={false} />,
       meta: {
         displayName: 'Party'
       }
