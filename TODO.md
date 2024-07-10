@@ -1,7 +1,7 @@
 # TODO
 - [ ] Bug: update_transaction auth handler is locking. fix it.
-- [ ] Bug: a faulty rule shouldn't halt the rerun_classifier. Fix the throw/catch
-- [ ] Add Simon "Create rule" from description filter, start with: description = 'assad', description = /assad/i
+- [ ] Bug: Editable input is saving on blur even when nothing has changed (15m)
+- [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 - [ ] Ruledit needs a save button?
 - [ ] Ruleedit should clear old values before running again
 - [ ] Rules applied should save the ruleid as well
@@ -9,7 +9,7 @@
 - [ ] Add string (contains/regex) to Account Filter
 - [ ] do tests for in and not in lists. try it with tags, party and account.
 - [ ] do tests for regex/contains on lists like tags, party and account.
-- [ ] Editable input is saving on blur even when nothing has changed (15m)
+- [x] Bug: a faulty rule shouldn't halt the rerun_classifier. Fix the throw/catch
 - [x] Bug: Tags needs to merge sets properly on autocat select/deselect.
 - [x] Bug: fix transaction column filter: Account_name
 - [x] Bug: badges aren't applying correctly on frontend
