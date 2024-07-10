@@ -27,7 +27,7 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
         setManualTags(manual);
         setTags(full);
         setAutoCategorize(autoCategorize);
-    }, [manual, auto, autoCategorize]);
+    }, [manual, auto]);
 
     // handle the logic when autocatorization is switched on and off
     function handleAutoCategorizeChange(_autoCategorize) {
@@ -38,9 +38,12 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
         // OK this logic is not trivial, so i'll describe it.
         // When turning off auto categorization, we want to take the existing
         // automatically created tags and move them over to the manual tags, so you can edit them.
+        
         if (!_autoCategorize) {
             updatedManualTags = [...new Set([...manualTags, ...autoTags])];
         }
+
+        
         // but when turning automatic tagging back on, we want to do the opposite,
         // we want to take whatever manually created tags are already covered by
         // the auto tagging and remove them from the set.
@@ -57,12 +60,15 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
             updatedManualTags = [...difference];
         }
 
+
+
         // build up new transaction state and call onUpdate handler
         // new transaction state should only contain the things that have actually changed
-        let updatedTransaction = {
-            auto_categorize: _autoCategorize,
-            manual_tags: [...updatedManualTags]
-        };
+        let updatedTransaction;
+        //  = {
+        //     auto_categorize: _autoCategorize,
+        //     manual_tags: [...updatedManualTags]
+        // };
 
         if (type == "tags") {
             updatedTransaction = {
@@ -79,6 +85,8 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
         updateHandler(id, updatedTransaction);
 
         setAutoCategorize(_autoCategorize);
+        console.log(`_autoCategorize: ${_autoCategorize}, manualTags: ${manualTags}, autoTags: ${autoTags}, updatedManualTags: ${updatedManualTags}`)
+
         setManualTags(updatedManualTags);
     }
 
@@ -112,7 +120,7 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
             setTags(values)
         }
 
-        setManualTags(values);
+        setManualTags(values); // <--HERE
     }
 
     const contentHeader = (

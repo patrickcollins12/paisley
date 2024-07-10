@@ -213,7 +213,7 @@ export default function RuleEditPage() {
                   isCreatable={true}
                   coloredPills={true}
                   isClearable={true}
-                  closeMenuOnSelect={false}
+                  closeMenuOnSelect={true}
                   placeholder="Add a party..."
                 />
 

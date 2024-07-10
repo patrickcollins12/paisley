@@ -1,42 +1,45 @@
 import CreatableSelect from 'react-select/creatable';
 import Select from 'react-select';
+import { useEffect } from 'react';
 import { generateColoredClassNames, generateDismissableColoredClassNames } from "@/components/ui/badge"
 import { clsx } from 'clsx';
 
-/** Styling **/
-const containerStyles = " ";
-
-const controlStyles = {
-  base: "rounded-sm bg-background hover:cursor-pointer",
-  focus: "border border-input ",
-  nonFocus: "border border-gray-200 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700",
-};
-
-// for some reason this value container has flex grow applied, don't know why.
-// doesn't exist in the multie value one
-const valueContainerStyles = "px-2 py-1 gap-1";
-let singleValueStyles = "py-0.5 px-2.5 text-xs mb-0 font-semibold ";
-
-let multiValueStyles = "inline-flex items-center pl-2 pr-1 py-0.5 text-xs mb-0 font-semibold";
-let multiValueRemoveStyles = "inline-flex items-center ml-2 px-0.25 py-0.25 text-sm rounded-full bg-transparent font-semibold ";
-
-const indicatorsContainerStyles = "p-1 gap-1 ";
-const indicatorSeparatorStyles = "bg-gray-300 dark:bg-gray-700";
-const clearIndicatorStyles = "p-1 text-gray-500 rounded-md hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300";
-const dropdownIndicatorStyles = "p-1 text-gray-500 rounded-md hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300";
-
-const inputStyles = "text-xs items-center ";
-const placeholderStyles = "p-2 text-xs items-center text-muted-foreground";
-
-const menuStyles = "p-1 mt-2 border border-input bg-background rounded-sm text-xs";
-const optionStyles = {
-  base: "hover:cursor-pointer px-3 py-2 rounded-sm",
-  focus: " active:bg-gray-200 active:bg-gray-800 bg-gray-100 dark:bg-gray-900",
-  selected: "opacity-50",
-};
-/** End Styling **/
-
 export function ReactSelect({ coloredPills, value, options, onChange, valueAsArray, optionsAsArray, isCreatable, ...props }) {
+
+  /** Styling **/
+  /** Weird side effects if these aren't defined inside this component **/
+  const containerStyles = " ";
+
+  const controlStyles = {
+    base: "rounded-sm bg-background hover:cursor-pointer",
+    focus: "border border-input ",
+    nonFocus: "border border-gray-200 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700",
+  };
+
+  // for some reason this value container has flex grow applied, don't know why.
+  // doesn't exist in the multie value one
+  const valueContainerStyles = "px-2 py-1 gap-1";
+  let singleValueStyles = "py-0.5 px-2.5 text-xs mb-0 font-semibold ";
+
+  let multiValueStyles = "inline-flex items-center pl-2 pr-1 py-0.5 text-xs mb-0 font-semibold";
+  let multiValueRemoveStyles = "inline-flex items-center ml-2 px-0.25 py-0.25 text-sm rounded-full bg-transparent font-semibold ";
+
+  const indicatorsContainerStyles = "p-1 gap-1 ";
+  const indicatorSeparatorStyles = "bg-gray-300 dark:bg-gray-700";
+  const clearIndicatorStyles = "p-1 text-gray-500 rounded-md hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300";
+  const dropdownIndicatorStyles = "p-1 text-gray-500 rounded-md hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-800 dark:hover:text-gray-300";
+
+  const inputStyles = "text-xs items-center ";
+  const placeholderStyles = "p-2 text-xs items-center text-muted-foreground";
+
+  const menuStyles = "p-1 mt-2 border border-input bg-background rounded-sm text-xs";
+  const optionStyles = {
+    base: "hover:cursor-pointer px-3 py-2 rounded-sm",
+    focus: " active:bg-gray-200 active:bg-gray-800 bg-gray-100 dark:bg-gray-900",
+    selected: "opacity-50",
+  };
+  /** End Styling **/
+
 
   multiValueStyles += (coloredPills) ? " rounded-full font-semibold " : " rounded-md bg-secondary "
   singleValueStyles += (coloredPills) ? " rounded-full " : " "
@@ -64,6 +67,7 @@ export function ReactSelect({ coloredPills, value, options, onChange, valueAsArr
       )
       return classes
     },
+
     multiValue: (state) => clsx(
       coloredPills ? generateColoredClassNames(state.children) : "",
       multiValueStyles,
@@ -85,6 +89,16 @@ export function ReactSelect({ coloredPills, value, options, onChange, valueAsArr
     valueContainer: () => valueContainerStyles,
     container: () => containerStyles,
   }
+
+
+  useEffect(() => {
+    console.log("ReactSelect value updated:", value);
+  }, [value]);
+  
+  useEffect(() => {
+    console.log("ReactSelect valueAsArray updated:", valueAsArray);
+  }, [valueAsArray]);
+
 
   // this section is a bug fix, for some reason, when not in 
   // multi mode, the flex:1 was making the pill stretch.

@@ -121,6 +121,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         data={props.row.original}
         placeholder="Add tags..."
         isMulti={true}
+        autoFocus={true}
         isClearable={true}
         maxMenuHeight={200}
         openMenuOnFocus={true}
@@ -155,6 +156,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         data={props.row.original}
         placeholder="Add a party..."
         isMulti={false}
+        autoFocus={true}
         isClearable={true}
         maxMenuHeight={200}
         openMenuOnFocus={true}

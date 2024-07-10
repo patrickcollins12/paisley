@@ -30,7 +30,7 @@ function ColumnSelector({ dataTable }) {
                   column.toggleVisibility();
                 }}
               >
-                {column.id}
+                {column.columnDef?.meta?.displayName || column.id}
               </DropdownMenuCheckboxItem>
             )
           })}

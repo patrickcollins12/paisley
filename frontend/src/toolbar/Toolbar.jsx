@@ -127,7 +127,6 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
       <div className='flex flex-row-reverse basis-1/2 space-x-2 space-x-reverse'>
         <ColumnSelector dataTable={dataTable} />
       </div>
-
     </div>
   )
 }

@@ -8,9 +8,8 @@ import { formatAmountCell } from "@/transactions/TransactionFieldFormatters.jsx"
 export default function TransactionCard({ data }) {
 
   const dateTime = DateTime.fromISO(data.datetime);
-  const { data: accountData } = useAccountData(data.account);
-  const accountDisplayName = `${accountData?.institution} ${accountData?.name}`;
-  const amountDisplayValue = data.amount
+  const { data: accountData } = useAccountData(data.account_number);
+  
   const tagAndParty = [...data.tags, ...data.party]
 
   return (
@@ -21,7 +20,7 @@ export default function TransactionCard({ data }) {
             {dateTime.toFormat("dd LLL yyyy")}
           </div>
           <div className="text-right opacity-50">
-            {accountDisplayName}
+            {accountData?.shortname}
           </div>
         </div>
         <div className="flex col-2 justify-between items-end gap-3">
@@ -29,7 +28,7 @@ export default function TransactionCard({ data }) {
             {data.description}
           </div>
           <div>
-            {formatAmountCell(amountDisplayValue)}
+            {formatAmountCell(data.amount)}
           </div>
         </div>
         <div className="flex flex-row">

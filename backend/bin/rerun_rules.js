@@ -7,12 +7,11 @@ const minimist = require('minimist');
 const args = minimist(process.argv);
 
 // load the config
-const config = require('./src/Config');
+const config = require('../src/Config');
 // console.log("args:",args);
 config.load(args["config"])
 
-
-const RulesClassifier = require('./src/RulesClassifier');
+const RulesClassifier = require('../src/RulesClassifier');
 // const BankDatabase = require('./src/BankDatabase');
 const classifier = new RulesClassifier()
 
