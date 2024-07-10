@@ -84,7 +84,7 @@ class TransactionQueryFilter {
             'tags', 'manual_tags', 'auto_tags',
             'party', 'manual_party', 'auto_party',
             'type', 'debit', 'credit', 'amount', 'balance',
-            'account', 'account_shortname', 'datetime'
+            'account', 'account_number','account_shortname',  'datetime'
         ]
         // const validOperators = ['>=', '>', '<', '<=', '=',]
 

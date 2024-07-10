@@ -37,7 +37,7 @@ class RuleToSqlParser {
     constructor() {
         this.allowedFieldList = [
             'description', 'revised_description', 'orig_description',
-            'account', 
+            'account', 'account_shortname', 'account_number',
             'manual_tags', 'auto_tags', 'tags', 
             'party', 'manual_party', 'auto_party', 
             'type', 

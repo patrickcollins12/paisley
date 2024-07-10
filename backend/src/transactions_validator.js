@@ -21,7 +21,7 @@ const validateTransactions = [
   query('order_by')
     .optional()
     .custom(value => {
-      const validSortColumns = ['datetime', 'account', 'description', 'credit', 'debit', 'amount', 'balance', 'type', 'tags', 'manual_tags'];
+      const validSortColumns = ['datetime', 'account', 'account_number', 'account_shortname', 'description', 'credit', 'debit', 'amount', 'balance', 'type', 'tags', 'manual_tags'];
       const parts = value.split(',');
       if (parts.length !== 2 || !validSortColumns.includes(parts[0].trim()) || !['asc', 'desc', 'ASC', 'DESC'].includes(parts[1].trim().toUpperCase())) {
         throw new Error('Invalid order_by parameter');

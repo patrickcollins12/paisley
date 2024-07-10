@@ -1,6 +1,9 @@
 # TODO
 - [ ] Bug: Tags needs to merge sets properly on autocat select/deselect.
 - [ ] Bug: update_transaction auth handler is locking. fix it.
+- [ ] Bug: badges aren't applying correctly on frontend
+- [ ] Bug: tag list is sometimes half loaded
+- [ ] Bug: a faulty rule shouldn't halt the rerun_classifier. Fix the throw/catch.
 - [ ] Ruledit needs a save button.
 - [ ] Ruleedit should clear old values before running again
 - [ ] Rules applied should save the ruleid as well
