@@ -28,7 +28,7 @@ describe('Rules classifier', () => {
 
     expect(result).toEqual({
       id: 'tx1',
-      datetime: '2023-04-01 12:00:00',
+      datetime: '2023-04-01 03:00:00',
       account: 'A123',
       description: 'Initial Deposit',
       credit: 1000,

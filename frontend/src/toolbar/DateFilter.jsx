@@ -13,7 +13,7 @@ import { dateOperators, filterExpression } from "@/toolbar/RuleCreator.jsx"
 
 export default function DateFilter({ className, onFilterClear, onFilterUpdate }) {
 
-    const fieldName = 'datetime';
+    const fieldName = 'datetime_without_timezone';
     const [date, setDate] = useState();
     const [pickerMode, setPickerMode] = useState("after");
     const [selectedPeriod, setSelectedPeriod] = useState("");

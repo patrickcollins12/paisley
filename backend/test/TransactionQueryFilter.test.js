@@ -257,9 +257,10 @@ describe('Test TransactionQuery', () => {
     });
 
     test('/transactions datetime > 2023-04-02', async () => {
-        const url = `http://localhost:${port}/api/transactions/?filter[datetime][>]=2023-04-02`
+        const url = `http://localhost:${port}/api/transactions/?filter[datetime][>=]=2023-04-02`
         const res = await axios.get(url);
-        expect(res.data?.resultSummary?.count).toBe(2)
+        // console.log(res.data)
+        expect(res.data?.resultSummary?.count).toBe(3)
     });
 
     test('/transactions datetime between ', async () => {

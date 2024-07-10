@@ -1,9 +1,11 @@
 # TODO
 - [ ] Bug: Tags needs to merge sets properly on autocat select/deselect.
 - [ ] Bug: update_transaction auth handler is locking. fix it.
+- [ ] Bug: fix transaction column filter: Account_name
 - [ ] Bug: badges aren't applying correctly on frontend
 - [ ] Bug: tag list is sometimes half loaded
-- [ ] Bug: a faulty rule shouldn't halt the rerun_classifier. Fix the throw/catch.
+- [ ] Bug: a faulty rule shouldn't halt the rerun_classifier. Fix the throw/catch
+- [ ] Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 - [ ] Ruledit needs a save button.
 - [ ] Ruleedit should clear old values before running again
 - [ ] Rules applied should save the ruleid as well

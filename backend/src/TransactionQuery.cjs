@@ -207,7 +207,10 @@ class TransactionQuery {
     static allTransactionsSubView = `
         SELECT 
         t.id,
+
         t.datetime,
+        substr(t.datetime, 1, instr(t.datetime, 'T')-1) AS datetime_without_timezone,
+
         t.account AS account_number,
         a.shortname AS account_shortname,
 

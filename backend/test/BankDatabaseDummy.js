@@ -33,6 +33,14 @@ function database_setup() {
           "party" JSON,
           PRIMARY KEY("id")
         );
+        CREATE TABLE "account" (
+	        "accountid"	TEXT NOT NULL UNIQUE,
+	        "institution"	TEXT,
+	        "name"	TEXT,
+	        "holders"	TEXT,
+	        "currency"	TEXT, "type" TEXT, "timezone" TEXT, "shortname" TEXT,
+	        PRIMARY KEY("accountid")
+        );
     `);
 
   // Insert sample transactions
@@ -49,16 +57,16 @@ function database_setup() {
 
   // Sample data for transactions
   const transactions = [
-    ['tx1', '2023-04-01 12:00:00', 'A123', 'Initial Deposit', 1000, 0, 1000, "DEP",
+    ['tx1', '2023-04-01 03:00:00', 'A123', 'Initial Deposit', 1000, 0, 1000, "DEP",
       JSON.stringify(['tag1', 'tag2']), JSON.stringify(['Shop 1'])],
 
-    ['tx2', '2023-04-02 12:00:00', 'A123', 'Coffee Shop', 0, 100, 900, "DEP",
+    ['tx2', '2023-04-02 03:00:00', 'A123', 'Coffee Shop', 0, 100, 900, "DEP",
       JSON.stringify(['tag1', 'tag2']), JSON.stringify(['Shop 2'])],
 
-    ['tx3', '2023-04-03 12:00:00', 'A123', 'Book Store', 0, 200, 700, "TXN",
+    ['tx3', '2023-04-03 03:00:00', 'A123', 'Book Store', 0, 200, 700, "TXN",
       JSON.stringify(['tag2', 'tag3']), JSON.stringify(['Shop 3'])],
 
-    ['tx4', '2023-04-04 12:00:00', 'A345', 'Hardware Store', 0, 5, 500, "TXN",
+    ['tx4', '2023-04-04 03:00:00', 'A345', 'Hardware Store', 0, 5, 500, "TXN",
       JSON.stringify([]), JSON.stringify([])]
   ];
 
