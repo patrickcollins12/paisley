@@ -8,8 +8,8 @@ const disableAuth = false; // false means apply auth, true means disable auth
 router.get('/api/tags', async (req, res) => {
   let db = new BankDatabase();
   let query = `
-      SELECT DISTINCT json_each.value 
-      FROM 'transaction' t, json_each(t.tags) 
+      SELECT DISTINCT json_each.value AS tags
+      FROM 'transaction' t, json_each(json_extract(t.tags, '$.tags')) 
       WHERE json_valid(t.tags)
 
       UNION
@@ -21,7 +21,7 @@ router.get('/api/tags', async (req, res) => {
 
   try {
     const stmt = db.db.prepare(query);
-    const rows = stmt.all().map(obj => obj.value);
+    const rows = stmt.all().map(obj => obj.tags);
     res.json(rows);
   } catch (err) {
     console.log("error: ", err.message);

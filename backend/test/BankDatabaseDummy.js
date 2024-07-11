@@ -58,16 +58,24 @@ function database_setup() {
   // Sample data for transactions
   const transactions = [
     ['tx1', '2023-04-01 03:00:00', 'A123', 'Initial Deposit', 1000, 0, 1000, "DEP",
-      JSON.stringify(['tag1', 'tag2']), JSON.stringify(['Shop 1'])],
+      JSON.stringify( {"tags"  : ['tag1', 'tag2'], "rule":[1,2]}), 
+      JSON.stringify( {"party": ['Shop 1'],       "rule":[1]  })
+    ],
 
     ['tx2', '2023-04-02 03:00:00', 'A123', 'Coffee Shop', 0, 100, 900, "DEP",
-      JSON.stringify(['tag1', 'tag2']), JSON.stringify(['Shop 2'])],
+      JSON.stringify({"tags" :   ['tag1', 'tag2'], "rule":[1,2]} ), 
+      JSON.stringify({"party" : ['Shop 2'],       "rule":[2]  } )
+    ],
 
     ['tx3', '2023-04-03 03:00:00', 'A123', 'Book Store', 0, 200, 700, "TXN",
-      JSON.stringify(['tag2', 'tag3']), JSON.stringify(['Shop 3'])],
+      JSON.stringify({"tags":['tag2', 'tag3'],'rule':[2,3]}), 
+      JSON.stringify({"party" : ['Shop 3'], "rule":[3]  } )
+    ],
 
     ['tx4', '2023-04-04 03:00:00', 'A345', 'Hardware Store', 0, 5, 500, "TXN",
-      JSON.stringify([]), JSON.stringify([])]
+      JSON.stringify({}), 
+      JSON.stringify({})
+    ]
   ];
 
   // id, description, tags, party, auto_categorize

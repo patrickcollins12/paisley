@@ -11,7 +11,7 @@ class RulesClassifier {
         this.ruleComponents = {}
     }
 
-    applyRule(ruleWhereClause, params, txids, newTags, party) {
+    applyRule(rule_id, ruleWhereClause, params, txids, newTags, party) {
         // Building the dynamic part of the WHERE clause based on the txids provided
         let txidsCondition = '';
         // let params = [];
@@ -52,10 +52,26 @@ class RulesClassifier {
 
         // Update each transaction with the new merged tags
         transactions.forEach(transaction => {
-            const existingTags = JSON.parse(transaction.auto_tags || '[]');
-            const mergedTags = Array.from(new Set([...existingTags, ...newTags])); // Use Set to remove duplicates
-            const tagsJson = JSON.stringify(mergedTags);
-            updateStmt.run(tagsJson, JSON.stringify(party), transaction.id);
+            // auto_tags.tags
+            // auto_tags.ruleid
+            const tags = JSON.parse(transaction.auto_tags || '{}')
+            const existingTags = tags?.tags || [];
+            const existingRuleIds = tags?.rule || [];
+
+            // Use Set to remove duplicates
+            const mergedTags = Array.from(new Set([...existingTags, ...newTags]));
+            const mergedRuleIds = Array.from(new Set([...existingRuleIds, rule_id])); 
+
+            // Add the new tags object
+            const tagObj = {"tags":mergedTags,"rule":mergedRuleIds}
+            const tagJson = JSON.stringify(tagObj);
+
+            let partyJson = "{}"
+            if (party) {
+                partyJson = JSON.stringify({party:party, rule:rule_id})
+            }
+
+            updateStmt.run(tagJson, partyJson, transaction.id);
 
         });
 
@@ -76,7 +92,7 @@ class RulesClassifier {
         }
 
         let resetTagsQuery = `UPDATE "transaction"
-            SET tags = '[]',
+            SET tags = '{}',
                 party = '[]'
             ${txidsCondition}`
 
@@ -102,6 +118,7 @@ class RulesClassifier {
 
             const whereSqlObj = parser.parse(rule.rule);
             cnt = this.applyRule(
+                rule.id,
                 whereSqlObj.sql,
                 whereSqlObj.params,
                 null,
@@ -132,6 +149,7 @@ class RulesClassifier {
                 const party = JSON.parse(rule?.party || [])
 
                 cnt += this.applyRule(
+                    rule.id,
                     whereSqlObj.sql,
                     whereSqlObj.params,
                     txids,

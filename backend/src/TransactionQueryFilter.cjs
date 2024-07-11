@@ -29,8 +29,35 @@ class TransactionQueryFilter {
         // (${value.map(() => '?').join(',')})
         let expressionArray = []
         for (const field of fields) {
-            expressionArray.push(`EXISTS (SELECT 1 FROM json_each(main.${field}) WHERE value IN (${paramsToAdd.map(() => '?').join(',')}))\n`
-            )
+
+            let query = ""
+            let params = paramsToAdd.map(() => '?').join(',')
+            if (field == "auto_tags") {
+                query = ` ( EXISTS (
+                    SELECT 1 
+                    FROM json_each(json_extract(auto_tags, '$.tags')) 
+                    WHERE json_each.value IN (${params})
+                    ))
+                    `
+            }
+            else if (field == "auto_party") {
+                query = ` ( EXISTS (
+                    SELECT 1 
+                    FROM json_each(json_extract(auto_tags, '$.tags')) 
+                    WHERE json_each.value IN (${params})
+                    ))
+                    `
+            }
+            else if (field == "manual_party" || field == "manual_tags") {
+                query = ` EXISTS (SELECT 1 FROM json_each(main.${field}) WHERE value IN (${params}))\n`
+
+            } else {
+                throw new Error(`Oof: food fight: ${field}`)
+            }
+
+            console.log("here:", query)
+            expressionArray.push(query)
+            // expressionArray.push(`EXISTS (SELECT 1 FROM json_each(main.${field}) WHERE value IN (${paramsToAdd.map(() => '?').join(',')}))\n`)
             this.params.push(...paramsToAdd)
         }
         this.where += ` AND ${NOT} ` + this._andOrJoin(expressionArray, "OR")
@@ -67,7 +94,7 @@ class TransactionQueryFilter {
         } else {
             condstr = this._andOrJoin(conditions, not ? " AND " : " OR ")
         }
-         
+
         this.where += ` AND ${not} (${condstr})\n`
 
         // this.params.push(...paramsToAdd)
@@ -84,7 +111,7 @@ class TransactionQueryFilter {
             'tags', 'manual_tags', 'auto_tags',
             'party', 'manual_party', 'auto_party',
             'type', 'debit', 'credit', 'amount', 'balance',
-            'account', 'account_number','account_shortname',  
+            'account', 'account_number', 'account_shortname',
             'datetime', "datetime_without_timezone"
         ]
         // const validOperators = ['>=', '>', '<', '<=', '=',]

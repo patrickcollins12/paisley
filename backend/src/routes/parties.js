@@ -8,7 +8,7 @@ router.get('/api/parties', async (req, res) => {
   let db = new BankDatabase();
   let query = `
       SELECT DISTINCT json_each.value 
-      FROM 'transaction' t, json_each(t.party) 
+      FROM 'transaction' t, json_each(json_extract(t.party,'$.party')) 
       WHERE json_valid(t.party)
 
       UNION

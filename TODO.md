@@ -1,9 +1,9 @@
 # TODO
+- [ ] Ruleedit should clear old values before running again
 - [ ] Bug: update_transaction auth handler is locking. fix it.
 - [ ] Bug: Editable input is saving on blur even when nothing has changed (15m)
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 - [ ] Ruledit needs a save button?
-- [ ] Ruleedit should clear old values before running again
 - [ ] Rules applied should save the ruleid as well
 - [ ] Ruleedit needs some helper text temporarily
 - [ ] Add string (contains/regex) to Account Filter

@@ -78,10 +78,14 @@ async function fetcher([url, options]) {
 
     // deserialize the tags
     // item.tags =        (item.tags)        ? JSON.parse(item.tags) : []
-    item.auto_tags = (item.auto_tags) ? JSON.parse(item.auto_tags) : []
+    const auto_tags = (item.auto_tags) ? JSON.parse(item.auto_tags) : {}
+    item.auto_tags = auto_tags?.tags || []
+
     item.manual_tags = (item.manual_tags) ? JSON.parse(item.manual_tags) : []
 
-    item.auto_party = (item.auto_party) ? JSON.parse(item.auto_party) : []
+    const auto_party = (item.auto_party) ? JSON.parse(item.auto_party) : {}
+    item.auto_party = auto_party?.party || []
+
     item.manual_party = (item.manual_party) ? JSON.parse(item.manual_party) : []
 
     item.tags = [...new Set([...item.manual_tags, ...item.auto_tags])];

@@ -35,8 +35,8 @@ describe('Rules classifier', () => {
       debit: 0,
       balance: 1000,
       type: "DEP",
-      tags: JSON.stringify(['tag1', 'tag2']),
-      party: JSON.stringify(['Shop 1'])
+      tags: JSON.stringify({"tags": ['tag1', 'tag2'], "rule":[1,2]}),
+      party: JSON.stringify({"party": ['Shop 1'], "rule":[1]  })
     });
   });
 
@@ -74,6 +74,7 @@ describe('Rules classifier', () => {
 
     // applyRule(ruleWhereClause, params, txids, newTags, party) {
     const cnt = classifier.applyRule(
+      1,
       whereSqlObj.sql, 
       whereSqlObj.params, 
       ["tx1"], 
@@ -84,8 +85,8 @@ describe('Rules classifier', () => {
 
     const stmt2 = db.prepare('SELECT * FROM "transaction" WHERE id = ?');
     const result2 = stmt2.get("tx1");
-    expect(result2.tags).toEqual('["tag1","tag2","Transfer > 1","Finance > Stuff"]')
-    expect(result2.party).toEqual('["Bank Inc"]')
+    expect(result2.tags).toEqual('{\"tags\":[\"tag1\",\"tag2\",\"Transfer > 1\",\"Finance > Stuff\"],\"rule\":[1,2]}')
+    expect(result2.party).toEqual('{\"party\":[\"Bank Inc\"],\"rule\":1}')
 
   });
 
@@ -97,7 +98,7 @@ describe('Rules classifier', () => {
     
 
     // applyRule(ruleWhereClause, params, txids, newTags, party) {
-    const cnt = classifier.applyRule(whereSqlObj.sql, whereSqlObj.params, null, ['blah'], ['blah'])
+    const cnt = classifier.applyRule(1,whereSqlObj.sql, whereSqlObj.params, null, ['blah'], ['blah'])
     // expect(cnt).toBe(4) // FIX THIS, SHOULD RETURN 4 not 0
   });
 
@@ -107,7 +108,7 @@ describe('Rules classifier', () => {
     expect(whereSqlObj.params[0]).toEqual('[\\w]/i')
     
     // applyRule(ruleWhereClause, params, txids, newTags, party) {
-    const cnt = classifier.applyRule(whereSqlObj.sql, whereSqlObj.params, ["tx1","tx2"], ['blah'], ['blah'])
+    const cnt = classifier.applyRule(1,whereSqlObj.sql, whereSqlObj.params, ["tx1","tx2"], ['blah'], ['blah'])
     // expect(cnt).toBe(2) // FIX THIS, SHOULD RETURN 2 not 0
   });
 
@@ -128,8 +129,8 @@ describe('Rules classifier', () => {
 
     console.log("result>>",JSON.stringify(result,null,"\t"))
 
-    expect(result[0].tags).toBe("[\"Transfer > 1\",\"Finance > Stuff\"]")
-    expect(result[1].tags).toBe("[\"Large > Tag1\",\"Small > Tag2\"]")
+    expect(result[0].tags).toBe("{\"tags\":[\"Transfer > 1\",\"Finance > Stuff\"],\"rule\":[1]}")
+    expect(result[1].tags).toBe("{\"tags\":[\"Large > Tag1\",\"Small > Tag2\"],\"rule\":[2]}")
 
   });
 
