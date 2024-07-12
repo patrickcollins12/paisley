@@ -11,7 +11,7 @@ class RulesClassifier {
         this.ruleComponents = {}
     }
 
-    applyRule(rule_id, ruleWhereClause, params, txids, newTags, party) {
+    _applyRule(rule_id, ruleWhereClause, params, txids, newTags, party) {
         // Building the dynamic part of the WHERE clause based on the txids provided
         let txidsCondition = '';
         // let params = [];
@@ -28,13 +28,8 @@ class RulesClassifier {
             params = params.concat(txids);
         }
 
-        // TODO: this needs to return
-        //          orig_description
-        //          new_description
-        //          description CASE
-        //          rules can use any of them.
-        // Fetch the current tags for transactions that match the rule and txids
-
+        
+        
         const fetchSql = TransactionQuery.allTransactionsQuery +
             ` AND ${ruleWhereClause} ${txidsCondition}`
         // console.log(`fetchSql: ${fetchSql}`)
@@ -102,9 +97,16 @@ class RulesClassifier {
 
         // console.log(`resetTagsQuery: ${resetTagsQuery}`)
         const stmt = this.db.db.prepare(resetTagsQuery)
-        stmt.run(params);
-    }
+        // stmt.run(params);
+        try {
+            this.db.db.transaction(() => {
+                stmt.run(params);
+            })();
+        } catch (error) {
+            console.error("Error updating transactions:", error);
+        }
 
+    }
 
     applyOneRule(id) {
         const rule = this.db.db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
@@ -121,7 +123,7 @@ class RulesClassifier {
         try {
 
             const whereSqlObj = parser.parse(rule.rule);
-            cnt = this.applyRule(
+            cnt = this._applyRule(
                 rule.id,
                 whereSqlObj.sql,
                 whereSqlObj.params,
@@ -136,6 +138,27 @@ class RulesClassifier {
         return cnt
     }
 
+    getTransactionsMatchingRuleId(ruleid) {
+        let query = `SELECT distinct(id)
+                        FROM "transaction"
+                        WHERE 
+                        EXISTS (
+                            SELECT 1
+                            FROM json_each(json_extract(tags, '$.rule'))
+                            WHERE json_each.value = ?
+                        )
+                        OR
+                        EXISTS (
+                            SELECT 1
+                            FROM json_each(json_extract(party, '$.party'))
+                            WHERE json_each.value = ?
+                        );`
+
+        const transactions = this.db.db.prepare(query).all(ruleid, ruleid);
+        const transaction_ids = transactions.map(transaction => transaction.id);
+        return transaction_ids
+    }
+  
     applyAllRules(txids) {
         let query = 'SELECT * FROM "rule"';
         const result = this.db.db.prepare(query).all();
@@ -152,7 +175,7 @@ class RulesClassifier {
                 const tag = JSON.parse(rule?.tag || [])
                 const party = JSON.parse(rule?.party || [])
 
-                cnt += this.applyRule(
+                cnt += this._applyRule(
                     rule.id,
                     whereSqlObj.sql,
                     whereSqlObj.params,

@@ -27,3 +27,33 @@ tags in ['a','b'] =>
 tags empty        =>      (manual_tags = '' [] null) and (auto_tags = '' [] null)
 tags not_empty    => NOT ((manual_tags = '' [] null) and (auto_tags = '' [] null))
 tags contains transfer => (manual_tags = like '%transfer%') OR (auto_tags like '%transfer%')
+
+
+
+
+
+- [ ] Ruleedit should clear old values before running again. 
+       On delete rule or edit rule:
+       - txids = get list of transaction's tag/party matching this ruleid
+              - clear the rules for these txids
+              - rerun all rules for these txids
+
+       - On rule edit or new
+              - run this rule on all transactions
+
+Given ruleid
+
+       Delete :ruleid
+              txids = RulesClassifier.getTransactionsMatchingRuleId(ruleid=1)
+              RulesClassifier.clearTags(txids)
+              RulesClassifier.applyAllRules(txids)
+
+       Edit :ruleid
+              txids = RulesClassifier.getTransactionsMatchingRuleId(1)
+              RulesClassifier.clearTags(txids)
+              RulesClassifier.applyAllRules(txids)
+              
+              applyOneRule(:ruleid) 
+
+       New
+              applyOneRule(:ruleid) // (OR applyOneRuleDirectly(ruleObj))

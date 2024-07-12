@@ -80,8 +80,14 @@ router.patch('/api/rule/:id', async (req, res) => {
         // so we (1) update the rule in the database
         db.prepare(sql).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment, id);
 
-        // and (2) classify this rule across all transactions
-        const cnt = new RulesClassifier().applyOneRule(id);
+        // (2) Clear out all rules on txids and rerun all the old rules.
+        const classifier = new RulesClassifier();
+        const txids = classifier.getTransactionsMatchingRuleId(id);
+        classifier.clearTags(txids);
+        classifier.applyAllRules(txids); // TODO doesn't work
+
+        // and (3) classify this rule across all transactions
+        const cnt = classifier.applyOneRule(id);
 
         return res.status(201).send({ id: id, classified: cnt, message: `Rule updated successfully and reclassified ${cnt} txns` });
     } catch (error) {
@@ -96,6 +102,13 @@ router.delete('/api/rule/:id', async (req, res) => {
 
     try {
         const result = db.prepare('DELETE FROM "rule" WHERE id = ?').run(id);
+
+        // Clear out all rules on txids and rerun all the old rules.
+        const classifier = new RulesClassifier();
+        const txids = classifier.getTransactionsMatchingRuleId(id);
+        classifier.clearTags(txids);
+        classifier.applyAllRules(txids); 
+
         if (result.changes === 0) {
             return res.status(404).send({ error: 'Rule not found' });
         }
@@ -104,7 +117,6 @@ router.delete('/api/rule/:id', async (req, res) => {
         res.status(400).send({ error: error.message });
     }
 });
-
 
 // module.exports = { loadRouter };
 module.exports = router;

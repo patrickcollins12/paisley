@@ -73,7 +73,7 @@ describe('Rules classifier', () => {
     expect(whereSqlObj.sql).toEqual('description LIKE ?')
 
     // applyRule(ruleWhereClause, params, txids, newTags, party) {
-    const cnt = classifier.applyRule(
+    const cnt = classifier._applyRule(
       1,
       whereSqlObj.sql, 
       whereSqlObj.params, 
@@ -98,7 +98,7 @@ describe('Rules classifier', () => {
     
 
     // applyRule(ruleWhereClause, params, txids, newTags, party) {
-    const cnt = classifier.applyRule(1,whereSqlObj.sql, whereSqlObj.params, null, ['blah'], ['blah'])
+    const cnt = classifier._applyRule(1,whereSqlObj.sql, whereSqlObj.params, null, ['blah'], ['blah'])
     // expect(cnt).toBe(4) // FIX THIS, SHOULD RETURN 4 not 0
   });
 
@@ -108,7 +108,7 @@ describe('Rules classifier', () => {
     expect(whereSqlObj.params[0]).toEqual('[\\w]/i')
     
     // applyRule(ruleWhereClause, params, txids, newTags, party) {
-    const cnt = classifier.applyRule(1,whereSqlObj.sql, whereSqlObj.params, ["tx1","tx2"], ['blah'], ['blah'])
+    const cnt = classifier._applyRule(1,whereSqlObj.sql, whereSqlObj.params, ["tx1","tx2"], ['blah'], ['blah'])
     // expect(cnt).toBe(2) // FIX THIS, SHOULD RETURN 2 not 0
   });
 
@@ -134,6 +134,18 @@ describe('Rules classifier', () => {
 
   });
 
+
+  test('test fetch txids', () => {
+    // applyRule(ruleWhereClause, params, txids, newTags, party) {
+    const cnt = classifier.getTransactionsMatchingRuleId(1)
+    expect(cnt).toEqual( ["tx1","tx2"] )
+  });
+
+  test('clear txids rules', () => {
+    classifier.clearTags(["tx1","tx2"])
+  });
+
+  
 });
 
 
