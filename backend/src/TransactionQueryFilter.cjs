@@ -32,7 +32,7 @@ class TransactionQueryFilter {
 
             let query = ""
             let params = paramsToAdd.map(() => '?').join(',')
-            if (field == "auto_tags") {
+            if (field === "auto_tags") {
                 query = ` ( EXISTS (
                     SELECT 1 
                     FROM json_each(json_extract(auto_tags, '$.tags')) 
@@ -40,24 +40,22 @@ class TransactionQueryFilter {
                     ))
                     `
             }
-            else if (field == "auto_party") {
+            else if (field === "auto_party") {
                 query = ` ( EXISTS (
                     SELECT 1 
-                    FROM json_each(json_extract(auto_tags, '$.tags')) 
+                    FROM json_each(json_extract(auto_party, '$.party')) 
                     WHERE json_each.value IN (${params})
                     ))
                     `
             }
-            else if (field == "manual_party" || field == "manual_tags") {
+            else if (field === "manual_party" || field === "manual_tags") {
                 query = ` EXISTS (SELECT 1 FROM json_each(main.${field}) WHERE value IN (${params}))\n`
 
             } else {
                 throw new Error(`Oof: food fight: ${field}`)
             }
 
-            console.log("here:", query)
             expressionArray.push(query)
-            // expressionArray.push(`EXISTS (SELECT 1 FROM json_each(main.${field}) WHERE value IN (${paramsToAdd.map(() => '?').join(',')}))\n`)
             this.params.push(...paramsToAdd)
         }
         this.where += ` AND ${NOT} ` + this._andOrJoin(expressionArray, "OR")
@@ -206,9 +204,9 @@ class TransactionQueryFilter {
                 break;
             case 'empty':
                 if (fields.length > 1) {
-                    this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '[]')`, fields, [], NOT, "AND")
+                    this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '{}' OR %% = '[]')`, fields, [], NOT, "AND")
                 } else {
-                    this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '[]')`, fields, [], NOT, "OR")
+                    this._addSqlConditionField(`(%% IS NULL OR %% = '' OR %% = '{}' OR %% = '[]')`, fields, [], NOT, "OR")
                 }
 
                 break;

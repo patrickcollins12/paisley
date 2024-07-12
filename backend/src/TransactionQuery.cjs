@@ -236,7 +236,7 @@ class TransactionQuery {
 
         /* tags */
         CASE
-            WHEN t.tags = '' OR t.tags IS NULL THEN '[]' -- Ensuring valid JSON array
+            WHEN t.tags = '' OR t.tags IS NULL THEN '{}' -- Ensuring valid JSON array
             ELSE t.tags
         END AS auto_tags,
         CASE
@@ -247,7 +247,7 @@ class TransactionQuery {
 
         /* party */
         CASE
-            WHEN t.party = '' OR t.party IS NULL THEN '[]' -- Ensuring valid JSON array
+            WHEN t.party = '' OR t.party IS NULL THEN '{}' -- Ensuring valid JSON array
             ELSE t.party
         END AS auto_party,
         CASE

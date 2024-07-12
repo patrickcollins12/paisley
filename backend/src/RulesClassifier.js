@@ -60,15 +60,19 @@ class RulesClassifier {
 
             // Use Set to remove duplicates
             const mergedTags = Array.from(new Set([...existingTags, ...newTags]));
-            const mergedRuleIds = Array.from(new Set([...existingRuleIds, rule_id])); 
+            const mergedRuleIds = Array.from(new Set([...existingRuleIds, rule_id]));
 
             // Add the new tags object
-            const tagObj = {"tags":mergedTags,"rule":mergedRuleIds}
-            const tagJson = JSON.stringify(tagObj);
+            let tagJson = "{}"
+            if (mergedTags && mergedTags.length > 0) {
+                const tagObj = { "tags": mergedTags, "rule": mergedRuleIds }
+                tagJson = JSON.stringify(tagObj);
+            }
 
             let partyJson = "{}"
-            if (party) {
-                partyJson = JSON.stringify({party:party, rule:rule_id})
+            if (party && party.length > 0) {
+                // console.log("party>>", party)
+                partyJson = JSON.stringify({ party: party, rule: rule_id })
             }
 
             updateStmt.run(tagJson, partyJson, transaction.id);
@@ -93,7 +97,7 @@ class RulesClassifier {
 
         let resetTagsQuery = `UPDATE "transaction"
             SET tags = '{}',
-                party = '[]'
+                party = '{}'
             ${txidsCondition}`
 
         // console.log(`resetTagsQuery: ${resetTagsQuery}`)

@@ -1,5 +1,5 @@
 # TODO
-- [ ] Ruleedit should clear old values before running again
+- [ ] New rules system, fix TQF tests for blank/not_blank and fix why party isn't filitering correctly on the frontend.
 - [ ] Bug: update_transaction auth handler is locking. fix it.
 - [ ] Bug: Editable input is saving on blur even when nothing has changed (15m)
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
