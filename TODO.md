@@ -1,14 +1,14 @@
 # TODO
-- [ ] New rules system, fix TQF tests for blank/not_blank and fix why party isn't filitering correctly on the frontend.
+- [ ] applyRule(txids) not working see TODO
 - [ ] Bug: update_transaction auth handler is locking. fix it.
 - [ ] Bug: Editable input is saving on blur even when nothing has changed (15m)
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 - [ ] Ruledit needs a save button?
-- [ ] Rules applied should save the ruleid as well
 - [ ] Ruleedit needs some helper text temporarily
 - [ ] Add string (contains/regex) to Account Filter
-- [ ] do tests for in and not in lists. try it with tags, party and account.
 - [ ] do tests for regex/contains on lists like tags, party and account.
+- [x] New rules system, fix TQF tests for blank/not_blank and fix why party isn't filitering correctly on the frontend.
+- [x] do tests for in and not in lists. try it with tags, party and account.
 - [x] Bug: a faulty rule shouldn't halt the rerun_classifier. Fix the throw/catch
 - [x] Bug: Tags needs to merge sets properly on autocat select/deselect.
 - [x] Bug: fix transaction column filter: Account_name
@@ -30,7 +30,7 @@ tags contains transfer => (manual_tags = like '%transfer%') OR (auto_tags like '
 
 
 
-
+#NOTES
 
 - [ ] Ruleedit should clear old values before running again. 
        On delete rule or edit rule:
