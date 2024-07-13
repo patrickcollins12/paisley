@@ -21,7 +21,6 @@ router.post('/api/update_transaction', [
   body('auto_categorize').optional().isBoolean().withMessage('Auto categorize must be a boolean.'),
 ], async (req, res) => {
 
-  console.log("here")
   // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {

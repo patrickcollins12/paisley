@@ -96,7 +96,7 @@ export function ReactSelect({ coloredPills, value, options, onChange, valueAsArr
   }, [value]);
   
   useEffect(() => {
-    console.log("ReactSelect valueAsArray updated:", valueAsArray);
+    // console.log("ReactSelect valueAsArray updated:", valueAsArray);
   }, [valueAsArray]);
 
 

@@ -29,7 +29,6 @@ router.post('/api/login', rateLimiter, [
     body('password').isString().trim().notEmpty().withMessage('Password is required')
 ], async (req, res) => {
 
-    console.log("here")
     const JWT_SECRET = config['jwt'] || 'not_sec';
     const manager = new UserManager(config['users_file'])
 

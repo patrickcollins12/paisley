@@ -1,12 +1,15 @@
 # TODO
-
-- [x] Bug: update_transaction auth handler is locking. fix it.
-- [x] Bug: Editable input is saving on blur even when nothing has changed (15m)
+- [ ] Add a backend filter for "All" in transactions filter
+- [ ] Simon: enable column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
+- [ ] Simon: Sync url with filters
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 - [ ] Add string (contains/regex) to Account Filter
 - [ ] do tests for regex/contains on lists like tags, party and account.
 
 
+
+- [x] Bug: update_transaction auth handler is locking. fix it.
+- [x] Bug: Editable input is saving on blur even when nothing has changed (15m)
 - [x] Ruleedit needs some helper text temporarily
 - [o] Ruledit needs a save button?
 - [x] applyRule(txids) not working see TODO

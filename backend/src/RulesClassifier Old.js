@@ -165,7 +165,6 @@ class RulesClassifier {
             // Handle matching
             if (pattern.startsWith('(')) {
                 // if (new RegExp(/coles/i).test(transaction['description'])) {
-                //     console.log("here");
                 // }
                 const matches = transaction[field].matchAll(pattern);
                 for (let i=0; i < matches.length; i++ ) {

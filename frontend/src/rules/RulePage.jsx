@@ -37,7 +37,7 @@ const filterFuncs = {
 export default function RulePage() {
   // useLogger('RulesPage');
 
-  const [pageState, setPageState] = useState({ pageSize: 500, pageIndex: 0 });
+  const [pageState, setPageState] = useState({ pageSize: 100, pageIndex: 0 });
   const [columnVisibilityState, setColumnVisibilityState] = useState({ id: false, comment: false });
   const [globalFilterState, setGlobalFilterState] = useState();
   const [sortState, setSortState] = useState([]);

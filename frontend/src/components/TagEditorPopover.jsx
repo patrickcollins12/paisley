@@ -2,9 +2,12 @@ import { Badge, generateColoredClassNames, generateDismissableColoredClassNames 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
 // import { useFetchTags } from "@/tags/TagApiHooks.js"
 import { ReactSelect } from "@/components/ReactSelect.jsx"
+import React, { useState } from 'react';
 
 
 export function TagEditorPopover({ values, allValues, updateHandler, cellValues, contentHeader, ...props }) {
+
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   // how to use
   // cellValues is what it will be displays when the popover is closed.
@@ -19,7 +22,8 @@ export function TagEditorPopover({ values, allValues, updateHandler, cellValues,
   // }
 
   return (
-    <Popover>
+
+    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
       <PopoverTrigger asChild>
 
         <div className="min-h-[26px] ">
@@ -37,20 +41,22 @@ export function TagEditorPopover({ values, allValues, updateHandler, cellValues,
       <PopoverContent className='w-[450px] p-3 ' align='start'>
         {contentHeader || ""}
 
-        <ReactSelect
-          onChange={updateHandler}
-          // options={allValues?.map(item => ({ value: item, label: item }))}
-          // value={values?.map(item => ({ label: item, value: item }))}
-          optionsAsArray={allValues}
-          valueAsArray={values}
-          isMulti={true}
-          isCreatable={true}
-          coloredPills={true}
-          isClearable={true}
-          defaultMenuIsOpen={true}
-          closeMenuOnSelect={false}
-          {...props}
-        />
+        {popoverOpen &&
+          <ReactSelect
+            onChange={updateHandler}
+            // options={allValues?.map(item => ({ value: item, label: item }))}
+            // value={values?.map(item => ({ label: item, value: item }))}
+            optionsAsArray={allValues}
+            valueAsArray={values}
+            isMulti={true}
+            isCreatable={true}
+            coloredPills={true}
+            isClearable={true}
+            defaultMenuIsOpen={true}
+            closeMenuOnSelect={false}
+            {...props}
+          />
+        }
 
       </PopoverContent>
     </Popover>
