@@ -6,10 +6,11 @@
   "scripts": {
     "test": "jest",
     "start": "node index.js",
-    "start:demo": "node index.js --config ~/paisley/demo/demo_config.js",
     "dev": "nodemon index.js",
     "scrape": "npx playwright test",
-    "postinstall": "node install.js"
+    "postinstall": "node install.js",
+    "demo:start": "node index.js --config ~/paisley/demo/demo_config.js",
+    "demo:rules:rerun": "cd ./bin && node rerun_rules.js --config ~/paisley/demo/demo_config.js"
   },
   "author": "",
   "license": "ISC",
