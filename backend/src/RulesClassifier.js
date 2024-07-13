@@ -3,6 +3,7 @@ const config = require('./Config');
 const RuleToSqlParser = require('./RuleToSqlParser');
 const TransactionQuery = require('./TransactionQuery.cjs');
 
+// dragons here.
 
 class RulesClassifier {
 
@@ -39,7 +40,7 @@ class RulesClassifier {
         // Prepare the SQL statement for updating tags and party
         const updateSql = `
             UPDATE 'transaction'
-            SET tags = ?,
+            SET tags = COALESCE(?, tags),
                 party = COALESCE(?, party)
             WHERE id = ?
         `;
@@ -64,12 +65,12 @@ class RulesClassifier {
                 tagJson = JSON.stringify(tagObj);
             }
 
-            let partyJson = "{}"
+            let partyJson = transaction.auto_party || '{}'
             if (party && party.length > 0) {
-                // console.log("party>>", party)
                 partyJson = JSON.stringify({ party: party, rule: rule_id })
             }
 
+            // console.log(`>> ${updateSql}\n ${tagJson}\n ${partyJson}\n ${transaction.id}` )
             updateStmt.run(tagJson, partyJson, transaction.id);
 
         });
@@ -110,16 +111,11 @@ class RulesClassifier {
 
     applyOneRule(id) {
         const rule = this.db.db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
-        this.applyOneRuleDirectly(rule)
-    }
-
-    applyOneRuleDirectly(rule) {
-        // const cnt = new RulesClassifier().applyOneRuleDirectly(rule)
 
         // Classify this rule across all transactions
         const parser = new RuleToSqlParser();
         let cnt = 0
-        // const classifier = new RulesClassifier()
+
         try {
 
             const whereSqlObj = parser.parse(rule.rule);
@@ -128,11 +124,11 @@ class RulesClassifier {
                 whereSqlObj.sql,
                 whereSqlObj.params,
                 null,
-                JSON.parse(rule.tag),
-                JSON.parse(rule.party)
+                JSON.parse(rule?.tag),
+                JSON.parse(rule?.party)
             )
         } catch (e) {
-            console.log("Rule processing failed:", rule)
+            console.log("Rule processing failed(1):", rule, e)
         }
 
         return cnt
@@ -160,12 +156,12 @@ class RulesClassifier {
     }
   
     applyAllRules(txids) {
-        let query = 'SELECT * FROM "rule"';
-        const result = this.db.db.prepare(query).all();
         let parser = new RuleToSqlParser(); // Initialize a new instance of the parser for each test
 
         this.clearTags(txids)
 
+        let query = 'SELECT * FROM "rule"';
+        const result = this.db.db.prepare(query).all();
         let cnt = 0
         for (const rule of result) {
 
@@ -185,7 +181,7 @@ class RulesClassifier {
                 )
             }
             catch (e) {
-                console.log(`Rule processing failed: ${e}\n   ${JSON.stringify(rule)}\n`)
+                console.log(`Rule processing failed(2): ${e}\n   ${JSON.stringify(rule)}\n`)
             }
 
         }
