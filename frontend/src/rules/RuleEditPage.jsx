@@ -177,6 +177,14 @@ export default function RuleEditPage() {
                       </div>
                     }
                   </div>
+                  <div className="col-span-6 text-sm text-muted-foreground">
+                    <p>description = 'Costco'</p>
+                    <p>description = /^Costco.*Stuff/</p>
+                    <p>amount &gt; 50</p>
+                    <p>account_number = /1547$/</p>
+                    <p>description = 'Costco' AND amount &gt; 50</p>
+                    <p>(description = 'direct' AND amount&gt;50) AND account_number = '1547'</p>
+                  </div>
                 </div>
               </div>
 

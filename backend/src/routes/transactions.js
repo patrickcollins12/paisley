@@ -21,15 +21,23 @@ router.get('/api/transactions', async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  try {
-
     let db = new BankDatabase();
 
     // console.log(JSON.stringify(req.query,null,"\t"))
+  let tq
+  try {
 
     // calculate the where clause based on the request
-    const tq = new TransactionQuery(req.query)
+    tq = new TransactionQuery(req.query)
     tq.processParams()
+
+  } catch (err) {
+    // console.debug("rule error: ", err);
+    res.status(500).json({ "error": err.message });
+    return
+  }
+
+  try {
 
     // results Summary query
     let resultSummary = tq.getSummaryOfTransactions()
@@ -46,6 +54,7 @@ router.get('/api/transactions', async (req, res) => {
   } catch (err) {
     console.error("error: ", err);
     res.status(500).json({ "error": err.message });
+    return
   }
 
 });

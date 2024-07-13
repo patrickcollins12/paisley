@@ -43,14 +43,13 @@ export function EditableDescriptionCell({ row, columnId, table }) {
 
     function handleChange(event) {
         const newVal = event.target.value.trim();
-        console.log("newVal>>", newVal)
         setHasBeenEdited(newVal !== "" && newVal !== initialDescription);
     }
 
     function saveDescription(newVal) {
         table.options.meta?.updateData(index, columnId, newVal);
         updateTransaction(row.original.id, { description: sanitize(newVal) }).then(success => {
-            if (success) console.log('Transaction successfully updated');
+            // if (success) console.log('Transaction successfully updated');
         });
     }
 
@@ -64,14 +63,14 @@ export function EditableDescriptionCell({ row, columnId, table }) {
                 setIsFocused(false);
 
                 let newVal = event.target.value.trim() || initialDescription;
-                const isEdited = newVal !== initialDescription;
+                const isEdited = newVal !== initialEditFieldValue;
                 setHasBeenEdited(isEdited);
 
                 if (isEdited) {
                     setEditFieldValue(newVal);
+                    saveDescription(newVal)
                 }
 
-                saveDescription(newVal)
             }
         }, 200)
 

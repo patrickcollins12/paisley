@@ -5,6 +5,12 @@ export function EditableInput({ value, className, onFocus, ...props }) {
   const [inputValue, setInputValue] = useState(value);
   const textAreaRef = useRef(null);
   
+
+  // Synchronize internal state with the value prop
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+  
   // adjust the size of the text area based on the number of lines, while 
   // still keeping the scrollbars off.
   useEffect(() => {
