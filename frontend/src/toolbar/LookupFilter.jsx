@@ -8,7 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ReactSelect } from '@/components/ReactSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FilterButton from "./FilterButton.jsx"
-import { defaultOperator, filterExpression } from "@/toolbar/RuleCreator.jsx"
+import { defaultOperator, filterExpression } from "@/toolbar/FilterExpression.jsx"
 
 function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilterClear, coloredPills }) {
 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input.jsx"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FilterButton from "./FilterButton.jsx"
 import useDebounce from './useDebounce.jsx';
-import { defaultOperator, filterExpression } from "@/toolbar/RuleCreator.jsx"
+import { defaultOperator, filterExpression } from "@/toolbar/FilterExpression.jsx"
 import { useUpdateEffect } from "react-use"
 
 function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {

@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FilterButton from "./FilterButton.jsx"
-import { dateOperators, filterExpression } from "@/toolbar/RuleCreator.jsx"
+import { dateOperators, filterExpression } from "@/toolbar/FilterExpression.jsx"
 
 export default function DateFilter({ className, onFilterClear, onFilterUpdate }) {
 

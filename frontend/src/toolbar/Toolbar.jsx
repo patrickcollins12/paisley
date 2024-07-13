@@ -2,11 +2,12 @@ import AllFilter from "@/toolbar/AllFilter.jsx"
 import DescriptionFilter from "@/toolbar/DescriptionFilter.jsx"
 import DateFilter from "@/toolbar/DateFilter.jsx"
 import ColumnSelector from "@/toolbar/ColumnSelector.jsx"
-import { lookupOperators, stringOperators } from "@/toolbar/RuleCreator.jsx"
+import { lookupOperators, numberOperators, stringOperators } from "@/toolbar/FilterExpression.jsx"
 import React from "react"
 import LookupFilter from "@/toolbar/LookupFilter.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
 import { useFetchTags } from "@/tags/TagApiHooks.js"
+import AmountFilter from "@/toolbar/AmountFilter.jsx"
 
 function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
 
@@ -26,6 +27,12 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
           onFilterClear={onFilterClear} />
 
         <DateFilter
+          onFilterUpdate={onFilterUpdate}
+          onFilterClear={onFilterClear}
+        />
+
+        <AmountFilter
+          operators={numberOperators}
           onFilterUpdate={onFilterUpdate}
           onFilterClear={onFilterClear}
         />

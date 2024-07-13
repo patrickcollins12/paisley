@@ -88,6 +88,30 @@ export const dateOperators = {
   }
 }
 
+export const numberOperators = {
+  equals: {
+    label: "equals",
+    operator: '=',
+    short: '',
+    default: true
+  },
+  gt: {
+    label: "greater than",
+    operator: '>',
+    short: '>',
+  },
+  lt: {
+    label: "less than",
+    operator: '<',
+    short: '<',
+  },
+  between: {
+    label: "between",
+    operator: '',
+    short: '',
+  }
+}
+
 export function filterExpression(field, operatorDefinition, value) {
   return {
     field,
