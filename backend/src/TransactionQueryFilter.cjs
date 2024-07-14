@@ -156,7 +156,7 @@ class TransactionQueryFilter {
         }
 
         if (field === "all") {
-            fields = ["description", "auto_tags", "manual_tags", "type", "auto_party", "manual_party"]
+            fields = ["orig_description", "revised_description", "account_shortname", "auto_tags", "manual_tags", "type", "auto_party", "manual_party"]
         }
 
 
