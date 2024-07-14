@@ -349,4 +349,26 @@ describe('Test TransactionQuery', () => {
         expect(res.data?.resultSummary?.count).toBe(1)
     });
 
+    ///////
+    // Test 'all'
+    test('/transactions all = ', async () => {
+        const url = `http://localhost:${port}/api/transactions/?` +
+                    `filter[all][contains]=tag1`
+        const res = await axios.get(url);
+        // expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND (( (auto_party IS NULL OR auto_party = '' OR auto_party = '[]') AND (manual_party IS NULL OR manual_party = '' OR manual_party = '[]')) )"))
+        console.log(res.data.resultSummary)
+        expect(res.data?.resultSummary?.count).toBe(2)
+    });
+
+    ///////
+    // Test 'all'
+    test('/transactions all DEP/TXN ', async () => {
+        const url = `http://localhost:${port}/api/transactions/?` +
+                    `filter[all][contains]=DEP`
+        const res = await axios.get(url);
+        // expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND (( (auto_party IS NULL OR auto_party = '' OR auto_party = '[]') AND (manual_party IS NULL OR manual_party = '' OR manual_party = '[]')) )"))
+        console.log(res.data.resultSummary)
+        expect(res.data?.resultSummary?.count).toBe(2)
+    });
+
 });
