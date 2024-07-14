@@ -39,6 +39,14 @@ function AllFilter({ onFilterUpdate, onFilterClear }) {
     setDebouncedValue('');
   }
 
+  function onKeyDown(event) {
+    if (event.key === 'Enter' || event.key === 'Escape' || event.key === 'Tab') {
+      event.preventDefault();
+      event.currentTarget.blur();
+      handleClear()
+    }
+  }
+
   return (
     <div className="relative block">
       {inputValue.length > 1 && ( // Show X only if inputValue has more than one character
@@ -54,6 +62,7 @@ function AllFilter({ onFilterUpdate, onFilterClear }) {
       <Input
         placeholder="Filter..."
         onChange={event => setInputValue(event.target.value)}
+        onKeyDown={onKeyDown}
         value={inputValue}
         className="h-8 w-[150px] lg:w-[250px] pr-6"
       />
