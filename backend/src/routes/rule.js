@@ -48,10 +48,27 @@ router.post('/api/rule', async (req, res) => {
     }
 });
 
+
+// Function to handle classification asynchronously
+async function classifyRuleAsync(id) {
+    const classifier = new RulesClassifier();
+    const txids = classifier.getTransactionsMatchingRuleId(id);
+
+    if (txids && txids.length > 0) {
+        classifier.clearTags(txids);
+        classifier.applyAllRules(txids);
+    }
+
+    // Classify this rule across all transactions
+    const cnt = classifier.applyOneRule(id);
+    return cnt;
+}
+
+
 // Update a specific rule by ID
 router.patch('/api/rule/:id', async (req, res) => {
     const db = new BankDatabase().db;
-    const id = req.params.id;
+    const id = parseInt(req.params.id);
     const { rule, group, tag, party, comment } = req.body;
 
     const existingRule = db.prepare('SELECT * FROM "rule" WHERE id = ?').get(id);
@@ -74,21 +91,20 @@ router.patch('/api/rule/:id', async (req, res) => {
             const parser = new RuleToSqlParser();
             parser.parse(rule);
         }
-
+    
         // if you get this far then the parser hasn't thrown and the rule is 👍
         // so we (1) update the rule in the database
         db.prepare(sql).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment, id);
 
-        // (2) Clear out all rules on txids and rerun all the old rules.
-        const classifier = new RulesClassifier();
-        const txids = classifier.getTransactionsMatchingRuleId(id);
-        classifier.clearTags(txids);
-        classifier.applyAllRules(txids); // TODO doesn't work
+        // Call classifyRuleAsync without awaiting it
+        // await classifyRuleAsync(id)
+        classifyRuleAsync(id).catch(error => {
+            console.error('Error during classification:', error);
+        });
 
-        // and (3) classify this rule across all transactions
-        const cnt = classifier.applyOneRule(id);
-
-        return res.status(201).send({ id: id, classified: cnt, message: `Rule updated successfully and reclassified ${cnt} txns` });
+        // Respond to the client immediately
+        return res.status(201).send({ id: id, message: 'Rule updated successfully and reclassification started' });
+        // return res.status(201).send({ id: id, classified: cnt, message: `Rule updated successfully and reclassified ${cnt} txns` });
     } catch (error) {
         return res.status(400).send({ error: error.message });
     }
@@ -106,7 +122,7 @@ router.delete('/api/rule/:id', async (req, res) => {
         const classifier = new RulesClassifier();
         const txids = classifier.getTransactionsMatchingRuleId(id);
         classifier.clearTags(txids);
-        classifier.applyAllRules(txids); 
+        classifier.applyAllRules(txids);
 
         if (result.changes === 0) {
             return res.status(404).send({ error: 'Rule not found' });

@@ -134,27 +134,32 @@ class RulesClassifier {
         return cnt
     }
 
-    getTransactionsMatchingRuleId(ruleid) {
-        let query = `SELECT distinct(id)
-                        FROM "transaction"
-                        WHERE 
-                        EXISTS (
-                            SELECT 1
-                            FROM json_each(json_extract(tags, '$.rule'))
-                            WHERE json_each.value = ?
-                        )
-                        OR
-                        EXISTS (
-                            SELECT 1
-                            FROM json_each(json_extract(party, '$.party'))
-                            WHERE json_each.value = ?
-                        );`
-
-        const transactions = this.db.db.prepare(query).all(ruleid, ruleid);
-        const transaction_ids = transactions.map(transaction => transaction.id);
-        return transaction_ids
-    }
   
+    getTransactionsMatchingRuleId(ruleid) {
+        let query = `SELECT DISTINCT id
+                 FROM "transaction"
+                 WHERE 
+                 EXISTS (
+                     SELECT 1
+                     FROM json_each(json_extract(tags, '$.rule'))
+                     WHERE json_each.value = ?
+                 )
+                 OR
+                 EXISTS (
+                     SELECT 1
+                     FROM json_each(json_extract(party, '$.party'))
+                     WHERE json_each.value = ?
+                 )
+                 OR
+                 json_extract(party, '$.rule') = ?;`
+    
+        const stmt = this.db.db.prepare(query);
+        const transactions = stmt.all(ruleid, ruleid,ruleid);
+        const transaction_ids = transactions.map(transaction => transaction.id);
+    
+        return transaction_ids;
+    }
+
     applyAllRules(txids) {
         let parser = new RuleToSqlParser(); // Initialize a new instance of the parser for each test
 

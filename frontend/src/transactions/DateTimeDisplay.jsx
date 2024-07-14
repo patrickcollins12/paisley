@@ -47,6 +47,7 @@ export function DateTimeDisplay({ account, datetime }) {
     // print 23 Mar
     dateDisplay = t.toFormat("d MMM")
 
+    // print 23 Mar 2024
     if (t.year !== DateTime.now().year) {
       dateDisplay += t.toFormat(" yyyy")
     }

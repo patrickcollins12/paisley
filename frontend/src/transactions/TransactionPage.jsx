@@ -22,6 +22,7 @@ function TransactionPage() {
     pageState, setPageState
   } = useTransactionSearchParams();
   const [columnVisibilityState, setColumnVisibilityState] = useState({
+    id: false,
     debit: false,
     credit: false,
     account_number: false,

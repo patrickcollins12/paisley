@@ -8,6 +8,18 @@ import { formatAmountCell, formatAmount } from "@/transactions/TransactionFieldF
 export function createColumnDefinitions(onTransactionUpdate) {
   return [
     {
+      accessorKey: 'id',
+      header: props => <HeaderCell align='right' {...props} />,
+      cell: ({ row }) => { 
+        let id = row.getValue("id"); 
+        return id.substr(0,4) + ".." + id.substr(id.length-4,4) 
+      },
+      meta: {
+        displayName: 'ID'
+      }
+    },
+
+    {
       accessorKey: 'datetime',
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <DateTimeDisplay account={row.getValue("account_number")} datetime={row.getValue("datetime")} />,

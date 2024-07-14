@@ -179,7 +179,7 @@ export default function RuleEditPage() {
                   </div>
                   <div className="col-span-6 text-sm text-muted-foreground">
                     <p>description = 'Costco'</p>
-                    <p>description = /^Costco.*Stuff/</p>
+                    <p>description = /^Costco.*Stuff/i (note the i for case insensitivity)</p>
                     <p>amount &gt; 50</p>
                     <p>account_number = /1547$/</p>
                     <p>description = 'Costco' AND amount &gt; 50</p>

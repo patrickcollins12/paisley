@@ -16,18 +16,32 @@ export function RulesTagsDisplay({ id, values, onUpdate, resource, ...props }) {
   function _localChangeHandler(values) {
     // const values = selectedValues.map(obj => obj.value);
     setTags(values);
-    const resourceToUpdate = (resource=="tags")?"tag":"party"
-    var postObj = { [resourceToUpdate]: values}
+    
+    const resourceToUpdate = (resource == "tags") ? "tag" : "party"
+    var postObj = { [resourceToUpdate]: values }
+
     onUpdate(id, postObj).catch(error => {
       console.error('Tag Edit Error: ', error);
       setTags(data.tag);
     });
   }
 
-  const placeholderType = (resource=="tags")?"tag":"party"
+  const placeholderType = (resource == "tags") ? "tag" : "party"
   const placeholder = `Select a ${placeholderType}. Type to create a ${placeholderType}...`
+  
   return (
-    <TagEditorPopover values={values} allValues={allTags} onChange={_localChangeHandler} placeholder={placeholder} {...props} />
+    <TagEditorPopover
+      values={values}
+      allValues={allTags}
+      // valueAsArray={values}
+      // optionsAsArray={allTags}
+      cellValues={values}
+      updateHandler={_localChangeHandler}
+      placeholder={placeholder}
+      {...props}
+    />
+
+     
   );
 
 }
