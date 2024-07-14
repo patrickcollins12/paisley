@@ -1,30 +1,50 @@
 import { Input } from "@/components/ui/input.jsx"
 import { X } from "lucide-react"
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { filterExpression } from "@/toolbar/FilterExpression.jsx"
+import { useDebounce } from "react-use"
 
-function AllFilter({ dataTable }) {
-  const defaultInputValue = dataTable.getColumn('description').getFilterValue() ?? ''
-  const [inputValue, setInputValue] = useState(defaultInputValue);
+const operatorDef = {
+  label: 'contains',
+  operator: 'contains',
+  short: ''
+};
 
-  const handleChange = (evt) => {
-    const value = evt.target.value;
-    dataTable.getColumn('description').setFilterValue(value);
-    setInputValue(value);
-    dataTable.resetPageIndex();
-  };
+function AllFilter({ onFilterUpdate, onFilterClear }) {
 
-  const clearInput = () => {
-    dataTable.getColumn('description').setFilterValue('');
+  const fieldName = 'all';
+
+  const [inputValue, setInputValue] = useState('');
+  const [debouncedValue, setDebouncedValue] = useState(inputValue);
+
+  useDebounce(() => {
+    setDebouncedValue(inputValue);
+  }, 500, [inputValue]);
+
+  useEffect(() => {
+    // if the debounced value is empty then we need to reset the filter
+    if (debouncedValue) {
+      onFilterUpdate(filterExpression(
+        fieldName,
+        operatorDef,
+        inputValue
+      ));
+    } else {
+      onFilterClear(fieldName);
+    }
+  }, [debouncedValue]);
+
+  const handleClear = () => {
     setInputValue('');
-    dataTable.resetPageIndex();
-  };
+    setDebouncedValue('');
+  }
 
   return (
     <div className="relative block">
       {inputValue.length > 1 && ( // Show X only if inputValue has more than one character
         <button
           className="absolute top-1/2 transform -translate-y-1/2 right-2"
-          onClick={clearInput} // Clear input on click
+          onClick={handleClear} // Clear input on click
           aria-label="Clear input"
         >
           <X size={16} className="text-slate-400 hover:text-black dark:hover:text-white" />
@@ -33,7 +53,7 @@ function AllFilter({ dataTable }) {
 
       <Input
         placeholder="Filter..."
-        onChange={handleChange}
+        onChange={event => setInputValue(event.target.value)}
         value={inputValue}
         className="h-8 w-[150px] lg:w-[250px] pr-6"
       />

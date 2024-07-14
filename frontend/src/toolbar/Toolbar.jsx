@@ -19,7 +19,10 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
     <div className="flex flex-row mb-4">
 
       <div className="flex flex-row space-x-2">
-        <AllFilter dataTable={dataTable} />
+        <AllFilter
+          onFilterUpdate={onFilterUpdate}
+          onFilterClear={onFilterClear}
+        />
 
         <DescriptionFilter
           operators={stringOperators}
