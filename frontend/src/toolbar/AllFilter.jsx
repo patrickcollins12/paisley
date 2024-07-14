@@ -14,12 +14,12 @@ function AllFilter({ onFilterUpdate, onFilterClear }) {
 
   const fieldName = 'all';
 
-  const [inputValue, setInputValue] = useState('');
-  const [debouncedValue, setDebouncedValue] = useState(inputValue);
+  const [value, setValue] = useState('');
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
   useDebounce(() => {
-    setDebouncedValue(inputValue);
-  }, 500, [inputValue]);
+    setDebouncedValue(value);
+  }, 500, [value]);
 
   useEffect(() => {
     // if the debounced value is empty then we need to reset the filter
@@ -27,7 +27,7 @@ function AllFilter({ onFilterUpdate, onFilterClear }) {
       onFilterUpdate(filterExpression(
         fieldName,
         operatorDef,
-        inputValue
+        value
       ));
     } else {
       onFilterClear(fieldName);
@@ -35,7 +35,7 @@ function AllFilter({ onFilterUpdate, onFilterClear }) {
   }, [debouncedValue]);
 
   const handleClear = () => {
-    setInputValue('');
+    setValue('');
     setDebouncedValue('');
   }
 
@@ -49,7 +49,7 @@ function AllFilter({ onFilterUpdate, onFilterClear }) {
 
   return (
     <div className="relative block">
-      {inputValue.length > 1 && ( // Show X only if inputValue has more than one character
+      {value.length > 1 && ( // Show X only if inputValue has more than one character
         <button
           className="absolute top-1/2 transform -translate-y-1/2 right-2"
           onClick={handleClear} // Clear input on click
@@ -61,9 +61,9 @@ function AllFilter({ onFilterUpdate, onFilterClear }) {
 
       <Input
         placeholder="Filter..."
-        onChange={event => setInputValue(event.target.value)}
         onKeyDown={onKeyDown}
-        value={inputValue}
+        onChange={event => setValue(event.target.value)}
+        value={value}
         className="h-8 w-[150px] lg:w-[250px] pr-6"
       />
     </div>

@@ -123,7 +123,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
               onChange={handleInputFilterBlur}
               // onChange = { (e) => {setValue(e.target.value)} }
               value={value}
-              className="h-8 w-[150px] lg:w-[250px] pr-6"
+              className="h-8 w-full pr-6"
             />}
           </div>
         </div>

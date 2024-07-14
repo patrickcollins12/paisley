@@ -8,6 +8,7 @@ import LookupFilter from "@/toolbar/LookupFilter.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import AmountFilter from "@/toolbar/AmountFilter.jsx"
+import { Landmark, Tag } from "lucide-react"
 
 function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
 
@@ -43,6 +44,7 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
         <LookupFilter
           label="Account"
           field="account_shortname"
+          Icon={Landmark}
           options={ () => {
             if (!accounts.data) return [];
             return Object.keys(accounts.data).map(key => accounts.data[key].shortname)  
@@ -57,6 +59,7 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
         <LookupFilter
           label="Tags"
           field="tags"
+          Icon={Tag}
           options={tags.data}
           coloredPills={true}
           operators={lookupOperators}
@@ -66,6 +69,7 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
         <LookupFilter
           label="Party"
           field="party"
+          Icon={Tag}
           options={parties.data}
           coloredPills={true}
           operators={lookupOperators}

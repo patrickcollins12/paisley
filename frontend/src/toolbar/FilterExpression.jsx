@@ -89,20 +89,20 @@ export const dateOperators = {
 }
 
 export const numberOperators = {
-  equals: {
+  abs_equals: {
     label: "equals",
-    operator: '=',
+    operator: 'abs=',
     short: '',
     default: true
   },
-  gt: {
+  abs_gt: {
     label: "greater than",
-    operator: '>',
+    operator: 'abs>',
     short: '>',
   },
-  lt: {
+  abs_lt: {
     label: "less than",
-    operator: '<',
+    operator: 'abs<',
     short: '<',
   },
   between: {

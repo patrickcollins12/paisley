@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import FilterButton from "./FilterButton.jsx"
 import { defaultOperator, filterExpression } from "@/toolbar/FilterExpression.jsx"
 
-function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilterClear, coloredPills }) {
+function LookupFilter({ label, field, Icon, options, operators, onFilterUpdate, onFilterClear, coloredPills }) {
 
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [isFilterActive, setIsFilterActive] = useState(false);
@@ -77,11 +77,11 @@ function LookupFilter({ label, field, options, operators, onFilterUpdate, onFilt
   };
 
   function renderButtonLabel(label) {
-    const icon = (<Landmark className="h-4 w-4 mr-2" />);
-
     return (
       <>
-        <span>{icon}</span>
+        <span>
+          <Icon className="h-4 w-4 mr-2" />
+        </span>
         <span className="inline-flex gap-1 w-auto text-nowrap">
           <span className="opacity-40">{label}</span>
 
