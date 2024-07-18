@@ -9,6 +9,7 @@ import useAccountData from "@/accounts/AccountApiHooks.js"
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import AmountFilter from "@/toolbar/AmountFilter.jsx"
 import { Landmark, Tag, UserCheck } from "lucide-react"
+import { Link } from '@tanstack/react-router'
 
 function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
 
@@ -19,7 +20,7 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
   return (
     <div className="flex flex-row mb-4">
 
-      <div className="flex flex-row space-x-2">
+      <div className="flex flex-row space-x-2 items-center">
         <AllFilter
           onFilterUpdate={onFilterUpdate}
           onFilterClear={onFilterClear}
@@ -45,10 +46,10 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
           label="Account"
           field="account_shortname"
           Icon={Landmark}
-          options={ () => {
+          options={() => {
             if (!accounts.data) return [];
-            return Object.keys(accounts.data).map(key => accounts.data[key].shortname)  
-          
+            return Object.keys(accounts.data).map(key => accounts.data[key].shortname)
+
           }}
           coloredPills={false}
           operators={lookupOperators}
@@ -76,6 +77,9 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
           onFilterUpdate={onFilterUpdate}
           onFilterClear={onFilterClear}
         />
+
+        <Link to="#" className="text-xs font-bold p-3">Clear</Link>
+        <Link to="#" className="text-xs font-semibold p-3">Save</Link>
 
       </div>
 

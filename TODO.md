@@ -1,4 +1,12 @@
+# PROJECTS
+- Define hooks on import and classify
+- Docs:
+- Create Install process.
+
+
 # TODO
+- [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
+- [ ] why is \bWORD\b not working?
 - [ ] Add a backend filter for "All" in transactions filter
 - [ ] Simon: enable column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 - [ ] Simon: Sync url with filters

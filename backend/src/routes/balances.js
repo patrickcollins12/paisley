@@ -14,8 +14,9 @@ router.get('/api/balances', async (req, res) => {
   group by account ) l
   on t.account = l.account
   AND t.id = l.id
-  order by a.institution asc, a.name asc
+  order by a.shortname ASC
 `;
+
 
   try {
     const stmt = db.db.prepare(query);
@@ -26,6 +27,7 @@ router.get('/api/balances', async (req, res) => {
       accountsObject[row.account] = row;
     }
         
+    console.log(JSON.stringify(accountsObject,null,"\t"))
     res.json(accountsObject);
 
   } catch (err) {

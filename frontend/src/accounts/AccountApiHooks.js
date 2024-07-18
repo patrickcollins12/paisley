@@ -10,6 +10,7 @@ function useAccountData(accountId = null) {
   const { data, error, isLoading } = useSWR('balances', fetcher);
 
   if (accountId && !isLoading && !error) {
+    // console.log(JSON.stringify(data, null, "\t"))
     return {
       data: (accountId in data) ? data[accountId] : null,
       error,
