@@ -172,9 +172,9 @@ class TransactionQueryFilter {
                 } else {
                     if (this.isNumeric(value)) {
                         if (abs_val) {
-                            this._addSqlConditionField(`ABS(%%) ${operator} CAST(? AS NUMERIC)`, fields, [value], NOT)
+                            this._addSqlConditionField(`ABS(%%) ${operator} CAST(? AS NUMERIC) AND %% NOT NULL AND %% != '' AND %% <> 0`, fields, [value], NOT)
                         } else {
-                            this._addSqlConditionField(`%% ${operator} CAST(? AS NUMERIC)`, fields, [value], NOT)
+                            this._addSqlConditionField(`%% ${operator} CAST(? AS NUMERIC) AND %% NOT NULL AND %% != '' AND %% <> 0`, fields, [value], NOT)
                         }
                     } else {
                         this._addSqlConditionField(`%% ${operator} ?`, fields, [value], NOT)
