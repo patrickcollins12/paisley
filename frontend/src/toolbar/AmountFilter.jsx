@@ -17,12 +17,11 @@ const filterRegex = /([0-9]{0,}(?:\.[0-9]{0,2})?)/;
 function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
 
   const [field, setField] = useState(fieldList[0]);
-  const [value, setValue] = useState('')
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const [value, setValue] = useState([]);
+  const [debouncedValue, setDebouncedValue] = useState([]);
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [operator, setOperator] = useState(defaultOperator(operators));
-  const [operatorOnly, setOperatorOnly] = useState(operators[defaultOperator(operators)]?.operatorOnly ?? false);
   const operatorDef = operators[operator];
 
   useDebounce(() => {
@@ -30,27 +29,47 @@ function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
   }, 500, [value]);
 
   useEffect(() => {
-    if (debouncedValue) {
-      setIsFilterActive(true);
-      onFilterUpdate(filterExpression(field.id, operatorDef, debouncedValue));
+    if (debouncedValue.length === 0) return;
+
+    setIsFilterActive(true);
+    if (debouncedValue.length === 1 && operator !== 'between') {
+      onFilterUpdate(filterExpression(field.id, operatorDef, debouncedValue[0]));
     } else {
-      setIsFilterActive(false);
-      onFilterClear(field.id);
+      let filters = [];
+      filters.push(filterExpression(field.id, operators.abs_gt, debouncedValue[0]));
+      filters.push(filterExpression(field.id, operators.abs_lt, debouncedValue[1]));
+      onFilterUpdate(...filters);
     }
-  }, [debouncedValue]);
+  }, [debouncedValue, field, operator]);
 
   const handleClear = (event) => {
     event.stopPropagation();
 
-    setValue('');
-    setDebouncedValue('');
+    setValue([]);
+    setDebouncedValue([]);
     setIsFilterActive(false);
+    setField(fieldList[0]);
+    setOperator(defaultOperator(operators));
+    onFilterClear(field.id);
   };
 
-  const handleInput = (event) => {
+  const handleFieldChange = (fieldId) => {
+    const newField = fieldList.find(field => field.id === fieldId);
+    if (!newField) return;
+    setField(prevState => {
+      onFilterClear(prevState.id);
+      return newField;
+    });
+  }
+
+  const handleInput = (event, valueIndex) => {
     const matches = filterRegex.exec(event.target.value);
     if (!matches) return;
-    setValue(matches[0]);
+    setValue(prevState => {
+      let newState = [...prevState];
+      newState[valueIndex] = matches[0];
+      return newState;
+    });
   }
 
   function renderButtonLabel(label) {
@@ -67,7 +86,7 @@ function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
             :
             <span>{operatorDef.label}</span>
           }
-          <span>{value}</span>
+          <span>{value.join(' to ')}</span>
         </span>
       </>
     )
@@ -79,7 +98,7 @@ function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
         <div>
           <FilterButton
             isFilterActive={isFilterActive}
-            label="Amount"
+            label={field.label}
             onClear={handleClear}
             activeRenderer={renderButtonLabel}
           />
@@ -88,8 +107,8 @@ function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
       <PopoverContent align='start' className="w-auto">
         <div className="text-xs">
           <div className="flex flex-col gap-3 items-start mb-3">
-            <Select value={field.id} className="border border-3" onValueChange={field => setField(field)}>
-              <SelectTrigger className="border h-8 text-xs w-[200px] inline-flex">
+            <Select value={field.id} className="border border-3" onValueChange={handleFieldChange}>
+              <SelectTrigger className="border h-8 text-xs w-[225px] inline-flex">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -99,7 +118,7 @@ function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
               </SelectContent>
             </Select>
             <Select value={operator} className="border border-3" onValueChange={operatorValue => setOperator(operatorValue)}>
-              <SelectTrigger className="border h-8 text-xs w-[200px] inline-flex">
+              <SelectTrigger className="border h-8 text-xs w-[225px] inline-flex">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -109,13 +128,35 @@ function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
               </SelectContent>
             </Select>
 
-            <Input
-              placeholder="amount ..."
-              autoFocus
-              onChange={handleInput}
-              value={value}
-              className="h-8 w-full pr-6"
-            />
+            {operator !== 'between' &&
+              <Input
+                placeholder='e.g. 539.50'
+                autoFocus
+                onChange={event => handleInput(event, 0)}
+                value={value[0] ?? ''}
+                className="h-8 w-full pr-6"
+              />
+            }
+
+            {operator === 'between' &&
+              <div className='flex w-full'>
+                <Input
+                  placeholder='e.g. 50.0'
+                  autoFocus
+                  onChange={event => handleInput(event, 0)}
+                  value={value[0] ?? ''}
+                  className="h-8 pr-6 w-[95px]"
+                />
+                <div className='leading-8 text-xs mx-1 grow text-center'>and</div>
+                <Input
+                  placeholder='e.g. 100.0'
+                  autoFocus
+                  onChange={event => handleInput(event, 1)}
+                  value={value[1] ?? ''}
+                  className="h-8 pr-6 w-[95px]"
+                />
+              </div>
+            }
           </div>
         </div>
       </PopoverContent>
