@@ -1,9 +1,3 @@
-# PROJECTS
-- Define hooks on import and classify
-- Docs:
-- Create Install process.
-
-
 # TODO
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 - [ ] why is \bWORD\b not working?
@@ -13,6 +7,18 @@
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 - [ ] Add string (contains/regex) to Account Filter
 - [ ] do tests for regex/contains on lists like tags, party and account.
+
+# PROJECTS
+- Define hooks on import and classify
+- Docs:
+- Create Install process
+- Finish Accounts
+- Create a Reporting System
+
+
+
+
+
 
 
 

@@ -40,10 +40,14 @@ function AllFilter({ onFilterUpdate, onFilterClear }) {
   }
 
   function onKeyDown(event) {
-    if (event.key === 'Enter' || event.key === 'Escape' || event.key === 'Tab') {
+    if (event.key === 'Escape') {
+    // if (event.key === 'Enter' || event.key === 'Escape' || event.key === 'Tab') {
       event.preventDefault();
       event.currentTarget.blur();
       handleClear()
+    }
+    if (event.key === 'Enter' || event.key === 'Tab') {
+      event.currentTarget.blur();
     }
   }
 

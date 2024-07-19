@@ -27,7 +27,7 @@ router.get('/api/balances', async (req, res) => {
       accountsObject[row.account] = row;
     }
         
-    console.log(JSON.stringify(accountsObject,null,"\t"))
+    // console.log(JSON.stringify(accountsObject,null,"\t"))
     res.json(accountsObject);
 
   } catch (err) {
