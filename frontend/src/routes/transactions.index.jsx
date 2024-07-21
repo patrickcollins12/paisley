@@ -4,6 +4,7 @@ import Joi from 'joi'
 import { pageSizeOptions } from "@/components/data-table/Pagination.jsx"
 import TransactionPage from "@/transactions/TransactionPage.jsx"
 import { createAuthenticatedFileRoute } from "@/auth/RouteHelpers.jsx"
+import { SearchContextProvider } from "@/components/search/SearchContext.jsx"
 
 /*
  Setup JOI based schema for validating search parameters
@@ -21,7 +22,11 @@ const schema = Joi.object({
 });
 
 export const Route = createAuthenticatedFileRoute('/transactions/',{
-  component: TransactionPage,
+  component: () => (
+    <SearchContextProvider>
+      <TransactionPage />
+    </SearchContextProvider>
+  ),
   validateSearch: search => {
     const { error, value: validatedSearch } = schema.validate(search);
     if (error) {

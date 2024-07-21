@@ -11,7 +11,7 @@ import AmountFilter from "@/toolbar/AmountFilter.jsx"
 import { Landmark, Tag, UserCheck } from "lucide-react"
 import { Link } from '@tanstack/react-router'
 
-function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
+function Toolbar({ dataTable }) {
 
   const accounts = useAccountData();
   const tags = useFetchTags('tags');
@@ -21,26 +21,13 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
     <div className="flex flex-row mb-4">
 
       <div className="flex flex-row space-x-2 items-center">
-        <AllFilter
-          onFilterUpdate={onFilterUpdate}
-          onFilterClear={onFilterClear}
-        />
+        <AllFilter />
 
-        <DescriptionFilter
-          operators={stringOperators}
-          onFilterUpdate={onFilterUpdate}
-          onFilterClear={onFilterClear} />
+        <DescriptionFilter operators={stringOperators} />
 
-        <DateFilter
-          onFilterUpdate={onFilterUpdate}
-          onFilterClear={onFilterClear}
-        />
+        <DateFilter />
 
-        <AmountFilter
-          operators={numberOperators}
-          onFilterUpdate={onFilterUpdate}
-          onFilterClear={onFilterClear}
-        />
+        <AmountFilter operators={numberOperators} />
 
         <LookupFilter
           label="Account"
@@ -53,8 +40,6 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
           }}
           coloredPills={false}
           operators={lookupOperators}
-          onFilterUpdate={onFilterUpdate}
-          onFilterClear={onFilterClear}
         />
 
         <LookupFilter
@@ -64,8 +49,6 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
           options={tags.data}
           coloredPills={true}
           operators={lookupOperators}
-          onFilterUpdate={onFilterUpdate}
-          onFilterClear={onFilterClear}
         />
         <LookupFilter
           label="Party"
@@ -74,8 +57,6 @@ function Toolbar({ dataTable, onFilterUpdate, onFilterClear }) {
           options={parties.data}
           coloredPills={true}
           operators={lookupOperators}
-          onFilterUpdate={onFilterUpdate}
-          onFilterClear={onFilterClear}
         />
 
         <Link to="#" className="text-xs font-bold p-3">Clear</Link>

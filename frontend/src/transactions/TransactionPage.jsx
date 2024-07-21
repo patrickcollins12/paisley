@@ -13,8 +13,12 @@ import { createColumnDefinitions } from "./TransactionColumnDefinitions.jsx"
 import Toolbar from "@/toolbar/Toolbar.jsx"
 import { useFetchTransactions, useUpdateTransaction } from "@/transactions/TransactionApiHooks.jsx"
 import { useTransactionSearchParams } from "@/transactions/TransactionSearchParamsHooks.jsx"
+import { useSearch } from "@/components/search/SearchContext.jsx"
 
 function TransactionPage() {
+  const searchContext = useSearch();
+  console.log('searchContext', searchContext.getFilters());
+
   const [customFilterState, setCustomFilterState] = useState([]);
   const {
     filterState, setFilterState,
@@ -30,7 +34,7 @@ function TransactionPage() {
   const { data } = useFetchTransactions({
     pageIndex: pageState.pageIndex,
     pageSize: pageState.pageSize,
-    filters: customFilterState,
+    filters: searchContext.getFilters(),
     orderBy: sortState.length > 0 ? { field: sortState[0].id, dir: sortState[0].desc ? 'desc' : 'asc' } : null,
   });
   const { update: updateTransaction } = useUpdateTransaction();
@@ -84,18 +88,17 @@ function TransactionPage() {
 
   return (
     <>
-      <Toolbar
-        dataTable={table}
-        onFilterUpdate={handleFilterUpdate}
-        onFilterClear={handleFilterClear}
-      />
-
-      <DataTable
-        paginated
-        data={data}
-        table={table}
-        columnVisibilityState={columnVisibilityState}
-      />
+        <Toolbar
+          dataTable={table}
+          onFilterUpdate={handleFilterUpdate}
+          onFilterClear={handleFilterClear}
+        />
+        <DataTable
+          paginated
+          data={data}
+          table={table}
+          columnVisibilityState={columnVisibilityState}
+        />
     </>
   )
 }

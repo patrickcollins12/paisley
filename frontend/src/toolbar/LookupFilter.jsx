@@ -9,10 +9,12 @@ import { ReactSelect } from '@/components/ReactSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FilterButton from "./FilterButton.jsx"
 import { defaultOperator, filterExpression } from "@/toolbar/FilterExpression.jsx"
+import { useSearch } from "@/components/search/SearchContext.jsx"
 
-function LookupFilter({ label, field, Icon, options, operators, onFilterUpdate, onFilterClear, coloredPills }) {
+function LookupFilter({ label, field, Icon, options, operators, coloredPills }) {
 
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const searchContext = useSearch();
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [operator, setOperator] = useState(defaultOperator(operators));
@@ -28,7 +30,7 @@ function LookupFilter({ label, field, Icon, options, operators, onFilterUpdate, 
     setIsFilterActive(true);
     setPopoverOpen(false);
 
-    onFilterUpdate(filterExpression(field, operatorDef, selectedOptions));
+    searchContext.updateFilters(filterExpression(field, operatorDef, selectedOptions));
   }, [selectedOptions]);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ function LookupFilter({ label, field, Icon, options, operators, onFilterUpdate, 
       setPopoverOpen(false);
       setOperatorOnly(true);
 
-      onFilterUpdate(filterExpression(field, operatorDef, null));
+      searchContext.updateFilters(filterExpression(field, operatorDef, null));
     } else {
       setOperatorOnly(false);
     }
@@ -62,7 +64,8 @@ function LookupFilter({ label, field, Icon, options, operators, onFilterUpdate, 
   const saveSelection = () => {
     setIsFilterActive(selectedOptions.length > 0);
     setPopoverOpen(false);
-    onFilterUpdate(filterExpression(field, operatorDef, selectedOptions));
+
+    searchContext.updateFilters(filterExpression(field, operatorDef, selectedOptions));
   }
 
   const clearSelection = (event) => {
@@ -73,7 +76,7 @@ function LookupFilter({ label, field, Icon, options, operators, onFilterUpdate, 
     setIsFilterActive(false);
     setPopoverOpen(false);
 
-    onFilterClear(field);
+    searchContext.clearFilters(field);
   };
 
   function renderButtonLabel(label) {

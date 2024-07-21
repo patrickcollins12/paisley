@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input.jsx"
 import { CircleDollarSignIcon, NotepadText as DescriptionIcon } from "lucide-react"
 import { defaultOperator, filterExpression } from "@/toolbar/FilterExpression.jsx"
 import { useDebounce } from "react-use"
+import { useSearch } from "@/components/search/SearchContext.jsx"
 
 const fieldList = [
   { id: 'amount', label: 'Amount' },
@@ -14,9 +15,10 @@ const fieldList = [
 ];
 const filterRegex = /([0-9]{0,}(?:\.[0-9]{0,2})?)/;
 
-function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
+function AmountFilter({ operators }) {
 
   const [field, setField] = useState(fieldList[0]);
+  const searchContext = useSearch();
   const [value, setValue] = useState([]);
   const [debouncedValue, setDebouncedValue] = useState([]);
   const [isFilterActive, setIsFilterActive] = useState(false);
@@ -33,12 +35,13 @@ function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
 
     setIsFilterActive(true);
     if (debouncedValue.length === 1 && operator !== 'between') {
-      onFilterUpdate(filterExpression(field.id, operatorDef, debouncedValue[0]));
+      searchContext.updateFilters(filterExpression(field.id, operatorDef, debouncedValue[0]));
     } else {
       let filters = [];
       filters.push(filterExpression(field.id, operators.abs_gt, debouncedValue[0]));
       filters.push(filterExpression(field.id, operators.abs_lt, debouncedValue[1]));
-      onFilterUpdate(...filters);
+
+      searchContext.updateFilters(...filters);
     }
   }, [debouncedValue, field, operator]);
 
@@ -50,14 +53,15 @@ function AmountFilter({ operators, onFilterUpdate, onFilterClear }) {
     setIsFilterActive(false);
     setField(fieldList[0]);
     setOperator(defaultOperator(operators));
-    onFilterClear(field.id);
+
+    searchContext.clearFilters(field.id);
   };
 
   const handleFieldChange = (fieldId) => {
     const newField = fieldList.find(field => field.id === fieldId);
     if (!newField) return;
     setField(prevState => {
-      onFilterClear(prevState.id);
+      searchContext.clearFilters(prevState.id);
       return newField;
     });
   }

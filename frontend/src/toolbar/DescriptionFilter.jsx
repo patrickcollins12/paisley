@@ -7,10 +7,12 @@ import FilterButton from "./FilterButton.jsx"
 import useDebounce from './useDebounce.jsx';
 import { defaultOperator, filterExpression } from "@/toolbar/FilterExpression.jsx"
 import { useUpdateEffect } from "react-use"
+import { useSearch } from "@/components/search/SearchContext.jsx"
 
-function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
+function DescriptionFilter({ operators }) {
 
   const fieldName = 'description';
+  const searchContext = useSearch();
   const [value, setValue] = useState("");
   const debouncedValue = useDebounce(value, 500);
 
@@ -26,7 +28,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
     // this will be triggered only after the specified delay (500mßs in this example)
     // console.log('Debounced value:', debouncedValue);
 
-    onFilterUpdate(filterExpression(fieldName, operatorDef, debouncedValue));
+    searchContext.updateFilters(filterExpression(fieldName, operatorDef, debouncedValue));
   }, [debouncedValue]);
 
   // handle change to the selected operator
@@ -39,11 +41,11 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
       setPopoverOpen(false);
       setOperatorOnly(true);
 
-      onFilterUpdate(filterExpression(fieldName, operatorDef, null));
+      searchContext.updateFilters(filterExpression(fieldName, operatorDef, null));
     } else {
       setOperatorOnly(false);
 
-      onFilterUpdate(filterExpression(fieldName, operatorDef, debouncedValue));
+      searchContext.updateFilters(filterExpression(fieldName, operatorDef, debouncedValue));
     }
   }, [operator]);
 
@@ -88,7 +90,7 @@ function DescriptionFilter({ operators, onFilterUpdate, onFilterClear }) {
     setOperator(defaultOperator(operators));
     setOperatorOnly(operators[defaultOperator(operators)]?.operatorOnly ?? false);
 
-    onFilterClear(fieldName);
+    searchContext.clearFilters(fieldName);
   }
 
   // TODO add onKeyDown escape propagates all the way up to close the popover

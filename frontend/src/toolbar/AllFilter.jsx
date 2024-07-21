@@ -3,6 +3,7 @@ import { X } from "lucide-react"
 import { useEffect, useState } from 'react';
 import { filterExpression } from "@/toolbar/FilterExpression.jsx"
 import { useDebounce } from "react-use"
+import { useSearch } from "@/components/search/SearchContext.jsx"
 
 const operatorDef = {
   label: 'contains',
@@ -10,10 +11,10 @@ const operatorDef = {
   short: ''
 };
 
-function AllFilter({ onFilterUpdate, onFilterClear }) {
+function AllFilter() {
 
   const fieldName = 'all';
-
+  const searchContext = useSearch();
   const [value, setValue] = useState('');
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -24,13 +25,13 @@ function AllFilter({ onFilterUpdate, onFilterClear }) {
   useEffect(() => {
     // if the debounced value is empty then we need to reset the filter
     if (debouncedValue) {
-      onFilterUpdate(filterExpression(
+      searchContext.updateFilters(filterExpression(
         fieldName,
         operatorDef,
         value
       ));
     } else {
-      onFilterClear(fieldName);
+      searchContext.clearFilters(fieldName);
     }
   }, [debouncedValue]);
 
