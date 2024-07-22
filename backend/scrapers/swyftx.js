@@ -1,7 +1,6 @@
 import { test,expect } from '@playwright/test';
 const util = require('../src/ScraperUtil');
 const config = (require('../src/Config'));
-const { access } = require('fs');
 const { DateTime } = require("luxon");
 const axios = require('axios').default;
 const path = require('path');

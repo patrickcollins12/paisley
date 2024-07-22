@@ -264,13 +264,15 @@ class TransactionQuery {
     static allTransactionsSizeQuery = `
 SELECT count(id) as cnt
 FROM (${TransactionQuery.allTransactionsSubView}) AS main
-WHERE 1 = 1 
+WHERE 1=1  
+AND type<>'BAL'
 `
 
     static allTransactionsQuery = `
 SELECT * 
 FROM (${TransactionQuery.allTransactionsSubView}) AS main
-WHERE 1=1
+WHERE 1=1 
+AND type<>'BAL'
 `
 
 }

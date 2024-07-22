@@ -1,19 +1,40 @@
 # TODO
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
-- [ ] why is \bWORD\b not working?
-- [ ] Add a backend filter for "All" in transactions filter
-- [ ] Simon: enable column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
+- [ ] What to do with "BAL"? I think when we implement layered filters, this is a default off.
+- [x] why is \bWORD\b not working?
+- [x] Add a backend filter for "All" in transactions filter
+- [ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 - [ ] Simon: Sync url with filters
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 - [ ] Add string (contains/regex) to Account Filter
 - [ ] do tests for regex/contains on lists like tags, party and account.
 
 # PROJECTS
-- Define hooks on import and classify
-- Docs:
-- Create Install process
 - Finish Accounts
-- Create a Reporting System
+     Accounts screen with balances
+
+- Define hooks on import and classify
+       Examples: 
+       Add tags/party from CSV import
+       Add an additional classifier that is sole or additional.
+       Scheduled enricher
+       
+- Docs
+       Document 
+
+- Playwright
+       Invoked from backend instead with node-cron and a * * * in config.js. Remove pm2
+       Write a wrapper and try/catch? Invoke playwright directly?
+       Add logging and events. Create an event table? Events could include playwright runs, balance checks, logins, 
+       Maybe balances go to events as well?
+       
+- Create Install process
+       Setup default demo database
+
+
+- Reports
+       Balance Reporting over time
+
 
 
 
