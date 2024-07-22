@@ -9,9 +9,12 @@ import useAccountData from "@/accounts/AccountApiHooks.js"
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import AmountFilter from "@/toolbar/AmountFilter.jsx"
 import { Landmark, Tag, UserCheck } from "lucide-react"
-import { Link } from '@tanstack/react-router'
+import { useSearch } from "@/components/search/SearchContext.jsx"
+import { Button } from "@/components/ui/button.jsx"
 
 function Toolbar({ dataTable }) {
+
+  const searchContext = useSearch();
 
   const accounts = useAccountData();
   const tags = useFetchTags('tags');
@@ -59,8 +62,14 @@ function Toolbar({ dataTable }) {
           operators={lookupOperators}
         />
 
-        <Link to="#" className="text-xs font-bold p-3">Clear</Link>
-        <Link to="#" className="text-xs font-semibold p-3">Save</Link>
+        <Button
+          onClick={() => searchContext.clear()}
+          variant='ghost'
+          className="h-8 p-3 text-left font-normal">Clear</Button>
+        <Button
+          onClick={() => searchContext.save()}
+          variant='ghost'
+          className="h-8 p-3 text-left font-normal">Save</Button>
 
       </div>
 

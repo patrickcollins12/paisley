@@ -3,7 +3,9 @@ import { createContext, useContext, useState } from "react"
 const defaultValues = {
   getFilters: () => [],
   updateFilters: () => {},
-  clearFilters: () => {}
+  clearFilters: () => {},
+  clear: () => {},
+  save: () => {}
 }
 const SearchContext = createContext(defaultValues);
 
@@ -30,13 +32,26 @@ export function SearchContextProvider({ children }) {
     })
   }
 
+  const clear = () => {
+    console.log('SearchContext.clear');
+    // TODO: Wire up the filter buttons so they know how to respond to this happening
+    // setFilters([]);
+  }
+
+  const save = () => {
+    console.log('SearchContext.save');
+    // TODO: Save search configuration somehow (maybe via localstorage for now)
+  }
+
   const getFilters = () => filters;
 
   return (
     <SearchContext.Provider value={{
       getFilters,
       updateFilters,
-      clearFilters
+      clearFilters,
+      clear,
+      save
     }}>
       {children}
     </SearchContext.Provider>
