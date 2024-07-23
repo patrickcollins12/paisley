@@ -56,10 +56,10 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
       }
     },
     {
-      accessorKey: 'matching_transactions',
+      accessorKey: 'tx_count',
       header: props => <HeaderCell {...props} />,
       meta: {
-        displayName: 'Matched Transactions'
+        displayName: 'Matches'
       }
     },
     {

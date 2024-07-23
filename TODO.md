@@ -1,13 +1,10 @@
 # TODO
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
-- [ ] What to do with "BAL"? I think when we implement layered filters, this is a default off.
-- [x] why is \bWORD\b not working?
-- [x] Add a backend filter for "All" in transactions filter
+- [ ] Add string (contains/regex) to Account/Tags/Party Filter, do tests too
+- [ ] /rules returns # of matching transactions
 - [ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 - [ ] Simon: Sync url with filters
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
-- [ ] Add string (contains/regex) to Account Filter
-- [ ] do tests for regex/contains on lists like tags, party and account.
 
 # PROJECTS
 - Finish Accounts
@@ -31,8 +28,8 @@
 - Create Install process
        Setup default demo database
 
-
 - Reports
+       Design the Account Screen as a report
        Balance Reporting over time
 
 
@@ -42,7 +39,9 @@
 
 
 
-
+- [x] why is \bWORD\b not working?
+- [x] Add a backend filter for "All" in transactions filter
+- [x] What to do with "BAL"? I think when we implement layered filters, this is a default off.
 - [x] Bug: update_transaction auth handler is locking. fix it.
 - [x] Bug: Editable input is saving on blur even when nothing has changed (15m)
 - [x] Ruleedit needs some helper text temporarily

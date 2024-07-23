@@ -9,18 +9,42 @@ const disableAuth = false; // false means apply auth, true means disable auth
 router.get('/api/rules',
   async (req, res) => {
     let db = new BankDatabase();
-    let query = "SELECT * from rule order by id desc";
 
-    let classifier = new RulesClassifier();
+    // This query might look a bit scary, all it's doing is:
+    // it gets the list of tx where it uses the rule id in either the party or tag field
+    let query = `SELECT
+        r.*,
+        COUNT(DISTINCT combined.id) AS tx_count
+        FROM
+            rule r
+        LEFT JOIN (
+            SELECT
+                t.id,
+                json_each.value AS rule
+            FROM
+                "transaction" t,
+                json_each(t.tags, '$.rule')
+
+            UNION ALL
+
+            SELECT
+                t.id,
+                json_extract(t.party, '$.rule') AS rule
+            FROM
+                "transaction" t
+            WHERE
+                json_extract(t.party, '$.rule') IS NOT NULL
+        ) combined ON r.id = combined.rule
+        GROUP BY
+            r.id
+        ORDER BY
+            r.id DESC;
+        `;
+
 
     try {
       const stmt = db.db.prepare(query);
       const rows = stmt.all();
-
-      for (const row of rows) {
-        row.matching_transactions = "" //classifier.applyOneRule(row.id)
-      }
-
 
       res.json(rows);
     } catch (err) {
