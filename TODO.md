@@ -1,7 +1,8 @@
 # TODO
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
+- [ ] Add rules to the dropdown
+- [ ] Add filter_save to the backend as kv pair
 - [ ] Add string (contains/regex) to Account/Tags/Party Filter, do tests too
-- [ ] /rules returns # of matching transactions
 - [ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 - [ ] Simon: Sync url with filters
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
@@ -16,8 +17,11 @@
        Add an additional classifier that is sole or additional.
        Scheduled enricher
        
+- DB Migrator, prism? knexjs? https://knexjs.org/guide/migrations.html#migration-api
+
+
 - Docs
-       Document 
+       Document how to create a scraper and a CSV importer
 
 - Playwright
        Invoked from backend instead with node-cron and a * * * in config.js. Remove pm2
@@ -32,13 +36,8 @@
        Design the Account Screen as a report
        Balance Reporting over time
 
-
-
-
-
-
-
-
+Closed bugs/tickets
+- [x] /rules returns # of matching transactions
 - [x] why is \bWORD\b not working?
 - [x] Add a backend filter for "All" in transactions filter
 - [x] What to do with "BAL"? I think when we implement layered filters, this is a default off.

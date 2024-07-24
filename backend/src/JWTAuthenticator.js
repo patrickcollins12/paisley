@@ -15,10 +15,10 @@ class JWTAuthenticator {
       const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
       // Paths to skip authentication
-      const skipPaths = ['/api/login', '/api/signup'];
-
+      const skipPaths = ['/api/login', '/api/signup', '/api/docs/'];
+      
       // Check if the request path should skip authentication
-      if (skipPaths.includes(req.path)) {
+      if (skipPaths.some(path => req.path.startsWith(path))) {
         return next();
       }
 
