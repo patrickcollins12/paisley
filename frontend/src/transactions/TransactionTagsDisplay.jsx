@@ -3,11 +3,8 @@ import { useEffect, useState } from 'react';
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import { Switch } from "@/components/ui/switch.jsx"
 import { TagEditorPopover } from "@/components/TagEditorPopover"
-import { useUpdateEffect } from "react-use"
 import { Link } from "@tanstack/react-router"
 import { CircleChevronRight } from "lucide-react";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { Button } from "@/components/ui/button.jsx"
 
 
 export function TransactionTagsDisplay({ type, data, manual, auto, rules, full, updateHandler, ...props }) {
