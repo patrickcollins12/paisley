@@ -80,11 +80,14 @@ async function fetcher([url, options]) {
     // item.tags =        (item.tags)        ? JSON.parse(item.tags) : []
     const auto_tags = (item.auto_tags) ? JSON.parse(item.auto_tags) : {}
     item.auto_tags = auto_tags?.tags || []
+    item.auto_tags_rule_ids = auto_tags?.rule || []
+
 
     item.manual_tags = (item.manual_tags) ? JSON.parse(item.manual_tags) : []
 
     const auto_party = (item.auto_party) ? JSON.parse(item.auto_party) : {}
     item.auto_party = auto_party?.party || []
+    item.auto_party_rule_ids = [auto_party?.rule] || ""
 
     item.manual_party = (item.manual_party) ? JSON.parse(item.manual_party) : []
 

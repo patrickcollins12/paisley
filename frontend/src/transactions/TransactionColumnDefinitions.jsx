@@ -130,6 +130,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         manual={props.row.original.manual_tags}
         auto={props.row.original.auto_tags}
         full={props.row.original.tags}
+        rules= {props.row.original.auto_tags_rule_ids}
         data={props.row.original}
         placeholder="Add tags..."
         isMulti={true}
@@ -165,6 +166,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         manual={props.row.original.manual_party}
         auto={props.row.original.auto_party}
         full={props.row.original.party}
+        rules= {props.row.original.auto_party_rule_ids}
         data={props.row.original}
         placeholder="Add a party..."
         isMulti={false}

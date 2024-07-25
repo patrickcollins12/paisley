@@ -1,13 +1,14 @@
 # TODO
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
-- [ ] Add rules to the dropdown
-- [ ] Add filter_save to the backend as kv pair
+- [x] Add rules to the dropdown
+- [x] Add filter_save to the backend as kv pair
 - [ ] Add string (contains/regex) to Account/Tags/Party Filter, do tests too
 - [ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 - [ ] Simon: Sync url with filters
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 
 # PROJECTS
+
 - Finish Accounts
      Accounts screen with balances
 
@@ -16,9 +17,8 @@
        Add tags/party from CSV import
        Add an additional classifier that is sole or additional.
        Scheduled enricher
-       
+     
 - DB Migrator, prism? knexjs? https://knexjs.org/guide/migrations.html#migration-api
-
 
 - Docs
        Document how to create a scraper and a CSV importer

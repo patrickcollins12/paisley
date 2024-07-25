@@ -4,8 +4,13 @@ import { useFetchTags } from "@/tags/TagApiHooks.js"
 import { Switch } from "@/components/ui/switch.jsx"
 import { TagEditorPopover } from "@/components/TagEditorPopover"
 import { useUpdateEffect } from "react-use"
+import { Link } from "@tanstack/react-router"
+import { CircleChevronRight } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { Button } from "@/components/ui/button.jsx"
 
-export function TransactionTagsDisplay({ type, data, manual, auto, full, updateHandler, ...props }) {
+
+export function TransactionTagsDisplay({ type, data, manual, auto, rules, full, updateHandler, ...props }) {
     const id = data.id;
 
     // both need to be valid arrays
@@ -17,6 +22,8 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
     const [autoTags, setAutoTags] = useState(auto);
     const [manualTags, setManualTags] = useState(manual);
     const [tags, setTags] = useState(full);
+    const [isRulesOpen, setIsRulesOpen] = useState(false);
+    const toggleRulesVisibility = () => { setIsRulesOpen(!isRulesOpen); };
 
     // const displayedTags = autoCategorize ? [...new Set([...manualTags, ...autoTags])] : [...manualTags];
     const { data: allTags } = useFetchTags(type); // for the select dropdown
@@ -38,12 +45,12 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
         // OK this logic is not trivial, so i'll describe it.
         // When turning off auto categorization, we want to take the existing
         // automatically created tags and move them over to the manual tags, so you can edit them.
-        
+
         if (!_autoCategorize) {
             updatedManualTags = [...new Set([...manualTags, ...autoTags])];
         }
 
-        
+
         // but when turning automatic tagging back on, we want to do the opposite,
         // we want to take whatever manually created tags are already covered by
         // the auto tagging and remove them from the set.
@@ -126,7 +133,7 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
     const contentHeader = (
         <>
             {/* ---- Autocategorize Switch ---- */}
-            < div className="flex items-center space-x-2 mb-3" >
+            < div className="flex items-center space-x-2 mb-2" >
 
                 <Switch
                     className="text-xs"
@@ -140,19 +147,55 @@ export function TransactionTagsDisplay({ type, data, manual, auto, full, updateH
             {/* ---- Show Categorized Tags ---- */}
             {
                 autoCategorize && autoTags.length ? (
-                    <div className="items-center">
-                        <div className="text-xs pr-1">Auto tags</div>
-                        {autoTags.map((tag, index) => (
-                            <Badge
-                                variant="colored"
-                                key={index}>{tag}
-                            </Badge>
-                        ))}
-                    </div>
+                    <>
+                        <div className="text-xs pr-1 mb-1">Auto tags</div>
+
+                        <div className="inline-flex items-center mb-1">
+                            <span>
+                                {autoTags.map((tag, index) => (
+                                    <Badge
+                                        className="mb-0"
+                                        variant="colored"
+                                        key={index}>{tag}
+                                    </Badge>
+                                ))}
+                            </span>
+
+                            <button onClick={toggleRulesVisibility} className="text-xs font-normal hover:cursor-pointer">
+                                <CircleChevronRight
+                                    size={16}
+                                    className={`transform transition-transform ${isRulesOpen ? 'rotate-90' : ''}`}
+                                />
+                            </button>
+
+                        </div>
+
+                        {isRulesOpen && (
+                            <div className="mb-1">
+
+                                <span className="text-xs">
+                                    Auto-tagged by {rules.length > 1 ? ' rules ' : ' rule '}
+                                </span>
+                                <span className="text-xs">
+
+                                    {rules.map((rule, index) => (
+                                        <span className="text-xs" key={index}>
+                                            {index > 0 && ', '}
+                                            <Link to={`/rules/${rule}`} className="underline">{rule}</Link>
+                                        </span>
+                                    ))}
+                                </span>
+
+                            </div>)
+                        }
+                    </>
                 ) : ""
+
             }
         </>
     )
+
+
 
     return (
         <TagEditorPopover
