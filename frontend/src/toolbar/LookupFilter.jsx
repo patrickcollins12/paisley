@@ -94,7 +94,7 @@ function LookupFilter({ label, field, Icon, options, operators, coloredPills }) 
             <span>{operatorDef.label}</span>
           }
 
-          {['is', 'anyof', 'notanyof'].includes(operator) && selectedOptions.length > 0 &&
+          {['is', 'any_of', 'not_any_of'].includes(operator) && selectedOptions.length > 0 &&
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-black bg-opacity-60 dark:bg-opacity-30">
               {selectedOptions.length}
             </span>
@@ -131,7 +131,7 @@ function LookupFilter({ label, field, Icon, options, operators, coloredPills }) 
             </Select>
 
             {/* Display the Clear | Filter buttons */}
-            {['anyof', 'notanyof'].includes(operator) && (
+            {['any_of', 'not_any_of'].includes(operator) && (
               <>
                 <Button size="sm" className="ml-auto justify-end" variant="secondary" onClick={clearSelection}>Clear</Button>
                 <Button size="sm" className="justify-end" disabled={selectedOptions.length === 0} onClick={saveSelection}>Filter</Button>

@@ -1,115 +1,157 @@
 export const stringOperators = {
-  contains: {
+  string_contains: {
+    id: 'string_contains',
     label: "contains",
     operator: 'contains',
     short: '',
     default: true
   },
-  notcontains: {
+  string_not_contains: {
+    id: 'string_not_contains',
     label: "does not contain",
     operator: 'not_contains',
     short: "not"
   },
-  regex: {
+  string_regex: {
+    id: 'string_regex',
     label: "matches regex",
     operator: 'regex',
     short: '',
     formatValue: (value) => `/${value}/i`
   },
-  notregex: {
+  string_not_regex: {
+    id: 'string_not_regex',
     label: "does not match regex",
     operator: 'not_regex',
     short: 'not',
     formatValue: (value) => `/${value}/i`
   },
-  matchword: {
+  string_match_word: {
+    id: 'string_match_word',
     label: "matches word",
     operator: 'regex',
     short: '',
     formatValue: (value) => `/\\b${value}\\b/i`
   },
-  blank: {
+  string_blank: {
+    id: 'string_blank',
     label: "is blank",
     operator: 'empty',
     operatorOnly: true,
   },
-  notblank: {
+  string_not_blank: {
+    id: 'string_not_blank',
     label: "is not blank",
     operator: 'not_empty',
     short: "not blank",
     operatorOnly: true,
   },
-  edited: {
+  string_edited: {
+    id: 'string_edited',
     label: "is edited",
     operator: 'edited',
     operatorOnly: true,
   },
-}
+};
 
 export const lookupOperators = {
-  is: {
+  lookup_is: {
+    id: 'lookup_is',
     label: "is",
     operator: 'in',
     short: ''
   },
-  anyof: {
+  lookup_any_of: {
+    id: 'lookup_any_of',
     label: "is any of",
     operator: 'in',
     short: '',
     default: true
   },
-  notanyof: {
+  lookup_not_any_of: {
+    id: 'lookup_not_any_of',
     label: "is not any of",
     operator: 'not_in',
     short: 'not'
   },
-  blank: {
+  lookup_blank: {
+    id: 'lookup_blank',
     label: "is blank",
     operator: 'empty',
     operatorOnly: true,
   },
-  notblank: {
+  lookup_not_blank: {
+    id: 'lookup_not_blank',
     label: "is not blank",
     operator: 'not_empty',
     operatorOnly: true,
   }
-}
+};
 
 export const dateOperators = {
-  after: {
+  date_after: {
+    id: 'date_after',
     label: 'On or after',
     operator: '>=',
     short: '>'
   },
-  before: {
+  date_before: {
+    id: 'date_before',
     label: 'On or before',
     operator: '<=',
     short: '<'
   }
-}
+};
 
 export const numberOperators = {
-  abs_equals: {
+  number_abs_equals: {
+    id: 'number_abs_equals',
     label: "equals",
     operator: 'abs=',
     short: '',
     default: true
   },
-  abs_gt: {
+  number_abs_gt: {
+    id: 'number_abs_gt',
     label: "greater than",
     operator: 'abs>',
     short: '>',
   },
-  abs_lt: {
+  number_abs_lt: {
+    id: 'number_abs_lt',
     label: "less than",
     operator: 'abs<',
     short: '<',
   },
-  between: {
+  number_between: {
+    id: 'number_between',
     label: "between",
     operator: '',
     short: '',
   }
+};
+
+export const allFilterOperators = {
+  all_contains: {
+    id: 'all_contains',
+    label: 'contains',
+    operator: 'contains',
+    short: ''
+  }
+};
+
+export function getOperatorById(id) {
+  const mergedLookup = {
+    ...stringOperators,
+    ...lookupOperators,
+    ...dateOperators,
+    ...numberOperators,
+    ...allFilterOperators
+  }
+
+  if (!(id in mergedLookup)) return null;
+
+  return mergedLookup[id];
 }
 
 export function filterExpression(field, operatorDefinition, value) {

@@ -43,7 +43,8 @@
     "react-use": "^17.5.0",
     "swr": "^2.2.5",
     "tailwind-merge": "^2.2.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@tanstack/router-devtools": "^1.26.12",

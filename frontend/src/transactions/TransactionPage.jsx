@@ -17,9 +17,7 @@ import { useSearch } from "@/components/search/SearchContext.jsx"
 
 function TransactionPage() {
   const searchContext = useSearch();
-  console.log('searchContext', searchContext.getFilters());
 
-  const [customFilterState, setCustomFilterState] = useState([]);
   const {
     filterState, setFilterState,
     sortState, setSortState,
@@ -44,25 +42,6 @@ function TransactionPage() {
     updateTransaction(id, transactionData).then(result => {
       console.log('update transaction result', result);
     });
-  }
-
-  function handleFilterUpdate(...filterExpressions) {
-    console.log('handleFilterUpdate', filterExpressions);
-
-    // build up a set of field keys to remove from the set of active filters
-    const filtersToReset = [...new Set(filterExpressions.map(expression => expression.field))];
-
-    setCustomFilterState((prevState) => {
-      return [...filterExpressions, ...prevState.filter(filter => !(filtersToReset.includes(filter.field)))];
-    });
-  }
-
-  function handleFilterClear(fieldName) {
-    console.log('handleFilterClear', fieldName);
-
-    setCustomFilterState(prevState => {
-      return [...prevState.filter(filter => filter.field !== fieldName)];
-    })
   }
 
   const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate), []);
@@ -90,8 +69,6 @@ function TransactionPage() {
     <>
         <Toolbar
           dataTable={table}
-          onFilterUpdate={handleFilterUpdate}
-          onFilterClear={handleFilterClear}
         />
         <DataTable
           paginated
