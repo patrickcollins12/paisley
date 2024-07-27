@@ -1,56 +1,46 @@
-import { Landmark } from "lucide-react"
 import { Button } from "@/components/ui/button.jsx"
-// import useAccountData from "@/accounts/AccountApiHooks.js"
-import React, { useState, useEffect, useMemo } from 'react';
-
+import { useEffect, useState } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
-
 import { ReactSelect } from '@/components/ReactSelect';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FilterButton from "./FilterButton.jsx"
 import { defaultOperator, filterExpression } from "@/toolbar/FilterExpression.jsx"
 import { useSearch } from "@/components/search/SearchContext.jsx"
 
-function LookupFilter({ label, field, Icon, options, operators, coloredPills }) {
+function LookupFilter({label, field, Icon, options, operators, coloredPills}) {
 
-  const [selectedOptions, setSelectedOptions] = useState([]);
   const searchContext = useSearch();
-  const [isFilterActive, setIsFilterActive] = useState(false);
+  const activeFilters = searchContext.getFilters(field);
+  const isFilterActive = activeFilters.length > 0;
+  const [selectedOptions, setSelectedOptions] = useState(activeFilters.length > 0 ? activeFilters[0].value : []);
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [operator, setOperator] = useState(defaultOperator(operators));
-  const [operatorOnly, setOperatorOnly] = useState(operators[defaultOperator(operators)]?.operatorOnly ?? false);
+  const [operator, setOperator] = useState(activeFilters.length > 0 ? activeFilters[0].operatorDefinition.id : defaultOperator(operators));
   const operatorDef = operators[operator];
   const selectOptions = options instanceof Function ? options() : options;
 
   // handle when a SINGLE selection is made while the IS operator is active
   // when this happens we should close the filter popover and update the filter immediately
   useEffect(() => {
-    if (operator !== 'is' || selectedOptions.length === 0) return;
+    if (operator !== 'lookup_is' || selectedOptions.length === 0) return;
 
-    setIsFilterActive(true);
     setPopoverOpen(false);
-
     searchContext.updateFilters(filterExpression(field, operatorDef, selectedOptions));
   }, [selectedOptions]);
 
   useEffect(() => {
     // handle operator definitions that don't have a "value" per se
     // e.g. blank / empty
-    if (operatorDef?.operatorOnly) {
-      setIsFilterActive(true);
+    if ('operatorOnly' in operatorDef) {
+      // setIsFilterActive(true);
       setPopoverOpen(false);
-      setOperatorOnly(true);
 
-      searchContext.updateFilters(filterExpression(field, operatorDef, null));
-    } else {
-      setOperatorOnly(false);
+      searchContext.updateFilters(filterExpression(field, operatorDef, []));
     }
 
     // handle switching from multi to single select when multiple options are still selected
     // the selection options are cleared in this case
-    if (operator === 'is' && selectedOptions.length > 1) {
+    if (operator === 'lookup_is' && selectedOptions.length > 1) {
       setSelectedOptions([]);
-      setIsFilterActive(false);
     }
   }, [operator]);
 
@@ -62,9 +52,7 @@ function LookupFilter({ label, field, Icon, options, operators, coloredPills }) 
   }, [popoverOpen]);
 
   const saveSelection = () => {
-    setIsFilterActive(selectedOptions.length > 0);
     setPopoverOpen(false);
-
     searchContext.updateFilters(filterExpression(field, operatorDef, selectedOptions));
   }
 
@@ -73,9 +61,7 @@ function LookupFilter({ label, field, Icon, options, operators, coloredPills }) 
 
     setOperator(defaultOperator(operators));
     setSelectedOptions([]);
-    setIsFilterActive(false);
     setPopoverOpen(false);
-
     searchContext.clearFilters(field);
   };
 
@@ -83,7 +69,7 @@ function LookupFilter({ label, field, Icon, options, operators, coloredPills }) 
     return (
       <>
         <span>
-          <Icon className="h-4 w-4 mr-2" />
+          <Icon className="h-4 w-4 mr-2"/>
         </span>
         <span className="inline-flex gap-1 w-auto text-nowrap">
           <span className="opacity-40">{label}</span>
@@ -94,8 +80,9 @@ function LookupFilter({ label, field, Icon, options, operators, coloredPills }) 
             <span>{operatorDef.label}</span>
           }
 
-          {['is', 'anyof', 'notanyof'].includes(operator) && selectedOptions.length > 0 &&
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-black bg-opacity-60 dark:bg-opacity-30">
+          {['lookup_is', 'lookup_any_of', 'lookup_not_any_of'].includes(operator) && selectedOptions.length > 0 &&
+            <span
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-white dark:bg-black bg-opacity-60 dark:bg-opacity-30">
               {selectedOptions.length}
             </span>
           }
@@ -121,7 +108,7 @@ function LookupFilter({ label, field, Icon, options, operators, coloredPills }) 
           <div className="flex flex-row gap-3 items-center mb-3">
             <Select value={operator} onValueChange={operatorValue => setOperator(operatorValue)}>
               <SelectTrigger className="border-0 h-6 text-xs w-auto inline-flex">
-                <SelectValue />
+                <SelectValue/>
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(operators).map(([value, obj]) => (
@@ -131,15 +118,17 @@ function LookupFilter({ label, field, Icon, options, operators, coloredPills }) 
             </Select>
 
             {/* Display the Clear | Filter buttons */}
-            {['anyof', 'notanyof'].includes(operator) && (
+            {['lookup_any_of', 'lookup_not_any_of'].includes(operator) && (
               <>
-                <Button size="sm" className="ml-auto justify-end" variant="secondary" onClick={clearSelection}>Clear</Button>
-                <Button size="sm" className="justify-end" disabled={selectedOptions.length === 0} onClick={saveSelection}>Filter</Button>
+                <Button size="sm" className="ml-auto justify-end" variant="secondary"
+                        onClick={clearSelection}>Clear</Button>
+                <Button size="sm" className="justify-end" disabled={selectedOptions.length === 0}
+                        onClick={saveSelection}>Filter</Button>
               </>
             )}
           </div>
 
-          {!operatorOnly && options &&
+          {!('operatorOnly' in operatorDef) && options &&
             <ReactSelect
               onChange={selected => setSelectedOptions(Array.isArray(selected) ? [...selected] : [selected])}
               optionsAsArray={selectOptions}
@@ -149,13 +138,13 @@ function LookupFilter({ label, field, Icon, options, operators, coloredPills }) 
               closeMenuOnSelect={false}
               coloredPills={coloredPills}
               autoFocus
-              components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
+              components={{DropdownIndicator: () => null, IndicatorSeparator: () => null}}
               defaultMenuIsOpen
             />
           }
         </div>
       </PopoverContent>
-    </Popover >
+    </Popover>
   )
 }
 

@@ -1,5 +1,5 @@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover.jsx"
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import FilterButton from "@/toolbar/FilterButton.jsx"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.jsx"
 import { Input } from "@/components/ui/input.jsx"
@@ -15,46 +15,59 @@ const fieldList = [
 ];
 const filterRegex = /([0-9]{0,}(?:\.[0-9]{0,2})?)/;
 
+// TODO: Clear between state properly. Right now a second value element is set
+// which is never unset when you switch operators or fields.
 function AmountFilter({ operators }) {
 
-  const [field, setField] = useState(fieldList[0]);
   const searchContext = useSearch();
-  const [value, setValue] = useState([]);
-  const [debouncedValue, setDebouncedValue] = useState([]);
-  const [isFilterActive, setIsFilterActive] = useState(false);
+  const activeFilters = searchContext.getFilters(...fieldList.map(field => field.id));
+  const isFilterActive = activeFilters.length > 0;
+  const [field, setField] = useState(() => {
+    if (activeFilters.length === 0) return fieldList[0];
+
+    const field = fieldList.find(f => f.id === activeFilters[0].field);
+    if (!field) return fieldList[0];
+
+    return field;
+  });
+  const [value, setValue] = useState(activeFilters.map(f => f.value));
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [operator, setOperator] = useState(defaultOperator(operators));
+  const [operator, setOperator] = useState(() => {
+    // if there are no active filters or too many then return the default operator
+    if (activeFilters.length === 0 || activeFilters.length > 2) return defaultOperator(operators);
+
+    // if there is one then set the operator to that
+    if (activeFilters.length === 1) return activeFilters[0].operatorDefinition.id;
+
+    // if there is two then set the operator to between
+    return operators.number_between.id;
+  });
   const operatorDef = operators[operator];
 
-  useDebounce(() => {
-    setDebouncedValue(value);
-  }, 500, [value]);
+  const handleUpdate = () => {
+    if (value.length === 0) return;
 
-  useEffect(() => {
-    if (debouncedValue.length === 0) return;
-
-    setIsFilterActive(true);
-    if (debouncedValue.length === 1 && operator !== 'between') {
-      searchContext.updateFilters(filterExpression(field.id, operatorDef, debouncedValue[0]));
+    if (value.length === 1 && operator !== 'number_between') {
+      searchContext.updateFilters(filterExpression(field.id, operatorDef, value[0]));
     } else {
       let filters = [];
-      filters.push(filterExpression(field.id, operators.abs_gt, debouncedValue[0]));
-      filters.push(filterExpression(field.id, operators.abs_lt, debouncedValue[1]));
-
+      filters.push(filterExpression(field.id, operators.number_abs_gt, value[0]));
+      filters.push(filterExpression(field.id, operators.number_abs_lt, value[1]));
       searchContext.updateFilters(...filters);
     }
-  }, [debouncedValue, field, operator]);
+  }
+
+  useDebounce(handleUpdate, 500, [value]);
+  useEffect(handleUpdate, [field, operator]);
 
   const handleClear = (event) => {
     event.stopPropagation();
 
     setValue([]);
-    setDebouncedValue([]);
-    setIsFilterActive(false);
     setField(fieldList[0]);
     setOperator(defaultOperator(operators));
 
-    searchContext.clearFilters(field.id);
+    searchContext.clearFilters(...fieldList.map(f => f.id));
   };
 
   const handleFieldChange = (fieldId) => {
@@ -132,7 +145,7 @@ function AmountFilter({ operators }) {
               </SelectContent>
             </Select>
 
-            {operator !== 'between' &&
+            {operator !== 'number_between' &&
               <Input
                 placeholder='e.g. 539.50'
                 autoFocus
@@ -142,7 +155,7 @@ function AmountFilter({ operators }) {
               />
             }
 
-            {operator === 'between' &&
+            {operator === 'number_between' &&
               <div className='flex w-full'>
                 <Input
                   placeholder='e.g. 50.0'

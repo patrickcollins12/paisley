@@ -18,7 +18,8 @@ const schema = Joi.object({
   page: Joi.number().greater(0).default(1),
   page_size: Joi.number().valid(...pageSizeOptions.map(x => x.key)).default(100),
   description: Joi.string().optional(),
-  order_by: Joi.string().optional().pattern(/^[a-z]*,(asc|desc)$/)
+  order_by: Joi.string().optional().pattern(/^[a-z]*,(asc|desc)$/),
+  search_id: Joi.string().optional()
 });
 
 export const Route = createAuthenticatedFileRoute('/transactions/',{
@@ -36,6 +37,7 @@ export const Route = createAuthenticatedFileRoute('/transactions/',{
         page_size: pageSizeOptions[0].key
       }
     }
+
     return validatedSearch;
   }
 });

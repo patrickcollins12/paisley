@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Input } from "@/components/ui/input.jsx"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FilterButton from "./FilterButton.jsx"
-import useDebounce from './useDebounce.jsx';
+import { useDebounce } from "react-use"
 import { defaultOperator, filterExpression } from "@/toolbar/FilterExpression.jsx"
 import { useUpdateEffect } from "react-use"
 import { useSearch } from "@/components/search/SearchContext.jsx"
@@ -12,42 +12,32 @@ import { useSearch } from "@/components/search/SearchContext.jsx"
 function DescriptionFilter({ operators }) {
 
   const fieldName = 'description';
-  const searchContext = useSearch();
-  const [value, setValue] = useState("");
-  const debouncedValue = useDebounce(value, 500);
+  const searchContext = useSearch()
+  const activeFilters = searchContext.getFilters(fieldName);
 
-  const [isFilterActive, setIsFilterActive] = useState(false);
+  const [value, setValue] = useState(activeFilters.length > 0 ? activeFilters[0].value : '');
   const [popoverOpen, setPopoverOpen] = useState(false);
-  const [operator, setOperator] = useState(defaultOperator(operators));
-  const [operatorOnly, setOperatorOnly] = useState(operators[defaultOperator(operators)]?.operatorOnly ?? false);
+  const [operator, setOperator] = useState(activeFilters.length > 0 ? activeFilters[0].operatorDefinition.id : defaultOperator(operators));
   const operatorDef = operators[operator];
 
-  // handle changes to the debounced input value
-  useUpdateEffect(() => {
-    // perform any action using the debounced value
-    // this will be triggered only after the specified delay (500mßs in this example)
-    // console.log('Debounced value:', debouncedValue);
-
-    searchContext.updateFilters(filterExpression(fieldName, operatorDef, debouncedValue));
-  }, [debouncedValue]);
-
-  // handle change to the selected operator
-  useUpdateEffect(() => {
-    // check whether the operator that has been selected is "operatorOnly"
-    // this essentially means the user does not need to select a value
-    if (operatorDef?.operatorOnly) {
-      setValue('');
-      setIsFilterActive(true);
+  // TODO: Handle operator changes more gracefully. Meaning when you switch from an operatorOnly field
+  // then the popover should remain open.
+  const handleUpdate = () => {
+    if (!value && !('operatorOnly' in operatorDef)) {
+      searchContext.clearFilters(fieldName);
       setPopoverOpen(false);
-      setOperatorOnly(true);
-
-      searchContext.updateFilters(filterExpression(fieldName, operatorDef, null));
-    } else {
-      setOperatorOnly(false);
-
-      searchContext.updateFilters(filterExpression(fieldName, operatorDef, debouncedValue));
+      return;
     }
-  }, [operator]);
+
+    if ('operatorOnly' in operatorDef) {
+      setPopoverOpen(false);
+    }
+
+    searchContext.updateFilters(filterExpression(fieldName, operatorDef, 'operatorOnly' in operatorDef ? '' : value));
+  }
+
+  useDebounce(handleUpdate, 500, [value]);
+  useUpdateEffect(handleUpdate, [operator]);
 
   function renderButtonLabel(label) {
     const icon = (<DescriptionIcon className="h-4 w-4 mr-2" />);
@@ -64,9 +54,9 @@ function DescriptionFilter({ operators }) {
             <span>{operatorDef.label}</span>
           }
           {'formatValue' in operatorDef ?
-            <span>{operatorDef.formatValue(debouncedValue)}</span>
+            <span>{operatorDef.formatValue(activeFilters[0].value)}</span>
             :
-            <span>{debouncedValue}</span>
+            <span>{activeFilters[0].value}</span>
           }
         </span>
       </>
@@ -76,19 +66,19 @@ function DescriptionFilter({ operators }) {
   // TODO: needs a debounce
   const handleInputFilterBlur = (evt) => {
     setValue(evt.target.value)
-    setIsFilterActive(true)
+    // setIsFilterActive(true)
   }
 
   const handleClear = (event) => {
     event.stopPropagation();
 
     setValue('');
-    setIsFilterActive(false);
+    // setIsFilterActive(false);
     setPopoverOpen(false);
 
     // reset to default option
     setOperator(defaultOperator(operators));
-    setOperatorOnly(operators[defaultOperator(operators)]?.operatorOnly ?? false);
+    // setOperatorOnly(operators[defaultOperator(operators)]?.operatorOnly ?? false);
 
     searchContext.clearFilters(fieldName);
   }
@@ -98,7 +88,7 @@ function DescriptionFilter({ operators }) {
     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
       <PopoverTrigger asChild>
         <div><FilterButton
-          isFilterActive={isFilterActive}
+          isFilterActive={searchContext.isFilterActive(fieldName)}
           label="Description"
           onClear={handleClear}
           activeRenderer={renderButtonLabel}
@@ -119,7 +109,7 @@ function DescriptionFilter({ operators }) {
               </SelectContent>
             </Select>
 
-            {!operatorOnly && <Input
+            {!('operatorOnly' in operatorDef) && <Input
               placeholder="description..."
               autoFocus
               onChange={handleInputFilterBlur}

@@ -5,39 +5,32 @@ import { filterExpression } from "@/toolbar/FilterExpression.jsx"
 import { useDebounce } from "react-use"
 import { useSearch } from "@/components/search/SearchContext.jsx"
 
-const operatorDef = {
-  label: 'contains',
-  operator: 'contains',
-  short: ''
-};
-
-function AllFilter() {
+function AllFilter({ operators }) {
 
   const fieldName = 'all';
   const searchContext = useSearch();
-  const [value, setValue] = useState('');
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const activeFilters = searchContext.getFilters(fieldName);
+  const [value, setValue] = useState(activeFilters.length > 0 ? activeFilters[0].value : '');
 
-  useDebounce(() => {
-    setDebouncedValue(value);
-  }, 500, [value]);
-
-  useEffect(() => {
-    // if the debounced value is empty then we need to reset the filter
-    if (debouncedValue) {
-      searchContext.updateFilters(filterExpression(
-        fieldName,
-        operatorDef,
-        value
-      ));
-    } else {
+  // TODO: Fix the debounce clear that happens when the app starts up
+  const handleUpdate = () => {
+    if (!value) {
       searchContext.clearFilters(fieldName);
+      return;
     }
-  }, [debouncedValue]);
+
+    searchContext.updateFilters(filterExpression(
+      fieldName,
+      operators.all_contains,
+      value
+    ));
+  }
+
+  useDebounce(handleUpdate, 500, [value]);
 
   const handleClear = () => {
     setValue('');
-    setDebouncedValue('');
+    searchContext.clearFilters(fieldName);
   }
 
   function onKeyDown(event) {

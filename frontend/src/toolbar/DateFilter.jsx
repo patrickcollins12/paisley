@@ -49,7 +49,7 @@ export default function DateFilter({ className }) {
   const filterPressed = () => {
     setPopoverOpen(false)
     setIsFilterActive(true)
-    saveValues()
+    // saveValues()
   }
 
   const saveValues = (filterValues) => {
@@ -155,7 +155,7 @@ export default function DateFilter({ className }) {
     setSelectedPeriod(periodName);
     setPopoverOpen(false)
     setDate({from, to});
-    saveValues({from, to})
+    // saveValues({from, to})
   };
 
 
