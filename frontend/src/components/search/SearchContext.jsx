@@ -58,7 +58,7 @@ export function SearchContextProvider({ children }) {
     }]);
   }
   const updateSearchParams = async (filterState) => {
-    console.log('SearchContext.updateSearchParams', filterState);
+    // console.log('SearchContext.updateSearchParams', filterState);
 
     // strip each filter expression down to only the necessary pieces required to re-hydrade the definition later
     const hashableFilterState = filterState.map(filter => ({
@@ -87,7 +87,7 @@ export function SearchContextProvider({ children }) {
   }
 
   const updateFilters = (...filterExpressions) => {
-    console.log('SearchContext.updateFilters', filterExpressions);
+    // console.log('SearchContext.updateFilters', filterExpressions);
 
     // build up a set of field keys to remove from the set of active filters
     const filtersToReset = [...new Set(filterExpressions.map(expression => expression.field))];

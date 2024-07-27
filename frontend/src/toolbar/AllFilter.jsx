@@ -12,8 +12,7 @@ function AllFilter({ operators }) {
   const activeFilters = searchContext.getFilters(fieldName);
   const [value, setValue] = useState(activeFilters.length > 0 ? activeFilters[0].value : '');
 
-  console.log(fieldName, activeFilters);
-
+  // TODO: Fix the debounce clear that happens when the app starts up
   const handleUpdate = () => {
     if (!value) {
       searchContext.clearFilters(fieldName);
