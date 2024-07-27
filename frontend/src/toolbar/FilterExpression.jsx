@@ -1,3 +1,19 @@
+/**
+ * @typedef {Object} OperatorDefinition
+ * @property {string} id
+ * @property {string} label
+ * @property {string} operator
+ * @property {string} short
+ * @property {boolean} default
+ */
+
+/**
+ * @typedef {Object} FilterExpression
+ * @property {string} field Field ID that the filter expression applies to (e.g. 'account').
+ * @property {OperatorDefinition} operatorDefinition Filter operator to apply to the field.
+ * @property value Value to filter for using the operator.
+ */
+
 export const stringOperators = {
   string_contains: {
     id: 'string_contains',
@@ -154,6 +170,13 @@ export function getOperatorById(id) {
   return mergedLookup[id];
 }
 
+/**
+ * Creates a filter expression.
+ * @param field
+ * @param operatorDefinition
+ * @param value
+ * @returns {FilterExpression} filterExpression
+ */
 export function filterExpression(field, operatorDefinition, value) {
   return {
     field,

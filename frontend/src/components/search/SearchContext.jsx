@@ -10,6 +10,7 @@ const defaultValues = {
   getFilters: () => [],
   updateFilters: () => {},
   clearFilters: () => {},
+  isFilterActive: () => {},
   clear: () => {},
   save: () => {}
 }
@@ -86,6 +87,11 @@ export function SearchContextProvider({ children }) {
     });
   }
 
+  /**
+   * Updates the current set of active filter expressions.
+   * Note: This will remove prior expressions that are already active for fields in the supplied in filterExpressions.
+   * @param {...FilterExpression} filterExpressions
+   */
   const updateFilters = (...filterExpressions) => {
     // console.log('SearchContext.updateFilters', filterExpressions);
 
@@ -97,12 +103,20 @@ export function SearchContextProvider({ children }) {
     });
   }
 
+  /**
+   * Clears any active filters for one or more fields.
+   * @param {...string} fieldNames Fields to clear filters for.
+   */
   const clearFilters = (...fieldNames) => {
-    console.log('SearchContext.clearFilters', fieldNames);
+    if (!filters.some(f => fieldNames.includes(f.field))) return;
 
     setFilters(prevState => {
       return [...prevState.filter(filter => !fieldNames.includes(filter.field))];
     })
+  }
+
+  const isFilterActive = (...fieldNames) => {
+    return filters.some(f => fieldNames.includes(f.field));
   }
 
   const clear = () => {
@@ -135,6 +149,7 @@ export function SearchContextProvider({ children }) {
   return (
     <SearchContext.Provider value={{
       getFilters,
+      isFilterActive,
       updateFilters,
       clearFilters,
       clear,

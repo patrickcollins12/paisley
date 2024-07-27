@@ -16,7 +16,6 @@ function DescriptionFilter({ operators }) {
   const activeFilters = searchContext.getFilters(fieldName);
 
   const [value, setValue] = useState(activeFilters.length > 0 ? activeFilters[0].value : '');
-  const isFilterActive = activeFilters.length > 0;
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [operator, setOperator] = useState(activeFilters.length > 0 ? activeFilters[0].operatorDefinition.id : defaultOperator(operators));
   const operatorDef = operators[operator];
@@ -38,7 +37,7 @@ function DescriptionFilter({ operators }) {
   }
 
   useDebounce(handleUpdate, 500, [value]);
-  useEffect(handleUpdate, [operator]);
+  useUpdateEffect(handleUpdate, [operator]);
 
   function renderButtonLabel(label) {
     const icon = (<DescriptionIcon className="h-4 w-4 mr-2" />);
@@ -89,7 +88,7 @@ function DescriptionFilter({ operators }) {
     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
       <PopoverTrigger asChild>
         <div><FilterButton
-          isFilterActive={isFilterActive}
+          isFilterActive={searchContext.isFilterActive(fieldName)}
           label="Description"
           onClear={handleClear}
           activeRenderer={renderButtonLabel}
