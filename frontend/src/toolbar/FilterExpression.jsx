@@ -116,6 +116,12 @@ export const dateOperators = {
     label: 'On or before',
     operator: '<=',
     short: '<'
+  },
+  date_between: {
+    id: 'date_between',
+    label: "between",
+    operator: '',
+    short: '',
   }
 };
 
