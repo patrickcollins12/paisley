@@ -6,7 +6,7 @@ class CommsecCSVParser extends BaseCSVParser {
         super(options);
 
         this.identifier = 'Commsec Australian Shares'
-        this.timezone = 'Australia/Sydney'
+        this.timezone = 'Australia/Sydney' // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
         this.dateFormat = 'dd/MM/yyyy'  // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
 

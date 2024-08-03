@@ -9,7 +9,7 @@ class UbankCSVParser extends BaseCSVParser {
 
         this.identifier = 'ubank'
         this.timezone = 'Australia/Sydney' 
-        this.dateFormat = 'dd MMM yyyy'
+        this.dateFormat = 'dd MMM yyyy' // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
         this.uniqueColumns = ['datetime', 'description', 'balance' ]
         this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']

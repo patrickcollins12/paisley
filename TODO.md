@@ -1,6 +1,6 @@
 # TODO
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
-- [ ] alter rules engine to allow s// of description
+- [ ] alter rules engine to allow s// of description, or do we just do this in the parser
 - [x] Add rules to the dropdown
 - [x] Add filter_save to the backend as kv pair
 - [ ] Add string (contains/regex) to Account/Tags/Party Filter, do tests too
@@ -32,6 +32,7 @@
        
 - Create Install process
        Setup default demo database
+       explore docker up
 
 - Reports
        Design the Account Screen as a report

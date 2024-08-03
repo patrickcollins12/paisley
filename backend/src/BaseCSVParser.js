@@ -23,7 +23,7 @@ class BaseCSVParser {
         // }
     }
 
-    async parse(filePath) {
+    async parseOld(filePath) {
 
         // this.findAccountNumber()
         let csv
@@ -39,6 +39,8 @@ class BaseCSVParser {
                 this.results.lines++;
                 try {
                     const processedLine = this.processLine(originalLine);
+                    this.originalLine = originalLine
+                    this.processedLine = processedLine
 
                     if (!processedLine) {
                         this.results.skipped++;
@@ -52,7 +54,7 @@ class BaseCSVParser {
 
                     let isValid = true;
                     try {
-                        this.isRecordValid(processedLine);
+                        this.isRecordValid();
 
                         if (!isAlreadyInserted) {
                             let newid = this.saveTransaction(originalLine, processedLine);
@@ -89,6 +91,75 @@ class BaseCSVParser {
         return this.results
     }
 
+    async parse(filePath) {
+
+        const csv = this.headers?.length > 0 ?
+            CSVParser(this.headers) :
+            CSVParser();
+
+        const stream = fs.createReadStream(filePath).pipe(csv);
+
+        try {
+            for await (const originalLine of stream) {
+                this.originalLine = originalLine
+                this.results.lines++;
+                await this.processLineAsync();
+            }
+        } catch (error) {
+            console.error("Error processing file:", error);
+        } finally {
+            stream.destroy();
+        }
+
+        this.results.file = path.basename(this.fileName);
+        this.results.account = this.accountid;
+        this.results.parser = this.constructor.name;
+
+        return this.results;
+    }
+
+    async processLineAsync() {
+        try {
+            this.processedLine = this.processLine(this.originalLine);
+
+            if (!this.processedLine?.datetime) {
+                this.results.skipped++;
+                console.log("here1",  this.originalLine, this.processedLine)
+                return;
+            }
+
+            this.results.setMinMaxDate("in_file", this.processedLine['datetime']);
+
+            if (this.oldUniqueColumns) {
+                await this.renameTransactionIDs();
+            }
+
+            if (this.isAlreadyInserted()) {
+                this.results.skipped++;
+                console.log("here2")
+                this.results.setMinMaxDate("skipped", this.processedLine['datetime']);
+            } else {
+                await this.handleValidRecord();
+            }
+        } catch (error) {
+            console.error("Error processing line:", error);
+            this.results.invalid++;
+        }
+    }
+
+    async handleValidRecord() {
+        try {
+            this.isRecordValid();
+            const newId = this.saveTransaction();
+            this.results.insert(newId);
+            this.results.setMinMaxDate("inserts", this.processedLine['datetime']);
+        } catch (error) {
+            console.log('Invalid record encountered:', error);
+            this.results.invalid++;
+        }
+    }
+
+
     // CREATE TABLE "transaction" (
     //     "id"	INTEGER NOT NULL UNIQUE,
     //     "account"	TEXT,
@@ -99,36 +170,37 @@ class BaseCSVParser {
     //     "type"	INTEGER,
     //     PRIMARY KEY("id" AUTOINCREMENT)
     // );
-    saveTransaction(originalLine, processedLine) {
-        originalLine['file'] = path.basename(this.fileName);
+    saveTransaction() {
+        this.originalLine['file'] = path.basename(this.fileName);
 
         // add metadata to transaction
-        processedLine['jsondata'] = JSON.stringify(originalLine);
-        processedLine['id'] = util.generateSHAFromObject(processedLine, this.uniqueColumns)
-        processedLine['inserted_datetime'] = DateTime.now().toISO();
+        this.processedLine['jsondata'] = JSON.stringify(this.originalLine);
+        this.processedLine['id'] = util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns)
+        this.processedLine['inserted_datetime'] = DateTime.now().toISO();
 
         // insert the transaction
-        const columns = Object.keys(processedLine).map(key => `"${key}"`).join(', ');
-        const placeholders = Object.keys(processedLine).map(() => '?').join(', ');
+        const columns = Object.keys(this.processedLine).map(key => `"${key}"`).join(', ');
+        const placeholders = Object.keys(this.processedLine).map(() => '?').join(', ');
         const sql = `INSERT INTO 'transaction' (${columns}) VALUES (${placeholders})`;
         // console.log('sql:', sql, processedLine)
         // Prepare and run the query with the data values
         const stmt = this.db.db.prepare(sql);
-        let result = stmt.run(Object.values(processedLine));
-        return processedLine['id'];
+        let result = stmt.run(Object.values(this.processedLine));
+        return this.processedLine['id'];
     }
 
 
-    isAlreadyInserted(processedLine) {
+    isAlreadyInserted() {
 
-        let sha = util.generateSHAFromObject(processedLine, this.uniqueColumns)
+        let sha = util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns)
         const stmt = this.db.db.prepare("select id from 'transaction' where id=?");
         const r = stmt.all(sha); // get() for a single row, all() for multiple rows
         if (r.length > 1) throw new Error('Error: Multiple records found.');
         return r.length === 1;
     }
 
-    isRecordValid(line) {
+    isRecordValid() {
+        const line = this.processedLine
         // this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
 
         if (this.mustExistBeforeSaving) {
@@ -144,6 +216,32 @@ class BaseCSVParser {
             }
         }
         return true;
+    }
+
+    async renameTransactionIDs() {
+        const oldId = util.generateSHAFromObject(this.originalLine, this.processedLine, this.oldUniqueColumns);
+        const newId = util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns);
+
+        const updateTransaction = this.db.db.prepare("UPDATE 'transaction' SET id = ? WHERE id = ?");
+        const updateEnriched = this.db.db.prepare("UPDATE 'transaction_enriched' SET id = ? WHERE id = ?");
+
+        try {
+            const transactionResult = updateTransaction.run(newId, oldId);
+            if (transactionResult.changes > 0) {
+                console.log(`Updated transaction record: ${oldId} to ${newId}`);
+            }
+        } catch (error) {
+            console.log('Error updating transaction table:', error.message);
+        }
+
+        try {
+            const enrichedResult = updateEnriched.run(newId, oldId);
+            if (enrichedResult.changes > 0) {
+                console.log(`Updated transaction_enriched record: ${oldId} to ${newId}`);
+            }
+        } catch (error) {
+            console.log('Error updating transaction_enriched table:', error.message);
+        }
     }
 
     processLine(line) {

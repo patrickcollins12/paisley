@@ -7,7 +7,10 @@ const crypto = require('crypto');
  * @param {string[]} keysOfInterest - An array of strings representing the keys in the object to be included in the hash.
  * @returns {string} A 64-character hexadecimal SHA256 hash string.
  */
-exports.generateSHAFromObject = function (obj, keysOfInterest) {
+// exports.generateSHAFromObject = function (obj, keysOfInterest) {
+exports.generateSHAFromObject = function (orig, processed, keysOfInterest) {
+    const obj = { ...orig, ...processed };
+
     let s = ""
     for (let k of keysOfInterest) {
         let val = obj[k]

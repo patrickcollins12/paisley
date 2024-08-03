@@ -7,7 +7,7 @@ class WestpacCSVParser extends BaseCSVParser {
 
         this.identifier = 'westpac'
         this.timezone = 'Australia/Sydney'
-        this.dateFormat = 'dd/MM/yyyy'
+        this.dateFormat = 'dd/MM/yyyy' // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
         this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
 

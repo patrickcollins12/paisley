@@ -6,7 +6,7 @@ class ChaseCSVParser extends BaseCSVParser {
         super(options);
 
         this.identifier = 'chase'
-        this.timezone = 'America/Los_Angeles'
+        this.timezone = 'America/Los_Angeles' // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
         this.dateFormat = 'MM/dd/yyyy' // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
         // what columns from the incoming csv file define a unique record

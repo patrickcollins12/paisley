@@ -109,7 +109,7 @@ class ParseResults {
         }
 
         const percent_imported = this.lines > 0 ? Math.round((this.inserted / this.lines) * 100) : 0;
-        console.log(color(`   ${this.inserted} of ${this.lines}, ${percent_imported}% imported`))
+        console.log(color(`   ${this.inserted} of ${this.lines}, ${percent_imported}% imported (${this.skipped} skipped)`))
 
         if (this.dates?.in_file) {
             const from_date = DateTime.fromJSDate(this.dates?.in_file[0]).toFormat('yyyy-MM-dd');

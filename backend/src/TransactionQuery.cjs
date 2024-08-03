@@ -265,14 +265,13 @@ class TransactionQuery {
 SELECT count(id) as cnt
 FROM (${TransactionQuery.allTransactionsSubView}) AS main
 WHERE 1=1  
-AND type<>'BAL'
+-- AND type<>'BAL'
 `
-
     static allTransactionsQuery = `
 SELECT * 
 FROM (${TransactionQuery.allTransactionsSubView}) AS main
 WHERE 1=1 
-AND type<>'BAL'
+-- AND type<>'BAL'
 `
 
 }
