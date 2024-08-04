@@ -11,8 +11,14 @@ class BankwestCSVParser extends BaseCSVParser {
         this.dateFormat = 'dd/MM/yyyy'  // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
         // what columns from the incoming csv file define a unique record
-        // this.uniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit' ]
-        this.uniqueColumns = ['datetime', 'description', 'credit', 'debit']
+        this.uniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit', 'Balance' ]
+        // this.oldUniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit' ]
+        // this.uniqueColumns = ['datetime', 'description', 'credit', 'debit', 'balance']
+        this.oldUniqueColumns = ['datetime', 'description', 'credit', 'debit']
+
+        // this.warnUniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit', 'Balance' ]
+        
+
     }
 
     matchesFileName(fileName) {

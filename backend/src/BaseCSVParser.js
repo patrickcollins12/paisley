@@ -124,7 +124,7 @@ class BaseCSVParser {
 
             if (!this.processedLine?.datetime) {
                 this.results.skipped++;
-                console.log("here1",  this.originalLine, this.processedLine)
+                // console.log("here1",  this.originalLine, this.processedLine)
                 return;
             }
 
@@ -196,7 +196,12 @@ class BaseCSVParser {
         const stmt = this.db.db.prepare("select id from 'transaction' where id=?");
         const r = stmt.all(sha); // get() for a single row, all() for multiple rows
         if (r.length > 1) throw new Error('Error: Multiple records found.');
-        return r.length === 1;
+        const exists = r.length === 1
+        // if (exists) {
+        //     console.log(`Exists\n-------\nOriginal: ${JSON.stringify(this.originalLine,null,"\t")}\nProcessed: ${JSON.stringify(this.processedLine,null,"\t")}\n${sha}`)
+        // }
+
+        return exists;
     }
 
     isRecordValid() {

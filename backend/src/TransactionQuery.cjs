@@ -132,7 +132,7 @@ class TransactionQuery {
             const [column, direction] = this.queryParams.order_by.split(',')
             this.order_by += ` ORDER BY ${column.trim()} ${direction.trim().toUpperCase()}`
         } else {
-            this.order_by += ` ORDER BY datetime DESC`
+            this.order_by += ` ORDER BY datetime DESC, amount desc`
         }
     }
 
