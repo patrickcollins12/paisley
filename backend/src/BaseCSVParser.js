@@ -159,34 +159,72 @@ class BaseCSVParser {
         }
     }
 
-
     // CREATE TABLE "transaction" (
-    //     "id"	INTEGER NOT NULL UNIQUE,
+    //     "id"	TEXT NOT NULL UNIQUE,
+    //     "datetime"	TEXT, 
     //     "account"	TEXT,
     //     "description"	TEXT,
-    //     "amount"	INTEGER,
-    //     "datetime" TEXT,
+    //     "credit" INTEGER,
+    //     "debit" INTEGER,
     //     "balance"	INTEGER,
     //     "type"	INTEGER,
-    //     PRIMARY KEY("id" AUTOINCREMENT)
-    // );
+    //     "tags" JSON,
+    //     jsondata JSON, "notes" TEXT, 'party' JSON, 'inserted_datetime' TEXT, 
+    //     PRIMARY KEY("id")
+    // )
     saveTransaction() {
-        this.originalLine['file'] = path.basename(this.fileName);
+        this.prepareForSave()
 
-        // add metadata to transaction
-        this.processedLine['jsondata'] = JSON.stringify(this.originalLine);
-        this.processedLine['id'] = util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns)
-        this.processedLine['inserted_datetime'] = DateTime.now().toISO();
+        knownColumns = [
+            "id",
+            "datetime",
+            "account",
+            "description",
+            "credit",
+            "debit",
+            "balance",
+            "type",
+            "jsondata",
+            "notes",
+            // "tags",
+            // "party",
+            "inserted_datetime"
+        ]
+
+        // TODO, learn how to do this if check in a map
+        const columns = []
+        const placeholders = []
+        for (const column of knownColumns) {
+            if (this.processedLine[column]) {
+                columns.push(column)
+                placeholders.push("?")
+            }
+        }
 
         // insert the transaction
-        const columns = Object.keys(this.processedLine).map(key => `"${key}"`).join(', ');
-        const placeholders = Object.keys(this.processedLine).map(() => '?').join(', ');
-        const sql = `INSERT INTO 'transaction' (${columns}) VALUES (${placeholders})`;
+        // arr.map(elem => )
+        const columns2 = Object.keys(this.processedLine).map(key => `"${key}"`).join(', ');
+        const placeholders2 = Object.keys(this.processedLine).map(() => '?').join(', ');
+
+        const sql = `INSERT INTO 'transaction' (${columns2}) VALUES (${placeholders2})`;
         // console.log('sql:', sql, processedLine)
         // Prepare and run the query with the data values
         const stmt = this.db.db.prepare(sql);
         let result = stmt.run(Object.values(this.processedLine));
         return this.processedLine['id'];
+    }
+
+    prepareForSave() {
+        this.originalLine['file'] = path.basename(this.fileName);
+
+        // add metadata to transaction
+        this.processedLine['jsondata'] = JSON.stringify(this.originalLine);
+
+        if (!this.processedLine['id']) {
+            this.processedLine['id'] = util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns)
+        }
+
+        this.processedLine['inserted_datetime'] = DateTime.now().toISO();
     }
 
 
@@ -249,23 +287,10 @@ class BaseCSVParser {
         }
     }
 
+    // MUST BE IMPLEMENTED IN SUBCLASS
     processLine(line) {
         throw new Error('processLine() must be implemented in subclass');
     }
-
-    // matchesSecondLine(firstDataLine) {
-    //     try {
-    //         for (const [pattern, accountid] of Object.entries(config.firstLinePatterns)) {
-    //             if (firstDataLine.includes(pattern)) {
-    //                 this.accountid = accountid
-    //                 console.log(`setting accountid: ${accountid}`)
-    //                 return true
-    //             }
-    //         }
-    //     } catch {}
-
-    //     return false;
-    // }
 
     matchesFileName(fileName) {
         // Logic to determine if this parser should handle the file based on the file name
@@ -289,23 +314,6 @@ class BaseCSVParser {
         }
         return found;
     }
-
-    // extractAccountFromFileName() {
-    //     try {
-    //         // config = {
-    //         //    "accountExpands": {
-    //         //        "Chase0378": "3222716XX 3162960YYY",
-    //         //        "Chase7316": "3222716XX 5656297YYY"
-    //         //    }
-    //         // }
-    //         var matches = this.fileName.match(/Chase(\d+)/ );
-    //         if (matches) {
-    //             var shortAccountName = matches[1];
-    //             var longAccountName = config.accountExpands[shortAccountName]
-    //             this.accountName = longAccountName;
-    //         }
-    //     } catch {}
-    // }
 
     async extractAccountBySecondLine() {
 

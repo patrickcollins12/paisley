@@ -17,7 +17,6 @@ class BankwestCSVParser extends BaseCSVParser {
         this.oldUniqueColumns = ['datetime', 'description', 'credit', 'debit']
 
         // this.warnUniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit', 'Balance' ]
-        
 
     }
 
