@@ -67,15 +67,27 @@ function TransactionPage() {
 
   return (
     <>
-        <Toolbar
-          dataTable={table}
-        />
-        <DataTable
-          paginated
-          data={data}
-          table={table}
-          columnVisibilityState={columnVisibilityState}
-        />
+      <Toolbar
+        dataTable={table}
+      />
+      {data?.resultSummary.amount_total > 0 &&
+        <div className="text-xs">Amount total ${data?.resultSummary.amount_total}</div>
+      }
+
+      {data?.resultSummary.debit_total > 0 &&
+        <div className="text-xs">Debit total ${data?.resultSummary.debit_total}</div>
+      }
+
+      {data?.resultSummary.credit_total > 0 &&
+        <div className="text-xs">Credit total ${data?.resultSummary.credit_total}</div>
+      }
+
+      <DataTable
+        paginated
+        data={data}
+        table={table}
+        columnVisibilityState={columnVisibilityState}
+      />
     </>
   )
 }
