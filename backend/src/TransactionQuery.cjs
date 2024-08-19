@@ -91,6 +91,9 @@ class TransactionQuery {
         return {
             pages: this.pages,
             count: this.count,
+            debit_total: Math.abs(summaryrows[0].debit_total),
+            credit_total: Math.abs(summaryrows[0].credit_total),
+            amount_total: Math.abs(summaryrows[0].amount_total),
             pageSize: this.pageSize,
             page: this.pageNumber,
             // TODO: remove this soon for prod
@@ -262,7 +265,7 @@ class TransactionQuery {
     `
 
     static allTransactionsSizeQuery = `
-SELECT count(id) as cnt
+SELECT count(id) as cnt, sum(amount) as amount_total, sum(credit) as credit_total, sum(debit) as debit_total
 FROM (${TransactionQuery.allTransactionsSubView}) AS main
 WHERE 1=1  
 -- AND type<>'BAL'
