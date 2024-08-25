@@ -28,6 +28,15 @@ export const DataTable = memo(function TransactionsDataTable({ table, data, ...p
 
         {data &&
           <TableBody>
+            {table.getFooterGroups().map(footerGroup => (
+              <TableRow key={footerGroup.id}>
+                {footerGroup.headers.map(footer => (
+                  <TableCell key={footer.id}>
+                    {flexRender(footer.column.columnDef.footer, footer.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
             {table.getRowModel().rows.map(row => (
               <TableRow key={row.id}>
                 {row.getVisibleCells().map(cell => (

@@ -47,6 +47,7 @@ function TransactionPage() {
   const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate), []);
   const table = useReactTable({
     data: data?.results ?? [],
+    meta: data?.resultSummary ?? {},
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
     state: {
@@ -70,17 +71,6 @@ function TransactionPage() {
       <Toolbar
         dataTable={table}
       />
-      {data?.resultSummary.amount_total > 0 &&
-        <div className="text-xs">Amount total ${data?.resultSummary.amount_total}</div>
-      }
-
-      {data?.resultSummary.debit_total > 0 &&
-        <div className="text-xs">Debit total ${data?.resultSummary.debit_total}</div>
-      }
-
-      {data?.resultSummary.credit_total > 0 &&
-        <div className="text-xs">Credit total ${data?.resultSummary.credit_total}</div>
-      }
 
       <DataTable
         paginated
