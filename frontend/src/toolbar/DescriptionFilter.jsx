@@ -21,12 +21,10 @@ function DescriptionFilter({ operators }) {
   const operatorDef = operators[operator];
 
   // TODO: Handle operator changes more gracefully. Meaning when you switch from an operatorOnly field
-  // TODO: FIX: When selecting an operator that needs an input value the popover closes.
   // then the popover should remain open.
   const handleUpdate = () => {
     if (!value && !('operatorOnly' in operatorDef)) {
       searchContext.clearFilters(fieldName);
-      setPopoverOpen(false);
       return;
     }
 
