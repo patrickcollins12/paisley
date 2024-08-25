@@ -21,6 +21,7 @@ function DescriptionFilter({ operators }) {
   const operatorDef = operators[operator];
 
   // TODO: Handle operator changes more gracefully. Meaning when you switch from an operatorOnly field
+  // TODO: FIX: When selecting an operator that needs an input value the popover closes.
   // then the popover should remain open.
   const handleUpdate = () => {
     if (!value && !('operatorOnly' in operatorDef)) {
@@ -53,8 +54,8 @@ function DescriptionFilter({ operators }) {
             :
             <span>{operatorDef.label}</span>
           }
-          {'formatValue' in operatorDef ?
-            <span>{operatorDef.formatValue(activeFilters[0].value)}</span>
+          {'getValue' in operatorDef ?
+            <span>{operatorDef.getValue(activeFilters[0])}</span>
             :
             <span>{activeFilters[0].value}</span>
           }

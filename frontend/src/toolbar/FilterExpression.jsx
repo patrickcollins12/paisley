@@ -1,3 +1,5 @@
+import { DateTime } from "luxon"
+
 /**
  * @typedef {Object} OperatorDefinition
  * @property {string} id
@@ -33,21 +35,21 @@ export const stringOperators = {
     label: "matches regex",
     operator: 'regex',
     short: '',
-    formatValue: (value) => `/${value}/i`
+    getValue: (expression) => `/${expression.value}/i`
   },
   string_not_regex: {
     id: 'string_not_regex',
     label: "does not match regex",
     operator: 'not_regex',
     short: 'not',
-    formatValue: (value) => `/${value}/i`
+    getValue: (expression) => `/${expression.value}/i`
   },
   string_match_word: {
     id: 'string_match_word',
     label: "matches word",
     operator: 'regex',
     short: '',
-    formatValue: (value) => `/\\b${value}\\b/i`
+    getValue: (expression) => `/\\b${expression.value}\\b/i`
   },
   string_blank: {
     id: 'string_blank',
@@ -104,18 +106,127 @@ export const lookupOperators = {
   }
 };
 
+export const namedDateRangePrefix = '__named_range__::';
+export const namedDateRanges = [
+  {
+    id: 'last_7_days', label: 'Last 7 days', group: 1, getDateRange: () => {
+      return {
+        from: DateTime.now().minus({days: 7}),
+        to: DateTime.now()
+      };
+    }
+  },
+  {
+    id: 'last_1_month', label: 'Last 1 month', group: 1, getDateRange: () => {
+      return {
+        from: DateTime.now().minus({months: 1}),
+        to: DateTime.now()
+      };
+    }
+  },
+  {
+    id: 'last_3_months', label: 'Last 3 months', group: 1, getDateRange: () => {
+      return {
+        from: DateTime.now().minus({months: 3}),
+        to: DateTime.now()
+      };
+    }
+  },
+  {
+    id: 'last_12_months', label: 'Last 12 months', group: 1, getDateRange: () => {
+      return {
+        from: DateTime.now().minus({months: 12}),
+        to: DateTime.now()
+      };
+    }
+  },
+  {
+    id: 'this_month', label: 'This month', group: 2, getDateRange: () => {
+      return {
+        from: DateTime.now().startOf('month'),
+        to: DateTime.now()
+      };
+    }
+  },
+  {
+    id: 'this_year', label: 'This year', group: 2, getDateRange: () => {
+      return {
+        from: DateTime.now().startOf('year'),
+        to: DateTime.now()
+      };
+    }
+  },
+  {
+    id: 'last_week', label: 'Last week', group: 3, getDateRange: () => {
+      return {
+        from: DateTime.now().minus({weeks: 1}).startOf('week'),
+        to: DateTime.now().minus({weeks: 1}).endOf('week')
+      };
+    }
+  },
+  {
+    id: 'last_month', label: 'Last month', group: 3, getDateRange: () => {
+      return {
+        from: DateTime.now().minus({months: 1}).startOf('month'),
+        to: DateTime.now().minus({months: 1}).endOf('month')
+      };
+    }
+  },
+  {
+    id: 'last_quarter', label: 'Last quarter', group: 3, getDateRange: () => {
+      return {
+        from: DateTime.now().minus({quarters: 1}).startOf('quarter'),
+        to: DateTime.now().minus({quarters: 1}).endOf('quarter')
+      };
+    }
+  },
+  {
+    id: 'last_year', label: 'Last year', group: 3, getDateRange: () => {
+      return {
+        from: DateTime.now().minus({years: 1}).startOf('year'),
+        to: DateTime.now().minus({years: 1}).endOf('year')
+      };
+    }
+  },
+];
 export const dateOperators = {
   date_after: {
     id: 'date_after',
     label: 'On or after',
     operator: '>=',
-    short: '>'
+    short: '>',
+    /**
+     * @param {FilterExpression} expression
+     */
+    getValue: (expression) => {
+      const namedRangeIndex = expression.value.toString().indexOf(namedDateRangePrefix);
+      if (namedRangeIndex === -1) return expression.value;
+
+      const namedRangeName = expression.value.toString().substring(namedRangeIndex + namedDateRangePrefix.length);
+      const namedRange = namedDateRanges.find(x => x.id === namedRangeName);
+      if (!namedRange) return expression.value;
+
+      return namedRange.getDateRange().from.toISODate();
+    }
   },
   date_before: {
     id: 'date_before',
     label: 'On or before',
     operator: '<=',
-    short: '<'
+    short: '<',
+    /**
+     * @param {FilterExpression} expression
+     */
+    getValue: (expression) => {
+      const namedRangeIndex = expression.value.toString().indexOf(namedDateRangePrefix);
+      if (namedRangeIndex === -1) return expression.value;
+
+      const namedRangeName = expression.value.toString().substring(namedRangeIndex + namedDateRangePrefix.length);
+      const namedRange = namedDateRanges.find(x => x.id === namedRangeName);
+      if (!namedRange) return expression.value;
+
+      return namedRange.getDateRange().to.toISODate();
+    }
   },
   date_between: {
     id: 'date_between',
@@ -181,6 +292,7 @@ export function getOperatorById(id) {
  * @param field
  * @param operatorDefinition
  * @param value
+ * @param meta
  * @returns {FilterExpression} filterExpression
  */
 export function filterExpression(field, operatorDefinition, value) {

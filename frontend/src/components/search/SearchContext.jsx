@@ -38,7 +38,7 @@ export function SearchContextProvider({ children }) {
     if (!existingSearch) return [];
 
     // attempt to hydrate the operator definition based on the operator id
-    // filter out any NuLL elements since we failed to find the operator definition for these
+    // filter out any NULL elements since we failed to find the operator definition for these
     return existingSearch.filters.map(hydrateOperatorDefinition).filter(x => x !== null);
   });
 

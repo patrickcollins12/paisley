@@ -1,5 +1,4 @@
-"use client";
-import React, { useState } from "react";
+import { useState } from "react";
 import { DateTime } from "luxon";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,70 +6,19 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import FilterButton from "./FilterButton.jsx"
-import { defaultOperator, filterExpression } from "@/toolbar/FilterExpression.jsx"
+import {
+  defaultOperator,
+  filterExpression,
+  namedDateRangePrefix,
+  namedDateRanges
+} from "@/toolbar/FilterExpression.jsx"
 import { useSearch } from "@/components/search/SearchContext.jsx"
 
-const dateTimeNow = DateTime.now();
-const rangeList = [
-  {
-    id: 'last_7_days', label: 'Last 7 days', group: 1, getDateRange: () => {
-      return {from: dateTimeNow.minus({days: 7}), to: dateTimeNow};
-    }
-  },
-  {
-    id: 'last_1_month', label: 'Last 1 month', group: 1, getDateRange: () => {
-      return {from: dateTimeNow.minus({months: 1}), to: dateTimeNow};
-    }
-  },
-  {
-    id: 'last_3_months', label: 'Last 3 months', group: 1, getDateRange: () => {
-      return {from: dateTimeNow.minus({months: 3}), to: dateTimeNow};
-    }
-  },
-  {
-    id: 'last_12_months', label: 'Last 12 months', group: 1, getDateRange: () => {
-      return {from: dateTimeNow.minus({months: 12}), to: dateTimeNow};
-    }
-  },
-  {
-    id: 'this_month', label: 'This month', group: 2, getDateRange: () => {
-      return {from: dateTimeNow.startOf('month'), to: dateTimeNow};
-    }
-  },
-  {
-    id: 'this_year', label: 'This year', group: 2, getDateRange: () => {
-      return {from: dateTimeNow.startOf('year'), to: dateTimeNow};
-    }
-  },
-  {
-    id: 'last_week', label: 'Last week', group: 3, getDateRange: () => {
-      return {from: dateTimeNow.minus({weeks: 1}).startOf('week'), to: dateTimeNow.minus({weeks: 1}).endOf('week')};
-    }
-  },
-  {
-    id: 'last_month', label: 'Last month', group: 3, getDateRange: () => {
-      return {from: dateTimeNow.minus({months: 1}).startOf('month'), to: dateTimeNow.minus({months: 1}).endOf('month')};
-    }
-  },
-  {
-    id: 'last_quarter', label: 'Last quarter', group: 3, getDateRange: () => {
-      return {
-        from: dateTimeNow.minus({quarters: 1}).startOf('quarter'),
-        to: dateTimeNow.minus({quarters: 1}).endOf('quarter')
-      };
-    }
-  },
-  {
-    id: 'last_year', label: 'Last year', group: 3, getDateRange: () => {
-      return {from: dateTimeNow.minus({years: 1}).startOf('year'), to: dateTimeNow.minus({years: 1}).endOf('year')};
-    }
-  },
-];
+
 
 // TODO: ON OPERATOR CHANGE
 // - update operator AND
 // - set date to now
-// TODO: Figure out a way to convert the pre-canned ranges properly
 
 export default function DateFilter({operators}) {
 
@@ -85,8 +33,8 @@ export default function DateFilter({operators}) {
       const fromFilter = activeFilters.find(f => f.operatorDefinition.id === 'date_after');
       const toFilter = activeFilters.find(f => f.operatorDefinition.id === 'date_before');
       return {
-        from: DateTime.fromISO(fromFilter.value),
-        to: DateTime.fromISO(toFilter.value)
+        from: DateTime.fromISO(fromFilter.operatorDefinition.getValue?.(fromFilter) ?? fromFilter.value),
+        to: DateTime.fromISO(toFilter.operatorDefinition.getValue?.(toFilter) ?? toFilter.value)
       };
     }
 
@@ -96,12 +44,31 @@ export default function DateFilter({operators}) {
       to: activeFilters[0].operatorDefinition.id === 'date_before' ? dateValue : null
     };
   });
-  const [selectedPeriod, setSelectedPeriod] = useState("");
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [operator, setOperator] = useState(defaultOperator(operators));
-  const operatorDef = operators[operator];
+  const [selectedPeriod, setSelectedPeriod] = useState(() => {
+    if (activeFilters.length === 0) return '';
 
-  console.log(fieldName, activeFilters);
+    const expression = activeFilters[0];
+    const namedRangeIndex = expression.value.toString().indexOf(namedDateRangePrefix);
+    if (namedRangeIndex === -1) return '';
+
+    const namedRangeName = expression.value.toString().substring(namedRangeIndex + namedDateRangePrefix.length);
+    const namedRange = namedDateRanges.find(x => x.id === namedRangeName);
+    if (!namedRange) return '';
+
+    return namedRange.label;
+  });
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [operator, setOperator] = useState(() => {
+    // if there are no active filters or too many then return the default operator
+    if (activeFilters.length === 0 || activeFilters.length > 2) return defaultOperator(operators);
+
+    // if there is one then set the operator to that
+    if (activeFilters.length === 1) return activeFilters[0].operatorDefinition.id;
+
+    // if there is two then set the operator to between
+    return operators.date_between.id;
+  });
+  const operatorDef = operators[operator];
 
   const handleClear = (event) => {
     event.stopPropagation();
@@ -118,15 +85,25 @@ export default function DateFilter({operators}) {
     updateFilters(value);
   }
 
-  const updateFilters = (dateRange) => {
-    console.log('DateFilter.updateFilters', dateRange, operatorDef);
+  const updateFilters = (dateRange, rangeName = null) => {
+    console.log('DateFilter.updateFilters', dateRange, rangeName, operatorDef);
 
     const filters = []
     if (dateRange?.from) {
-      filters.push(filterExpression(fieldName, operators.date_after, dateRange?.from.toISODate()));
+      const fromValue = rangeName ? `${namedDateRangePrefix}${rangeName}` : dateRange?.from.toISODate();
+      filters.push(filterExpression(
+        fieldName,
+        operators.date_after,
+        fromValue
+      ));
     }
     if (dateRange?.to) {
-      filters.push(filterExpression(fieldName, operators.date_before, dateRange?.to.toISODate()));
+      const toValue = rangeName ? `${namedDateRangePrefix}${rangeName}` : dateRange?.to.toISODate();
+      filters.push(filterExpression(
+        fieldName,
+        operators.date_before,
+        toValue
+      ));
     }
 
     searchContext.updateFilters(...filters);
@@ -163,7 +140,7 @@ export default function DateFilter({operators}) {
   };
 
   const handleRangeClick = (rangeId) => {
-    const range = rangeList.find(r => r.id === rangeId);
+    const range = namedDateRanges.find(r => r.id === rangeId);
     if (!range) return;
 
     if (range?.getDateRange === undefined) {
@@ -171,10 +148,11 @@ export default function DateFilter({operators}) {
       return;
     }
 
+    setPopoverOpen(false);
     setSelectedPeriod(range.label);
     setOperator(operators.date_between.id);
     setValue(range.getDateRange());
-    updateFilters(range.getDateRange());
+    updateFilters(range.getDateRange(), rangeId);
   }
 
   const renderButtonLabel = (label) => {
@@ -265,10 +243,10 @@ export default function DateFilter({operators}) {
 
             </div>
             <div className="flex flex-col mx-3">
-              {rangeList.map((range, index) => (
+              {namedDateRanges.map((range, index) => (
                 <div key={range.id}>
                   {/* insert a gap between groups */}
-                  {((rangeList[index - 1]?.group ?? 1) !== range.group) &&
+                  {((namedDateRanges[index - 1]?.group ?? 1) !== range.group) &&
                     <div className="h-2"></div>
                   }
                   <Button
