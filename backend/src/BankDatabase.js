@@ -99,7 +99,7 @@ class BankDatabase {
 
                     const flagMatch = /\/([a-z]+)$/.exec(pattern);
                     const flags = flagMatch ? flagMatch[1] : '';
-                    const regexPattern = flagMatch ? pattern.slice(0, flagMatch.index) : pattern;
+                    const regexPattern = flagMatch ? pattern.slice(1, flagMatch.index) : pattern;
 
                     regex = new RegExp(regexPattern, flags);  // Try compiling the regex
                     
