@@ -47,7 +47,7 @@ function TransactionPage() {
   const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate), []);
   const table = useReactTable({
     data: data?.results ?? [],
-    meta: data?.resultSummary ?? {},
+    resultsSummary: data?.resultSummary ?? {},
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
     state: {

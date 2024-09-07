@@ -74,7 +74,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
     {
       accessorKey: 'debit',
       header: props => <HeaderCell align='right' {...props} />,
-      footer: ({ table }) => formatAmountCell(table.options.meta.debit_total ?? 0.0),
+      footer: ({ table }) => formatAmountCell(table.options.resultsSummary?.debit_total ?? 0.0),
       cell: ({ row }) => formatAmountCell(row.getValue("debit")),
       meta: {
         displayName: 'Debit'
@@ -84,7 +84,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
     {
       accessorKey: 'credit',
       header: props => <HeaderCell align='right' {...props} />,
-      footer: ({ table }) => formatAmountCell(table.options.meta.credit_total ?? 0.0),
+      footer: ({ table }) => formatAmountCell(table.options.resultsSummary?.credit_total ?? 0.0),
       cell: ({ row }) => formatAmountCell(row.getValue("credit")),
       meta: {
         displayName: 'Credit'
@@ -94,7 +94,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
     {
       accessorKey: 'amount',
       header: props => <HeaderCell align='right' {...props} />,
-      footer: ({ table }) => formatAmountCell(table.options.meta.amount_total ?? 0.0),
+      footer: ({ table }) => formatAmountCell(table.options.resultsSummary?.amount_total ?? 0.0),
       cell: ({ row }) => {
         const amt = row.getValue("amount")
 
