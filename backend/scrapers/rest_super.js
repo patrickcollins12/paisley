@@ -7,8 +7,6 @@ const bank_config = config['RestSuperScraper'];
 const path = require('path');
 const { DateTime } = require("luxon");
 
-// console.log (outCSVFile);
-
 test('test', async ({ page }) => {
     test.slow();
     // return;
@@ -26,8 +24,8 @@ test('test', async ({ page }) => {
     await page.goto(url);
 
     if (!DEBUG) {
-        await page.getByRole('button', { name: 'Login' }).click();
-        await page.getByRole('link', { name: 'C Member login' }).click();
+        await page.getByRole('button', { name: 'Login N' }).click();
+        await page.getByRole('link', { name: ' Member login' }).click();
         await page.getByRole('textbox').fill(userName);
         await page.getByRole('textbox').press('Enter');
         await page.locator('input[type="password"]').fill(password);

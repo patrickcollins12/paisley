@@ -136,7 +136,7 @@ class BaseCSVParser {
 
             if (this.isAlreadyInserted()) {
                 this.results.skipped++;
-                console.log("here2")
+                // console.log("here2")
                 this.results.setMinMaxDate("skipped", this.processedLine['datetime']);
             } else {
                 await this.handleValidRecord();
@@ -175,7 +175,11 @@ class BaseCSVParser {
     saveTransaction() {
         this.prepareForSave()
 
-        knownColumns = [
+        // WARNING: You can't arbitrarily add data to the transaction table from the parsers
+        //          without updating this list first.
+        //          This allows us to put data in the processedLine record as a working storage solution,
+        //          but only the final knownColumns get saved and the rest can be ignored.
+        let knownColumns = [
             "id",
             "datetime",
             "account",
@@ -186,32 +190,65 @@ class BaseCSVParser {
             "type",
             "jsondata",
             "notes",
-            // "tags",
-            // "party",
+            // "tags",   // not sure if parsers should be able to directly add tags. 
+            // "party",  //   If they do, we probably need special processing logic here
             "inserted_datetime"
         ]
 
-        // TODO, learn how to do this if check in a map
-        const columns = []
-        const placeholders = []
-        for (const column of knownColumns) {
-            if (this.processedLine[column]) {
-                columns.push(column)
-                placeholders.push("?")
-            }
-        }
+        // Filter the columns to include only those that are in knownColumns and have a value in processedLine
+        const validColumns = Object.keys(this.processedLine).filter(key => knownColumns.includes(key) && this.processedLine[key]);
 
-        // insert the transaction
-        // arr.map(elem => )
-        const columns2 = Object.keys(this.processedLine).map(key => `"${key}"`).join(', ');
-        const placeholders2 = Object.keys(this.processedLine).map(() => '?').join(', ');
 
-        const sql = `INSERT INTO 'transaction' (${columns2}) VALUES (${placeholders2})`;
-        // console.log('sql:', sql, processedLine)
+        // Create the SQL parts
+        const columns = validColumns.map(key => `"${key}"`).join(', ');
+        const placeholders = validColumns.map(() => '?').join(', ');
+        const values = validColumns.map(key => this.processedLine[key]);
+
+        // Construct the SQL query
+        const sql = `INSERT INTO 'transaction' (${columns}) VALUES (${placeholders})`;
+
         // Prepare and run the query with the data values
         const stmt = this.db.db.prepare(sql);
-        let result = stmt.run(Object.values(this.processedLine));
+        let result = stmt.run(Object.values(values));
+
+        this.saveTransactionEnriched()
+
         return this.processedLine['id'];
+    }
+
+    // checks for presence of advanced fields and saves them to transaction_enriched
+    saveTransactionEnriched() {
+
+        if ( ! this.processedLine?.id ) {
+            throw new Error("Food fight!")
+        }
+
+        // Helper to validate and stringify arrays
+        const validateAndStringifyArray = (value) => Array.isArray(value) && value.length > 0 ? JSON.stringify(value) : undefined;
+
+        const dataToUpdate = {
+            description: this.processedLine.revised_description ?? undefined,
+            tags: validateAndStringifyArray(this.processedLine.tags),
+            party: validateAndStringifyArray(this.processedLine.party)
+        };
+
+        // Only proceed if there are fields to update other than 'id'
+        if (Object.values(dataToUpdate).some(value => value != null && value !== '')) {
+            dataToUpdate.id = this.processedLine.id
+
+            const sql = `
+                    INSERT INTO transaction_enriched (id, tags, description, party)
+                    VALUES (@id, @tags, @description, @party)
+                    ON CONFLICT(id) DO UPDATE SET
+                    tags = COALESCE(@tags, tags),
+                    description = COALESCE(@description, description),
+                    party = COALESCE(@party, party)
+                `;
+
+            const stmt = this.db.db.prepare(sql);
+            stmt.run(dataToUpdate);
+
+        }
     }
 
     prepareForSave() {

@@ -11,10 +11,10 @@ class BankwestCSVParser extends BaseCSVParser {
         this.dateFormat = 'dd/MM/yyyy'  // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
         // what columns from the incoming csv file define a unique record
-        this.uniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit', 'Balance' ]
+        this.uniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit']
         // this.oldUniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit' ]
         // this.uniqueColumns = ['datetime', 'description', 'credit', 'debit', 'balance']
-        this.oldUniqueColumns = ['datetime', 'description', 'credit', 'debit']
+        // this.oldUniqueColumns = ['datetime', 'description', 'credit', 'debit']
 
         // this.warnUniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit', 'Balance' ]
 
@@ -91,10 +91,12 @@ class BankwestCSVParser extends BaseCSVParser {
         // 05:04PM 27Jul
         processed.datetime = this.convertToLocalTime(l['Transaction Date']);
 
-        // if (this.extractDateFromDescription(processed)) {
-        //     console.log(">>", processed.datetime)
-        //     console.log(">>", processed.revised_sdescription)    
-        // }
+        if (this.extractDateFromDescription(processed)) {
+            // console.log("datetime >>", processed.datetime)
+            // console.log("description >>", processed.description)    
+            // console.log("revised_description >>", processed.revised_description)  
+            // console.log("")  
+        }
 
         let bsb = l['BSB Number'].replace("-", "")
         processed.account = bsb + " " + l['Account Number']
