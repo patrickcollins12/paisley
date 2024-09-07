@@ -53,20 +53,6 @@ export function createColumnDefinitions(onTransactionUpdate) {
         <EditableDescriptionCell key={row.original.id} row={row} columnId={id} table={table} />
       ),
       meta: {
-        updateData: function (rowIndex, columnId, value) {
-          // Skip page index reset until after next rerender
-          skipAutoResetPageIndex();
-          setData(function (old) {
-            return old.map(function (row, index) {
-              if (index === rowIndex) {
-                var newRow = Object.assign({}, old[rowIndex]);
-                newRow[columnId] = value;
-                return newRow;
-              }
-              return row;
-            });
-          });
-        },
         displayName: 'Description'
       }
     },
