@@ -45,11 +45,11 @@ class BankwestCSVParser extends BaseCSVParser {
     //     "type"	INTEGER,
     //     PRIMARY KEY("id" AUTOINCREMENT)
     // );
+    
     extractDateFromDescription(processed) {
-        let re = RegExp(/(\d\d?):(\d\d)([AP]M) (\d\d?)(\w{3})\b/, "i")
         // let str2 = 'blah 05:04PM 27Jul h'
+        let re = RegExp(/(\d\d?):(\d\d)([AP]M) (\d\d?)(\w{3})\b/, "i")
         let desc = processed.description
-
         let match = desc.match(re)
         if (match) {
             let [full, hr, min, ampm, date, month] = match
@@ -62,6 +62,8 @@ class BankwestCSVParser extends BaseCSVParser {
             let new_datetime = DateTime.fromFormat(parsable, "ff", { zone: this.timezone })
 
             let revised_description = desc.replace(re, "")
+            revised_description = revised_description.replace(/\s+/g, " ").trim()
+            // revised_description = revised_description.replace(/\s+/, " ")
             console.log(`Revised ${orig_datetime} to ${new_datetime} based on ${desc}`)
             console.log(`Revised description ${revised_description}`)
             processed.revised_description = revised_description

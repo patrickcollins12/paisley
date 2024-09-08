@@ -89,6 +89,8 @@ class BankDatabase {
 
         // Add a custom a function to sqlite.
         // description REGEXP 'myregex/i'
+        // description REGEXP '/myregex/i'
+        // description REGEXP 'myregex/i'
         // it will cache the regex into the regexCache set
         this.db.function('REGEXP', (pattern, value) => {
             // Attempt to retrieve the regex, or undefined if not present
@@ -97,15 +99,22 @@ class BankDatabase {
             if (regex === undefined) {  // If the pattern is not in the cache
                 try {
 
-                    const flagMatch = /\/([a-z]+)$/.exec(pattern);
+                    // optionally accept flags at the end of the regex
+                    // like /myregex/i or myregex/gim
+                    const flagMatch = /\/([a-z]*)$/.exec(pattern);
                     const flags = flagMatch ? flagMatch[1] : '';
-                    const regexPattern = flagMatch ? pattern.slice(1, flagMatch.index) : pattern;
+
+                    let regexPattern = flagMatch ? pattern.slice(0, flagMatch.index) : pattern;
+
+                    // strip a leading / if it exists
+                    const stripCharacter = (str, char) => str.startsWith(char) ? str.slice(1) : str;
+                    regexPattern = stripCharacter(regexPattern, '/');  // Output: 'example'
+
+                    // console.log(">>pattern: ",pattern)
+                    // console.log(">>regexPattern: ",regexPattern)
 
                     regex = new RegExp(regexPattern, flags);  // Try compiling the regex
-                    
                     this.regexCache.set(pattern, regex);      // Cache the compiled regex
-
-                    // console.log(`incoming pattern ${pattern}, regexPattern ${regexPattern}, flags ${flags}, final regex ${regex}`)
 
                 } catch (e) {
                     this.regexCache.set(pattern, null);  // Cache the failure state

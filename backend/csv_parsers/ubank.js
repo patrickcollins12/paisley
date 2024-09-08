@@ -20,6 +20,12 @@ class UbankCSVParser extends BaseCSVParser {
         return this.matchFileExpands(fileName);
     }
 
+    // matchesFileName(fileName) {
+    //     // Logic to determine if this parser should handle the file based on the file name
+    //     return fileName.toLowerCase().includes('SpendAccount-5689');
+    // }
+
+
     // Date	Description	Debit	Credit	Balance
     // 01 Apr 2020	Slide N Shake 	$44.20		+$469.99
     // 04 Apr 2020	Thai Tucka 	$42.70		+$427.29

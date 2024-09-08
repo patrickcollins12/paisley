@@ -53,8 +53,12 @@ describe('Westpac Class', () => {
             'debit': 1.00,
             'balance': 50
         }
+        
+        
+        westpac.originalLine = processedLine
         let orig = { ... processedLine}
-        const uniqueId = westpac.saveTransaction(orig, processedLine)
+        westpac.processedLine = orig
+        const uniqueId = westpac.saveTransaction()
 
         const isAlreadyInserted = westpac.isAlreadyInserted(processedLine);
 

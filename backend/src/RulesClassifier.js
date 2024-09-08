@@ -17,10 +17,10 @@ class RulesClassifier {
         let txidsCondition = '';
         // let params = [];
 
-        if (!Array.isArray(newTags)) {
+        if (newTags && !Array.isArray(newTags)) {
             throw new TypeError('The rule.tags is not an array.');
         }
-        if (!Array.isArray(party)) {
+        if (party && !Array.isArray(party)) {
             throw new TypeError('The rule.party is not an array.');
         }
 
