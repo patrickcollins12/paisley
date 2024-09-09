@@ -2,6 +2,7 @@ const minimist = require('minimist');
 const ExpressServer = require('./src/ExpressServer');
 const config = require('./src/Config');
 const TransactionFileProcessor = require('./src/TransactionFileProcessor');
+const PlaywrightRunner = require('./src/PlaywrightRunner');
 
 // Load command line arguments
 const args = minimist(process.argv);
@@ -14,6 +15,7 @@ if (args.help) {
   Options:
     --config               Path to the configuration file.
     --disabletfp           Disable the Transaction CSV File Processor.
+    --playwright           Playwright scheduler enable/disable. Defaults to true.
     --globalDisableAuth    Globally disable authentication. Defaults to false unless explicitly set to "true".
     --port                 Port for the Express server to run on. Defaults to 4000.
     --help                 Show this help message and exit.
@@ -25,8 +27,6 @@ if (args.help) {
 config.load(args["config"]);
 
 ////////////
-// TFP
-
 // Start the Transaction CSV File Processor
 if(! args["disabletfp"]) {
     const tfp = new TransactionFileProcessor();
@@ -34,8 +34,15 @@ if(! args["disabletfp"]) {
 }
 
 ////////////
-// EXPRESS
+// Start the Playwright runner
+if(! args["playwright"]) {
+  const pr = new PlaywrightRunner();
+  pr.startCronScheduler()
+}
 
+
+////////////
+// EXPRESS
 // Determine if auth should be enabled. 
 // Defaults to false unless explicitly set to "true"
 const globalDisableAuth = args["globalDisableAuth"] === "true";
