@@ -24,6 +24,9 @@ class ExpressServer {
         if (this.enableApiDocs) {
             this.setupSwaggerDocs();
         }
+        else {
+            console.log("Swagger API docs NOT enabled")
+        }
 
     }
 
@@ -96,12 +99,15 @@ class ExpressServer {
         };
 
         const swaggerDocs = swaggerJsdoc(swaggerOptions);
-        this.app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+        const apidocs = '/api/docs'
+        this.app.use(apidocs, swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+        console.log("Swagger backend API docs enabled at ${apidocs}")
+
     }
     async start() {
         return new Promise((resolve, reject) => {
             this.server = this.app.listen(this.port, () => {
-                console.log(`Server is running on port ${this.port}`);
+                console.log(`Paisley backend API server is running on port ${this.port}`);
                 resolve();
             }).on('error', reject);
         });

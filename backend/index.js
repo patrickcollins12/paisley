@@ -15,7 +15,7 @@ if (args.help) {
     --config               Path to the configuration file.
     --disabletfp           Disable the Transaction CSV File Processor.
     --globalDisableAuth    Globally disable authentication. Defaults to false unless explicitly set to "true".
-    --port                 Port for the Express server to run on. Defaults to 4000.
+    --port                 Port for the Backend API Express server to run on. Defaults to 4000.
     --help                 Show this help message and exit.
     `);
     process.exit(0);
