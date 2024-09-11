@@ -11,27 +11,40 @@ class PlaywrightRunner {
     }
 
     // config.json:
-    //    scheduled_scrape: true,
+    //    enable_scraper: true,
+    //    scrape_at_startup: true,
     //    scheduled_scrape_cron: "40 * * * *", // on the 5th minute of every hour. See node-cron
     //    scheduled_scrape_command: "/opt/homebrew/bin/npx playwright test --reporter json --retries 1",
     startCronScheduler() {
 
-        // skip scrape?
-        if (config.scheduled_scrape == false) { return }
+        // scraper enabled?
+        if (config.enable_scraper == false) { 
+            console.warn(`Warn: Scraper disabled 'enable_scraper: ${config.enable_scraper}'`)
+            return 
+        }
 
         // run at startup
-        const cronstr = config.scheduled_scrape_cron
-        if (cronstr == "startup") {
+        if (config.scrape_at_startup) {
+            console.log(`Running playwright 'scrape_at_startup: ${config.scrape_at_startup}'`);
             this.start()
+        }
 
         // cron.schedule('1-5 * * * *', () => {
+        const cronstr = config.scheduled_scrape_cron
+        if (cronstr) {
+            if (cron.validate(cronstr)) {
+                cron.schedule(cronstr, () => {
+                    console.log('Scheduled playwright run starting now:', cronstr);
+                    this.start()
+                });
+            } else {
+                throw new Error(`Invalid cron schedule string - scheduled_scrape_cron: ${cronstr}`)
+            }
+
         } else {
-            console.log("Running playwright on this schedule: ", cronstr)
-            cron.schedule(cronstr, () => {
-                console.log('Scheduled start');
-                this.start()
-            });
+            throw new Error(`No scheduled_scrape_cron: ${cronstr}`)
         }
+
     }
 
     parseResults(data) {
@@ -49,27 +62,38 @@ class PlaywrightRunner {
                 timedOut: '⏰ Timed Out',
             };
 
+            let resultsSummary = ""
             // Process the results
+            const scrapeData = []
             jsonData.suites.forEach(suite => {
-                console.log(`Suite: ${suite.title}`);
+                resultsSummary += `Suite: ${suite.title}  `;
 
                 suite.specs.forEach(spec => {
                     // Log spec title and whether all tests in this spec were OK
                     const specStatus = spec.ok ? '✅ passed' : '❌ failed';
-                    console.log(`  ${specStatus}`);
+                    resultsSummary += `${specStatus}\n`;
 
+                    let attemptData = []
                     spec.tests.forEach(test => {
                         // Extract test results
                         test.results.forEach(result => {
                             const { status, duration } = result; // Destructure result for cleaner code
                             const statusText = statusMap[status] || 'Unknown status'; // Default message for unknown statuses
-
-                            // Log the status and duration
-                            console.log(`   Duration: ${duration}ms, Status: ${statusText}`);
+                            resultsSummary += `   Duration: ${duration}ms, Status: ${statusText}\n`;
+                            attemptData.push({duration,status,statusText})
                         });
                     });
+
+                    scrapeData.push({scraper: suite.title, status: spec.ok, text_status: specStatus, attemptData})
                 });
             });
+
+            console.log(resultsSummary)
+            console.log(JSON.stringify(scrapeData,null,"\t"))
+            console.log(JSON.stringify(jsonData.stats,null,"\t"))
+
+
+            // TODO: Save the resultsSummary to the log
 
         } catch (error) {
             console.error('Error loading or processing the JSON file:', error);
@@ -92,13 +116,11 @@ class PlaywrightRunner {
         // Create the temp file path in a cross-platform manner
         const jsontmpfile = path.join(tempDir, `playwright_${pid}_results.json`);
 
+        // These are the options for the exec spawn
         const options = {
             cwd: path.join(__dirname, '..'), // This sets the cwd to the parent directory
             env: { ...process.env, "PLAYWRIGHT_JSON_OUTPUT_NAME": jsontmpfile }
         };
-        // console.log(options)
-
-        console.log(`Beginning Playwright test run...`);
 
         // RUN THE COMMAND
         // const cmd = '/opt/homebrew/bin/npx playwright test --reporter json --retries 1';
@@ -108,12 +130,13 @@ class PlaywrightRunner {
 
         // PROCESS STDOUT
         npx.stdout.on('data', (data) => {
-            console.log(data.toString());
+            // TODO where to log this "error" output?
+            // console.log(data.toString());
         });
 
         // PROCESS STDERR
         npx.stderr.on('data', (data) => {
-            console.error(`stderr: ${data.toString()}`);
+            // console.error(`stderr: ${data.toString()}`);
         });
 
         npx.on('close', async (code) => {

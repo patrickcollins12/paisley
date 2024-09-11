@@ -101,7 +101,7 @@ class ExpressServer {
         const swaggerDocs = swaggerJsdoc(swaggerOptions);
         const apidocs = '/api/docs'
         this.app.use(apidocs, swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-        console.log("Swagger backend API docs enabled at ${apidocs}")
+        console.log(`Swagger backend API docs enabled at ${apidocs}`)
 
     }
     async start() {
