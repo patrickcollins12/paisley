@@ -10,3 +10,5 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
+venv/
+__pycache__/
