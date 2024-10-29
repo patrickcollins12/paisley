@@ -11,6 +11,7 @@ const defaultValues = {
   updateFilters: () => {},
   clearFilters: () => {},
   isFilterActive: () => {},
+  calculateSearchId: () => {},
   clear: () => {},
   save: () => {}
 }
@@ -58,26 +59,35 @@ export function SearchContextProvider({ children }) {
       filters
     }]);
   }
-  const updateSearchParams = async (filterState) => {
-    // console.log('SearchContext.updateSearchParams', filterState);
 
-    // strip each filter expression down to only the necessary pieces required to re-hydrade the definition later
-    const hashableFilterState = filterState.map(filter => ({
+  const getHashableFilterState = (filterState) => {
+    return filterState.map(filter => ({
       field: filter.field,
       operatorId: filter.operatorDefinition.id,
       value: filter.value
     }));
+  }
+
+  const calculateSearchId = () => {
+    // strip each filter expression down to only the necessary pieces required to re-hydrade the definition later
+    const hashableFilterState = getHashableFilterState(filters);
 
     // generate a deterministic search id based on the current search configuration
-    const searchId = uuidv5(JSON.stringify(hashableFilterState), uuidNamespace);
+    return uuidv5(JSON.stringify(hashableFilterState), uuidNamespace);
+  }
+
+  const updateSearchParams = async () => {
+    // console.log('SearchContext.updateSearchParams', filterState);
+
+    const searchId = calculateSearchId();
 
     // update the search history (in localstorage)
-    updateSearchHistory(searchId, hashableFilterState);
+    updateSearchHistory(searchId, getHashableFilterState(filters));
 
     // update the search params
     await navigate({
       search: prevSearchState => {
-        if (filterState.length === 0) {
+        if (filters.length === 0) {
           const { search_id, ...newSearchState } = prevSearchState;
           return newSearchState;
         }
@@ -140,7 +150,7 @@ export function SearchContextProvider({ children }) {
 
   useEffect(() => {
     const update = async () => {
-      await updateSearchParams(filters);
+      await updateSearchParams();
     }
 
     update().catch(console.error);
@@ -152,6 +162,7 @@ export function SearchContextProvider({ children }) {
       isFilterActive,
       updateFilters,
       clearFilters,
+      calculateSearchId,
       clear,
       save
     }}>

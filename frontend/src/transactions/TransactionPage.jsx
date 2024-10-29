@@ -70,6 +70,14 @@ function TransactionPage() {
     updateUrlSearchParams(pageState, sortState);
   }, [sortState, pageState]);
 
+  // when filters change we need to reset the page index back to 0
+  useUpdateEffect(() => {
+    setPageState(prevState => ({
+      ...prevState,
+      pageIndex: 0,
+    }));
+  }, [searchContext.calculateSearchId()]);
+
   // finally we fetch the data using the search (filters) state, sorting and pagination state
   const { data } = useFetchTransactions({
     pageIndex: pageState.pageIndex,
