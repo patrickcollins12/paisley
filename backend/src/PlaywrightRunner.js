@@ -89,8 +89,8 @@ class PlaywrightRunner {
             });
 
             console.log(resultsSummary)
-            console.log(JSON.stringify(scrapeData,null,"\t"))
-            console.log(JSON.stringify(jsonData.stats,null,"\t"))
+            // console.log(JSON.stringify(scrapeData,null,"\t"))
+            // console.log(JSON.stringify(jsonData.stats,null,"\t"))
 
 
             // TODO: Save the resultsSummary to the log

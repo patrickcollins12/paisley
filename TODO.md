@@ -1,5 +1,9 @@
 # TODO
+- [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
+- [ ] Add kv logging for events. Events could include playwright runs, balance checks, logins.
+- [ ] Maybe balances go to events as well?
+
 - [ ] alter rules engine to allow s// of description, or do we just do this in the parser
 - [x] Add rules to the dropdown
 - [x] Add filter_save to the backend as kv pair
@@ -9,6 +13,11 @@
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 
 # PROJECTS
+
+- Playwright
+       [x] Invoked from backend instead with node-cron and a * * * in config.js. Remove pm2
+       [x] Write a wrapper and try/catch? Invoke playwright directly?
+- Replace Playwright with undetected
 
 - Finish Accounts
      Accounts screen with balances
@@ -24,11 +33,7 @@
 - Docs
        Document how to create a scraper and a CSV importer
 
-- Playwright
-       Invoked from backend instead with node-cron and a * * * in config.js. Remove pm2
-       Write a wrapper and try/catch? Invoke playwright directly?
-       Add logging and events. Create an event table? Events could include playwright runs, balance checks, logins, 
-       Maybe balances go to events as well?
+
        
 - Create Install process
        Setup default demo database
