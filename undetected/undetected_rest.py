@@ -15,7 +15,7 @@ driver.find_element(By.CSS_SELECTOR, "input").click()
 driver.find_element(By.CSS_SELECTOR, ".rs-ga-tooltip").click()
 driver.find_element(By.CSS_SELECTOR, ".rs-ga-container").click()
 driver.find_element(By.CSS_SELECTOR, ".rs-ga-button-primary").click()
-driver.find_element(By.CSS_SELECTOR, "input").send_keys("6PamzZU9wkGebstP")
+driver.find_element(By.CSS_SELECTOR, "input").send_keys("<PASS>")
 
 driver.save_screenshot('rest.png')
 
