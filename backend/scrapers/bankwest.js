@@ -11,7 +11,7 @@ test('test', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Personal Access Number (PAN)' }).fill(bank_config['pan']);
   await page.getByRole('textbox', { name: 'Password' }).fill(bank_config['password']);
   await page.getByRole('button', { name: 'Login' }).click();
-  await new Promise(resolve => setTimeout(resolve, 10000));
+  // await new Promise(resolve => setTimeout(resolve, 10000));
   await page.getByRole('button', { name: 'Accounts' }).click();
   await page.getByRole('link', { name: 'Transaction search' }).click();
 
