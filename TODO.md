@@ -32,8 +32,6 @@
 
 - Docs
        Document how to create a scraper and a CSV importer
-
-
        
 - Create Install process
        Setup default demo database

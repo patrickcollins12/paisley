@@ -9,7 +9,7 @@
     "dev": "nodemon --ignore test-results/ --verbose index.js",
     "scrape": "npx playwright test",
     "postinstall": "node install.js",
-    "demo:start": "node index.js --config ~/paisley/demo/demo_config.js",
+    "demo": "node --verbose index.js --config ~/paisley/demo/demo_config.js",
     "demo:rules:rerun": "cd ./bin && node rerun_rules.js --config ~/paisley/demo/demo_config.js"
   },
   "author": "",
