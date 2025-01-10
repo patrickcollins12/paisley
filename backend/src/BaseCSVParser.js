@@ -136,8 +136,13 @@ class BaseCSVParser {
 
             if (this.isAlreadyInserted()) {
                 this.results.skipped++;
-                // console.log("here2")
                 this.results.setMinMaxDate("skipped", this.processedLine['datetime']);
+
+                // Call transactionSkipped if it has been defined in the subclass
+                if (typeof this.transactionSkipped === 'function') {
+                    this.transactionSkipped();
+                }
+                
             } else {
                 await this.handleValidRecord();
             }
@@ -153,6 +158,12 @@ class BaseCSVParser {
             const newId = this.saveTransaction();
             this.results.insert(newId);
             this.results.setMinMaxDate("inserts", this.processedLine['datetime']);
+
+            // Call hasSaved if it has been defined in the subclass
+            if (typeof this.transactionSaved === 'function') {
+                this.transactionSaved(newId);
+            }
+
         } catch (error) {
             console.log('Invalid record encountered:', error);
             this.results.invalid++;
@@ -219,7 +230,7 @@ class BaseCSVParser {
     // checks for presence of advanced fields and saves them to transaction_enriched
     saveTransactionEnriched() {
 
-        if ( ! this.processedLine?.id ) {
+        if (!this.processedLine?.id) {
             throw new Error("Food fight!")
         }
 

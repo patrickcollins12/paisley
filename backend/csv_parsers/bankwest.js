@@ -63,9 +63,11 @@ class BankwestCSVParser extends BaseCSVParser {
 
             let revised_description = desc.replace(re, "")
             revised_description = revised_description.replace(/\s+/g, " ").trim()
-            // revised_description = revised_description.replace(/\s+/, " ")
-            console.log(`Revised ${orig_datetime} to ${new_datetime} based on ${desc}`)
-            console.log(`Revised description ${revised_description}`)
+            
+            // save these console.log's to a buffer for later printing
+            this.debug_str  = `Revised ${orig_datetime} to ${new_datetime} based on ${desc}\n`
+            this.debug_str += `Revised description ${revised_description}`
+
             processed.revised_description = revised_description
             processed.datetime = new_datetime.toISO()
             return true
@@ -112,6 +114,15 @@ class BankwestCSVParser extends BaseCSVParser {
         return processed
     }
 
+    transactionSaved(id) {
+        console.log(`\nSaved txn with id: ${id}`);
+        console.log(this.debug_str)
+        console.log("\n")
+    }
+
+    // transactionSkipped() {
+    //     console.log('Do nothing');
+    // }
 }
 
 module.exports = BankwestCSVParser;
