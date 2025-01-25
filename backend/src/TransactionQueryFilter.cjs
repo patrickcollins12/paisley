@@ -24,36 +24,55 @@ class TransactionQueryFilter {
     }
 
     // tags, manual_tags and auto_tags need special treatment becasue they're json
+    // 1. fields:  [ 'auto_tags', 'manual_tags' ]
+    // 2. paramsToAdd:  [ 'Transfer > CDIA outbound', 'Business > Legal' ]
+    // 3. NOT:  NOT
+    // OUTPUT:
+    //     query output:
+    //     EXISTS (
+    //         SELECT 1 
+    //         FROM json_each(main.manual_tags) 
+    //         WHERE json_each.value LIKE ? OR json_each.value LIKE ?
+    //     )
+    //     params:
+    //     [ 'Transfer%', 'Financial > Balance Check%' ]
     _addSqlTagsWhere(fields, paramsToAdd, NOT = '') {
+        // basic guard, but shouldn't happen
+        if (!paramsToAdd.length) return;
 
-        // (${value.map(() => '?').join(',')})
         let expressionArray = []
         for (const field of fields) {
 
-            let query = ""
-            let params = paramsToAdd.map(() => '?').join(',')
-            if (field === "auto_tags") {
-                query = ` ( EXISTS (
-                    SELECT 1 
-                    FROM json_each(json_extract(auto_tags, '$.tags')) 
-                    WHERE json_each.value IN (${params})
-                    ))
-                    `
-            }
-            else if (field === "auto_party") {
-                query = ` ( EXISTS (
-                    SELECT 1 
-                    FROM json_each(json_extract(auto_party, '$.party')) 
-                    WHERE json_each.value IN (${params})
-                    ))
-                    `
-            }
-            else if (field === "manual_party" || field === "manual_tags") {
-                query = ` EXISTS (SELECT 1 FROM json_each(main.${field}) WHERE value IN (${params}))\n`
+            let query = "";
+            let params = paramsToAdd.map(value => `${value}%`); // Adjust values for LIKE patterns
+            let likeConditions = params.map(() => `json_each.value LIKE ?`).join(' OR ');
 
-            } else {
-                throw new Error(`Oof: food fight: ${field}`)
+            // Determine the JSON field to process based on the input field
+            let jsonField = "";
+            switch (field) {
+                case "auto_tags":
+                    jsonField = "json_extract(auto_tags, '$.tags')";
+                    break;
+                case "auto_party":
+                    jsonField = "json_extract(auto_party, '$.party')";
+                    break;
+                case "manual_party":
+                case "manual_tags":
+                    jsonField = `main.${field}`;
+                    break;
+                default:
+                    throw new Error(`Unsupported field: ${field}`);
             }
+
+            // Build the query using the simplified structure
+            query = `EXISTS (
+                        SELECT 1 
+                        FROM json_each(${jsonField}) 
+                        WHERE ${likeConditions}
+                    )`;
+
+            // console.log("query", query)
+            // console.log("params", params)
 
             expressionArray.push(query)
             this.params.push(...paramsToAdd)

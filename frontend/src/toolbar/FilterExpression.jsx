@@ -106,6 +106,35 @@ export const lookupOperators = {
   }
 };
 
+
+export const lookupTagOperators = {
+  lookup_any_of: {
+    id: 'lookup_any_of',
+    label: "starts with",
+    operator: 'in',
+    short: '',
+    default: true
+  },
+  lookup_not_any_of: {
+    id: 'lookup_not_any_of',
+    label: "does not start with",
+    operator: 'not_in',
+    short: 'not'
+  },
+  lookup_blank: {
+    id: 'lookup_blank',
+    label: "is blank",
+    operator: 'empty',
+    operatorOnly: true,
+  },
+  lookup_not_blank: {
+    id: 'lookup_not_blank',
+    label: "is not blank",
+    operator: 'not_empty',
+    operatorOnly: true,
+  }
+};
+
 export const namedDateRangePrefix = '__named_range__::';
 export const namedDateRanges = [
   {
@@ -277,6 +306,7 @@ export function getOperatorById(id) {
   const mergedLookup = {
     ...stringOperators,
     ...lookupOperators,
+    ...lookupTagOperators,
     ...dateOperators,
     ...numberOperators,
     ...allFilterOperators

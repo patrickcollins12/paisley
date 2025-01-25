@@ -6,6 +6,7 @@ import {
   allFilterOperators,
   dateOperators,
   lookupOperators,
+  lookupTagOperators,
   numberOperators,
   stringOperators
 } from "@/toolbar/FilterExpression.jsx"
@@ -57,7 +58,7 @@ function Toolbar({ dataTable }) {
           Icon={Tag}
           options={tags.data}
           coloredPills={true}
-          operators={lookupOperators}
+          operators={lookupTagOperators}
         />
         <LookupFilter
           label="Party"
