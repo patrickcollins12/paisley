@@ -44,7 +44,7 @@ class TransactionQueryFilter {
         for (const field of fields) {
 
             let query = "";
-            let params = paramsToAdd.map(value => `${value}%`); // Adjust values for LIKE patterns
+            let params = paramsToAdd.map(value => `${value}\%`); // Adjust values for LIKE patterns
             let likeConditions = params.map(() => `json_each.value LIKE ?`).join(' OR ');
 
             // Determine the JSON field to process based on the input field
@@ -71,13 +71,13 @@ class TransactionQueryFilter {
                         WHERE ${likeConditions}
                     )`;
 
-            // console.log("query", query)
-            // console.log("params", params)
 
             expressionArray.push(query)
-            this.params.push(...paramsToAdd)
+            this.params.push(...params)
         }
-        this.where += ` AND ${NOT} ` + this._andOrJoin(expressionArray, "OR")
+        const final = ` AND ${NOT} ` + this._andOrJoin(expressionArray, "OR")
+        this.where += final
+
     }
 
     // _andOrJoin(["this is x","this is y"], "and|or" )

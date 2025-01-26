@@ -23,6 +23,7 @@ class BankDatabase {
                 throw new Error(`Database file not found at path: ${path}`);
             }
 
+            // Enable this to turn on logging:
             // this.db = new Database(path, {verbose: console.log});
             this.db = new Database(path);
 

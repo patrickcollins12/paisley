@@ -21,8 +21,36 @@ router.get('/api/tags', async (req, res) => {
 
   try {
     const stmt = db.db.prepare(query);
-    const rows = stmt.all().map(obj => obj.tags);
-    res.json(rows);
+    const rows = stmt.all()
+
+    // Extract the tags from the query result
+    const originalTags = rows
+      .map(row => row.tags)
+      // .filter(tag => tag && typeof tag === 'string' && tag.trim() !== ''); // Filter out null, empty, or invalid tags
+      console.log("originalTags: ", originalTags);
+    // Create a Set to store all unique tags (including parents)
+    const allTags = new Set();
+
+    // Process each tag to include its parent tags
+    originalTags.forEach(tag => {
+      
+      // Split the tag into parts using the regex for " > " with surrounding spaces
+      const parts = tag.split(/\s>\s/);
+
+      // Reconstruct and add each parent tag to the Set
+      let parentTag = '';
+      parts.forEach((part, index) => {
+        parentTag = index === 0 ? part : `${parentTag} > ${part}`;
+        allTags.add(parentTag);
+      });
+    });
+
+    // Convert the Set to an array for the response
+    const result = Array.from(allTags);
+
+    // Send the result as JSON
+    res.json(result.sort());
+    // res.json(rows);
   } catch (err) {
     console.log("error: ", err.message);
     res.status(400).json({ "error": err.message });
