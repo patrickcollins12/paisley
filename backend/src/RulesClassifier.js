@@ -13,6 +13,7 @@ class RulesClassifier {
     }
 
     _applyRule(rule_id, ruleWhereClause, params, txids, newTags, party) {
+
         // Building the dynamic part of the WHERE clause based on the txids provided
         let txidsCondition = '';
         // let params = [];
@@ -29,13 +30,12 @@ class RulesClassifier {
             params = params.concat(txids);
         }
 
-        
-        
+
         const fetchSql = TransactionQuery.allTransactionsQuery +
             ` AND ${ruleWhereClause} ${txidsCondition}`
         // console.log(`fetchSql: ${fetchSql}`)
         const fetchStmt = this.db.db.prepare(fetchSql);
-        const transactions = fetchStmt.all(params);
+        let transactions = fetchStmt.all(params);
 
         // Prepare the SQL statement for updating tags and party
         const updateSql = `
@@ -70,7 +70,7 @@ class RulesClassifier {
                 partyJson = JSON.stringify({ party: party, rule: rule_id })
             }
 
-            // console.log(`>> ${updateSql}\n ${tagJson}\n ${partyJson}\n ${transaction.id}` )
+            // console.log(`>> ${partyJson}` )
             updateStmt.run(tagJson, partyJson, transaction.id);
 
         });
@@ -117,16 +117,17 @@ class RulesClassifier {
         let cnt = 0
 
         try {
-
             const whereSqlObj = parser.parse(rule.rule);
+
             cnt = this._applyRule(
                 rule.id,
                 whereSqlObj.sql,
                 whereSqlObj.params,
                 null,
                 JSON.parse(rule?.tag),
-                JSON.parse(rule?.party)
+                JSON.parse(rule?.party || "[]")
             )
+
         } catch (e) {
             console.log("Rule processing failed(1):", rule, e)
         }
@@ -134,7 +135,7 @@ class RulesClassifier {
         return cnt
     }
 
-  
+
     getTransactionsMatchingRuleId(ruleid) {
         let query = `SELECT DISTINCT id
                  FROM "transaction"
@@ -152,11 +153,11 @@ class RulesClassifier {
                  )
                  OR
                  json_extract(party, '$.rule') = ?;`
-    
+
         const stmt = this.db.db.prepare(query);
-        const transactions = stmt.all(ruleid, ruleid,ruleid);
+        const transactions = stmt.all(ruleid, ruleid, ruleid);
         const transaction_ids = transactions.map(transaction => transaction.id);
-    
+
         return transaction_ids;
     }
 
@@ -173,8 +174,8 @@ class RulesClassifier {
             try {
                 const whereSqlObj = parser.parse(rule.rule);
 
-                const tag = JSON.parse(rule?.tag || [])
-                const party = JSON.parse(rule?.party || [])
+                const tag = JSON.parse(rule?.tag || "[]")
+                const party = JSON.parse(rule?.party || "[]")
 
                 cnt += this._applyRule(
                     rule.id,
