@@ -27,7 +27,7 @@ router.get('/api/tags', async (req, res) => {
     const originalTags = rows
       .map(row => row.tags)
       // .filter(tag => tag && typeof tag === 'string' && tag.trim() !== ''); // Filter out null, empty, or invalid tags
-      console.log("originalTags: ", originalTags);
+      
     // Create a Set to store all unique tags (including parents)
     const allTags = new Set();
 

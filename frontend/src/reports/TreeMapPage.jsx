@@ -1,7 +1,7 @@
 import { getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useCallback, useMemo, useState } from 'react';
 import { DataTable } from "@/components/data-table/DataTable.jsx";
-import { createColumnDefinitions } from "./TransactionColumnDefinitions.jsx";
+// import { createColumnDefinitions } from "./TransactionColumnDefinitions.jsx";
 import Toolbar from "@/toolbar/Toolbar.jsx";
 import { useFetchTransactions, useUpdateTransaction } from "@/transactions/TransactionApiHooks.jsx";
 import { useSearch } from "@/components/search/SearchContext.jsx";
@@ -10,12 +10,12 @@ import { useUpdateEffect } from "react-use"
 
 const routeApi = getRouteApi('/transactions/');
 
-const defaultColumnVisibility = {
-  id: false,
-  debit: false,
-  credit: false,
-  account_number: false,
-};
+// const defaultColumnVisibility = {
+//   id: false,
+//   debit: false,
+//   credit: false,
+//   account_number: false,
+// };
 
 const initialiseSortState = (searchParams) => {
   if (!searchParams.order_by) return [];
@@ -29,7 +29,7 @@ const initialiseSortState = (searchParams) => {
   }];
 };
 
-export default function TransactionPage() {
+export default function TreeMapPage() {
 
   // navigate is used to update URL search params
   const navigate = routeApi.useNavigate();
@@ -129,3 +129,4 @@ export default function TransactionPage() {
     </>
   )
 }
+

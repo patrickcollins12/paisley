@@ -1,7 +1,7 @@
 const minimist = require('minimist');
 
-const UserManager = require('./src/UserManager');
-const config = require('./src/Config');
+const UserManager = require('../src/UserManager');
+const config = require('../src/Config');
 
 // load command line arguments
 const args = minimist(process.argv);
