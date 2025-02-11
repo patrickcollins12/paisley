@@ -1,4 +1,5 @@
-import { test,expect } from '@playwright/test';
+import { test } from '@playwright/test';
+
 const util = require('../src/ScraperUtil');
 const config = (require('../src/Config'));
 const { DateTime } = require("luxon");
@@ -89,7 +90,7 @@ async function apiCallsToSwyftx() {
     // console.log(rates)
 }
 
-test('test', async ({ page }) => {
+test('test', async () => {
 
     let data = await apiCallsToSwyftx()
 

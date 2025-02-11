@@ -10,7 +10,7 @@ CREATE TABLE "account_new" (
     "timezone" TEXT,
     "shortname" TEXT,
     "parentid" TEXT,  -- ✅ Define `parentid` before using it in FOREIGN KEY
-    "metadata" TEXT,
+    "data" TEXT,
     FOREIGN KEY("parentid") REFERENCES "account_new"("accountid") ON DELETE CASCADE
 );
 
