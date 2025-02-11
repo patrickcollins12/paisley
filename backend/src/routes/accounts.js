@@ -10,9 +10,7 @@ const db = new BankDatabase();
  */
 router.get('/api/accounts', async (req, res) => {
     try {
-        const query = "SELECT * FROM account";
-        const stmt = db.db.prepare(query);
-        const accounts = stmt.all();
+        const accounts = db.db.prepare("SELECT * FROM account").all();
         res.json({ success: true, accounts });
     } catch (error) {
         res.status(500).json({ success: false, message: "Database error", error: error.message });
@@ -26,9 +24,7 @@ router.get('/api/accounts', async (req, res) => {
 router.get('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const query = "SELECT * FROM account WHERE accountid = ?";
-        const stmt = db.db.prepare(query);
-        const account = stmt.get(id);
+        const account = db.db.prepare("SELECT * FROM account WHERE accountid = ?").get(id);
 
         if (!account) {
             return res.status(404).json({ success: false, message: "Account not found" });
@@ -41,52 +37,36 @@ router.get('/api/accounts/:id', async (req, res) => {
 });
 
 /**
- * POST /api/accounts
- * Create a new account
- */
-router.post('/api/accounts', async (req, res) => {
-    try {
-        const { accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata } = req.body;
-
-        if (!accountid || !name || !currency || !type) {
-            return res.status(400).json({ success: false, message: "Missing required fields" });
-        }
-
-        const query = `INSERT INTO account 
-            (accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-        const stmt = db.db.prepare(query);
-        stmt.run(accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata);
-
-        res.status(201).json({ success: true, message: "Account created successfully", accountid });
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Database error", error: error.message });
-    }
-});
-
-/**
- * PUT /api/accounts/:id
- * Update an existing account
+ * UPSERT /api/accounts/:id
+ * Create or update an account
  */
 router.put('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { institution, name, holders, currency, type, timezone, shortname, parentid, metadata } = req.body;
 
-        const query = `UPDATE account SET 
-            institution = ?, name = ?, holders = ?, currency = ?, type = ?, timezone = ?, 
-            shortname = ?, parentid = ?, metadata = ? 
-            WHERE accountid = ?`;
+        // if (!name) {
+        //     return res.status(400).json({ success: false, message: "Missing required field: name" });
+        // }
+
+        const query = `
+            INSERT INTO account (accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(accountid) DO UPDATE SET 
+                institution = excluded.institution,
+                name = excluded.name,
+                holders = excluded.holders,
+                currency = excluded.currency,
+                type = excluded.type,
+                timezone = excluded.timezone,
+                shortname = excluded.shortname,
+                parentid = excluded.parentid,
+                metadata = excluded.metadata`;
 
         const stmt = db.db.prepare(query);
-        const result = stmt.run(institution, name, holders, currency, type, timezone, shortname, parentid, metadata, id);
+        stmt.run(id, institution, name, holders, currency, type, timezone, shortname, parentid, metadata);
 
-        if (result.changes === 0) {
-            return res.status(404).json({ success: false, message: "Account not found" });
-        }
-
-        res.json({ success: true, message: "Account updated successfully" });
+        res.json({ success: true, message: "Account upserted successfully", accountid: id });
     } catch (error) {
         res.status(500).json({ success: false, message: "Database error", error: error.message });
     }
@@ -99,9 +79,7 @@ router.put('/api/accounts/:id', async (req, res) => {
 router.delete('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const query = "DELETE FROM account WHERE accountid = ?";
-        const stmt = db.db.prepare(query);
-        const result = stmt.run(id);
+        const result = db.db.prepare("DELETE FROM account WHERE accountid = ?").run(id);
 
         if (result.changes === 0) {
             return res.status(404).json({ success: false, message: "Account not found" });
@@ -114,6 +92,7 @@ router.delete('/api/accounts/:id', async (req, res) => {
 });
 
 module.exports = router;
+
 
 /**
  * @swagger
@@ -197,11 +176,41 @@ module.exports = router;
 
 /**
  * @swagger
- * /api/accounts:
- *   post:
- *     summary: Create a new account
- *     description: Add a new account to the system.
+ * /api/accounts/{id}:
+ *   delete:
+ *     summary: Delete an account
+ *     description: Remove an account from the system.
  *     tags: [Accounts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the account to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Account deleted successfully
+ *       404:
+ *         description: Account not found
+ *       500:
+ *         description: Database error
+ */
+
+/**
+ * @swagger
+ * /api/accounts/{id}:
+ *   put:
+ *     summary: Create or update an account
+ *     description: If the account exists, update it. If not, create a new account.
+ *     tags: [Accounts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: The ID of the account (UUID)
+ *         schema:
+ *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -209,12 +218,8 @@ module.exports = router;
  *           schema:
  *             type: object
  *             required:
- *               - accountid
  *               - name
  *             properties:
- *               accountid:
- *                 type: string
- *                 example: "12345"
  *               name:
  *                 type: string
  *                 example: "Main Savings"
@@ -243,90 +248,10 @@ module.exports = router;
  *                 type: string
  *                 example: "{}"
  *     responses:
- *       201:
- *         description: Account created successfully
+ *       200:
+ *         description: Account created or updated successfully
  *       400:
- *         description: Missing required fields
- *       500:
- *         description: Database error
- */
-
-/**
- * @swagger
- * /api/accounts/{id}:
- *   put:
- *     summary: Update an existing account
- *     description: Modify an account's details.
- *     tags: [Accounts]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the account to update
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Updated Savings"
- *               institution:
- *                 type: string
- *                 example: "Bank B"
- *               holders:
- *                 type: string
- *                 example: "John Doe"
- *               currency:
- *                 type: string
- *                 example: "AUD"
- *               type:
- *                 type: string
- *                 example: "savings"
- *               timezone:
- *                 type: string
- *                 example: "Australia/Sydney"
- *               shortname:
- *                 type: string
- *                 example: "Emergency"
- *               parentid:
- *                 type: string
- *                 example: "98765"
- *               metadata:
- *                 type: string
- *                 example: "{}"
- *     responses:
- *       200:
- *         description: Account updated successfully
- *       404:
- *         description: Account not found
- *       500:
- *         description: Database error
- */
-
-/**
- * @swagger
- * /api/accounts/{id}:
- *   delete:
- *     summary: Delete an account
- *     description: Remove an account from the system.
- *     tags: [Accounts]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the account to delete
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Account deleted successfully
- *       404:
- *         description: Account not found
+ *         description: Missing required field (name)
  *       500:
  *         description: Database error
  */

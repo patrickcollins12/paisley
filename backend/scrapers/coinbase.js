@@ -3,6 +3,16 @@ const { sign } = require('jsonwebtoken');
 const crypto = require('crypto');
 const axios = require('axios');
 
+// TODO.
+// Dynamically consider adding and removing of assets. How to add the parent account etc.
+// How to infer the currency? What currency to store it in?
+// create an account_history route api
+// Fetch the spot price in that currency, then save the price in account_history.
+
+
+
+
+
 // Coinbase Scraper needs a configuration which looks like the following:
 //     /////////
 //     // Coinbase
@@ -75,6 +85,7 @@ async function getCoinbaseBalances() {
 
 }
 
+
 /**
  * Save Coinbase data to the account API (Paisley) by updating only the metadata field.
  * 
@@ -86,7 +97,7 @@ async function saveDataToPaisley(coinbaseData, paisleyUrl, paisleyApiKey) {
     try {
         // Extract metadata fields from Coinbase data
         const metadata = {
-            available_balance: coinbaseData.available_balance.value,
+            available_balance: coinbaseData.available_balance?.value,
             currency: coinbaseData.currency,
             default: coinbaseData.default,
             active: coinbaseData.active,
@@ -103,14 +114,31 @@ async function saveDataToPaisley(coinbaseData, paisleyUrl, paisleyApiKey) {
         // };
 
         const payload = {
-        
             "metadata": JSON.stringify(coinbaseData) // Store metadata as JSON string
         };
 
-        const accountid = "Coinbase BTC"
+        // {
+        //     uuid: 'd949e546-ca3f-5bd8-8a2e-b3f1547d9edd',
+        //     name: 'BTC Wallet',
+        //     currency: 'BTC',
+        //     available_balance: { value: '0.17352111', currency: 'BTC' },
+        //     default: true,
+        //     active: true,
+        //     created_at: '2017-07-25T16:40:40.054Z',
+        //     updated_at: '2022-11-16T08:49:48.334Z',
+        //     deleted_at: null,
+        //     type: 'ACCOUNT_TYPE_CRYPTO',
+        //     ready: true,
+        //     hold: { value: '0', currency: 'BTC' },
+        //     retail_portfolio_id: '9e8082b3-fdb5-576b-b1cb-25ca8604da30',
+        //     platform: 'ACCOUNT_PLATFORM_CONSUMER'
+        //   }
+          
+        const accountid = `Coinbase ${coinbaseData.currency}`
+        const url = `${paisleyUrl}/api/accounts/${accountid}`
 
         // Send a PUT request to update only the metadata field
-        const response = await axios.put(`${paisleyUrl}/api/accounts/${accountid}`, payload, {
+        const response = await axios.put(url, payload, {
             headers: {
                 'x-api-key': paisleyApiKey,
                 'Content-Type': 'application/json'
