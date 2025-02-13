@@ -9,10 +9,6 @@ const axios = require('axios');
 // create an account_history route api
 // Fetch the spot price in that currency, then save the price in account_history.
 
-
-
-
-
 // Coinbase Scraper needs a configuration which looks like the following:
 //     /////////
 //     // Coinbase
@@ -20,10 +16,10 @@ const axios = require('axios');
 //       // Coinbase API credentials
 //       "keyName": 'organizations/06xxxxxxx-a92f-4xx9-axxc-xxxxxxxx/apiKeys/a5ccccca-xxxx-xxxx-xxxx-a3xxxxxxxxxxx7a',
 //       "keySecret": `-----BEGIN EC PRIVATE KEY-----
-// MHcCAxxxxxxxx/feSonxxxx/Mdxxxx/QHP2xxxxxx+rNUycFF0i8oAxxxxxxxxxx
-// AwEHoUQDQgAxxxxxxxxx/XBJIi2Uxxxxxxxxxxxxxxxxxxxxx/6xxk+X
-// jxxxxxxxxxxxxxC/KxxxxJR+8cxxxxxxgC/yxxxw==
-// -----END EC PRIVATE KEY-----`
+//                      MHcCAxxxxxxxx/feSonxxxx/Mdxxxx/QHP2xxxxxx+rNUycFF0i8oAxxxxxxxxxx
+//                      AwEHoUQDQgAxxxxxxxxx/XBJIi2Uxxxxxxxxxxxxxxxxxxxxx/6xxk+X
+//                      jxxxxxxxxxxxxxC/KxxxxJR+8cxxxxxxgC/yxxxw==
+//                      -----END EC PRIVATE KEY-----`
 //   },
 
 const config = (require('../src/Config'));
@@ -37,39 +33,124 @@ let keySecret = bank_config['keySecret']
 let paisleyUrl = config['paisleyUrl']
 let paisleyApiKey = config['paisleyApiKey']
 
-async function getCoinbaseBalances() {
-    console.log(`paisleyUrl: ${paisleyUrl}`)
-    console.log(`paisleyApiKey: ${paisleyApiKey}`)
-
+////////////////////////
+async function createOrUpdateMainAccount() {
+    let account_from_user_payload = {}
     try {
+
+        // sample from the /v2/user coinbase api, this is not used
+        const sample_data_test = {
+            "data": {
+                "id": "9e8082b3-xxxx-576b-xxxx-25ca8604da30",
+                "name": "Patrick Collins",
+                "avatar_url": "https://images.coinbase.com/avatar?h=5977xxxx8%2Bt9Su2uEvm6xxxxxxxxxxxx6s7CPqu%0AvcNa&s=128",
+                "resource": "user",
+                "resource_path": "/v2/user",
+                "time_zone": "Pacific Time (US & Canada)",
+                "native_currency": "AUD",
+                "bitcoin_unit": "BTC",
+                "country": {
+                    "code": "AU",
+                    "name": "Australia"
+                },
+                "created_at": "2017-07-25T16:40:39Z",
+                "email": "pxxxxxxxxxx@gmail.com"
+            }
+        }
+
+        // call /v2/user to create the main Coinbase account
+        // this API is not deprecated according to this discord 
+        // chat: https://discord.com/channels/1220414409550336183/1220417437921443861/1339103373588299776
+        const raw_data = await callCoinbase('/v2/user')
+        const user_data = raw_data.data
+        console.log(`User data: ${JSON.stringify(user_data, null, 2)}`)
+        account_from_user_payload = {
+            "id": user_data.id,
+            "institution": "Coinbase",
+            "name": "Coinbase", // account name
+            "holders": user_data.name,
+            "currency": user_data.native_currency,
+            "type": "crypto",
+            "timezone": convertToIanaTimezone(user_data.time_zone),
+            "shortname": "Coinbase",
+            // "parentid": null,
+            "metadata": JSON.stringify(user_data)
+        }
+
+        // Note this is an upsert operation, so will overwrite the existing account 
+        // if has been modified manually.
+        saveDataToPaisley(account_from_user_payload, paisleyUrl, paisleyApiKey)
+            .then(response => console.log("API Response:", response))
+            .catch(error => console.error("Error:", error));
+    } catch (error) {
+        console.error('Failed to fetch data:', error.message);
+    }
+
+    return account_from_user_payload
+}
+
+// Get all accounts from the brokerage API
+// Filter those with a +ve balance, then
+// Save it to the paisley account API
+async function getCoinbaseBalances(account_from_user_payload) {
+    try {
+
         const data = await callCoinbase('/api/v3/brokerage/accounts');
         const filteredAccounts = data.accounts.filter(account => {
             const balance = parseFloat(account.available_balance.value);
             return balance > 0;
         });
 
-        // console.log(JSON.stringify(data, null, 2));
+        // sample from the /api/v3/brokerage/accounts coinbase api, this is not used
+        const sample_account = {
+            uuid: 'd949e546-ca3f-5bd8-8a2e-b3f1547d9edd',
+            name: 'BTC Wallet',
+            currency: 'BTC',
+            available_balance: { value: '0.17352111', currency: 'BTC' },
+            default: true,
+            active: true,
+            created_at: '2017-07-25T16:40:40.054Z',
+            updated_at: '2022-11-16T08:49:48.334Z',
+            deleted_at: null,
+            type: 'ACCOUNT_TYPE_CRYPTO',
+            ready: true,
+            hold: { value: '0', currency: 'BTC' },
+            retail_portfolio_id: '9e8082b3-fdb5-576b-b1cb-25ca8604da30',
+            platform: 'ACCOUNT_PLATFORM_CONSUMER'
+        }
 
         for (const account of filteredAccounts) {
-            const uuid = account.uuid
-            const code = account.available_balance?.currency
-            const value = account.available_balance?.value
-
-            // console.log(`Account: ${JSON.stringify(account, null, 2)}`)
-            saveDataToPaisley(account, paisleyUrl, paisleyApiKey)
-                .then(response => console.log("API Response:", response))
-                .catch(error => console.error("Error:", error));
-            
             try {
 
-                const spotprice = await callCoinbase(`/v2/prices/${code}-USD/spot`);
+                const payload = {
+                    "id": account.uuid,
+                    "institution": "Coinbase",
+                    "name": account.name,
+                    "holders": account_from_user_payload.holders,
+                    "currency": account_from_user_payload.currency,
+                    "type": "crypto",
+                    "status": (account.active === true) ? "active" : "inactive",
+                    "timezone": account_from_user_payload.timezone,
+                    "shortname": "Coinbase " + account.currency, // Coinbase BTC
+                    "parentid": account_from_user_payload.id,
+                    "metadata": JSON.stringify(account)
+                };
 
-                const price = spotprice.data.amount;
-                console.log(`Account: ${uuid} ${code}-USD \$${(price * value).toFixed(2)}\t\t(Volume held:${value}, Spot price:${parseFloat(price).toFixed(3)})`);
+                // console.log(`Payload: ${JSON.stringify(payload, null, 2)}`)
+                saveDataToPaisley(payload, paisleyUrl, paisleyApiKey)
+                    .then(response => console.log("API Response:", response))
+                    .catch(error => console.error("Error:", error));
 
-                const spotprice2 = await callCoinbase(`/v2/prices/${code}-AUD/spot`);
-                const price2 = spotprice2.data.amount;
-                console.log(`Account: ${uuid} ${code}-AUD \$${(price2 * value).toFixed(2)}\t\t(Volume held:${value}, Spot price:${parseFloat(price2).toFixed(3)})`);
+                // console.log(`\n\n`)
+
+                // const spotprice = await callCoinbase(`/v2/prices/${code}-USD/spot`);
+
+                // const price = spotprice.data.amount;
+                // // console.log(`Account: ${uuid} ${code}-USD \$${(price * value).toFixed(2)}\t\t(Volume held:${value}, Spot price:${parseFloat(price).toFixed(3)})`);
+
+                // const spotprice2 = await callCoinbase(`/v2/prices/${code}-AUD/spot`);
+                // const price2 = spotprice2.data.amount;
+                // console.log(`Account: ${uuid} ${code}-AUD \$${(price2 * value).toFixed(2)}\t\t(Volume held:${value}, Spot price:${parseFloat(price2).toFixed(3)})`);
             } catch (error) {
                 console.error('Failed to fetch data:', error.message);
             }
@@ -89,102 +170,18 @@ async function getCoinbaseBalances() {
 /**
  * Save Coinbase data to the account API (Paisley) by updating only the metadata field.
  * 
- * @param {Object} coinbaseData - The Coinbase account data
+ * @param {Object} payload - The request payload
  * @param {string} paisleyUrl - The base URL of the Paisley API
  * @param {string} paisleyApiKey - The API key for authentication
  */
-async function saveDataToPaisley(coinbaseData, paisleyUrl, paisleyApiKey) {
+async function saveDataToPaisley(payload, paisleyUrl, paisleyApiKey) {
     try {
-        // Extract metadata fields from Coinbase data
-        const metadata = {
-            available_balance: coinbaseData.available_balance?.value,
-            currency: coinbaseData.currency,
-            default: coinbaseData.default,
-            active: coinbaseData.active,
-            created_at: coinbaseData.created_at,
-            updated_at: coinbaseData.updated_at,
-            hold: coinbaseData.hold.value,
-            retail_portfolio_id: coinbaseData.retail_portfolio_id,
-            platform: coinbaseData.platform
-        };
+        const url = `${paisleyUrl}/api/accounts/${payload.id}`
 
-        // Construct the request payload with only metadata, leaving other fields unchanged
-        // const payload = {
-        //     metadata: JSON.stringify(metadata) // Store as a JSON string
-        // };
-
-        const payload = {
-            "metadata": JSON.stringify(coinbaseData) // Store metadata as JSON string
-        };
-
-        // {
-        //     uuid: 'd949e546-ca3f-5bd8-8a2e-b3f1547d9edd',
-        //     name: 'BTC Wallet',
-        //     currency: 'BTC',
-        //     available_balance: { value: '0.17352111', currency: 'BTC' },
-        //     default: true,
-        //     active: true,
-        //     created_at: '2017-07-25T16:40:40.054Z',
-        //     updated_at: '2022-11-16T08:49:48.334Z',
-        //     deleted_at: null,
-        //     type: 'ACCOUNT_TYPE_CRYPTO',
-        //     ready: true,
-        //     hold: { value: '0', currency: 'BTC' },
-        //     retail_portfolio_id: '9e8082b3-fdb5-576b-b1cb-25ca8604da30',
-        //     platform: 'ACCOUNT_PLATFORM_CONSUMER'
-        //   }
-          
-        const accountid = `Coinbase ${coinbaseData.currency}`
-        const url = `${paisleyUrl}/api/accounts/${accountid}`
+        console.log(`Calling URL: ${url}`)
 
         // Send a PUT request to update only the metadata field
         const response = await axios.put(url, payload, {
-            headers: {
-                'x-api-key': paisleyApiKey,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        console.log('Successfully updated account metadata:', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('Error saving data to Paisley:', error.response?.data || error.message);
-        throw error;
-    }
-}
-
-/**
- * Save Coinbase data to the account API (Paisley)
- * 
- * @param {Object} coinbaseData - The Coinbase account data
- * @param {string} paisleyUrl - The base URL of the Paisley API
- * @param {string} paisleyApiKey - The API key for authentication
- */
-async function saveDataToPaisley2(coinbaseData, paisleyUrl, paisleyApiKey) {
-    try {
-        // Extract relevant data from Coinbase response
-        const metadata = {
-            available_balance: coinbaseData.available_balance.value,
-            currency: coinbaseData.currency,
-            default: coinbaseData.default,
-            active: coinbaseData.active,
-            created_at: coinbaseData.created_at,
-            updated_at: coinbaseData.updated_at,
-            hold: coinbaseData.hold.value,
-            retail_portfolio_id: coinbaseData.retail_portfolio_id,
-            platform: coinbaseData.platform
-        };
-
-        // Construct the request payload
-        const payload = {
-            "accountid": "Coinbase BTC",
-            "metadata": JSON.stringify(coinbaseData) // Store metadata as JSON string
-        };
-
-        console.log(`Payload: ${JSON.stringify(payload, null, 2)}`)
-
-        // Send a PUT request to update the existing account
-        const response = await axios.put(`${paisleyUrl}/api/accounts/${coinbaseData.uuid}`, payload, {
             headers: {
                 'x-api-key': paisleyApiKey,
                 'Content-Type': 'application/json'
@@ -238,12 +235,45 @@ async function callCoinbase(requestPath) {
     }
 }
 
+/**
+ * Converts a human-readable timezone from Coinbase to a valid IANA timezone.
+ *
+ * Coinbase's API returns timezone names in a human-readable format (e.g., "Pacific Time (US & Canada)"),
+ * but most libraries (like Luxon and Moment.js) require IANA timezones (e.g., "America/Los_Angeles").
+ *
+ * ## Updating the Timezone Map:
+ * - This `timezoneMap` contains known mappings from Coinbase's format to IANA format.
+ * - If Coinbase introduces new timezones, update this map accordingly.
+ * - Log unknown timezones for monitoring.
+ *
+ * ## Fallback Behavior:
+ * - If an unknown timezone is encountered, a warning is logged.
+ * - The function returns `"UTC"` as a safe default.
+ */
+const timezoneMap = {
+    "Pacific Time (US & Canada)": "America/Los_Angeles",
+    "Eastern Time (US & Canada)": "America/New_York",
+    "Central Time (US & Canada)": "America/Chicago",
+    "Mountain Time (US & Canada)": "America/Denver",
+    // "Central European Time (CET)": "Europe/Berlin",
+    // "Eastern European Time (EET)": "Europe/Bucharest",
+    // Add more as needed
+};
+
+function convertToIanaTimezone(humanReadableTz) {
+    const ianaTz = timezoneMap[humanReadableTz];
+
+    if (!ianaTz) {
+        console.warn(`⚠️ Unknown timezone received: "${humanReadableTz}". Defaulting to UTC.`);
+        return "UTC"; // Safe fallback
+    }
+
+    return ianaTz;
+}
+
 
 test('test', async () => {
-
-    let data = await getCoinbaseBalances()
-
-    saveDataToPaisley(data, paisleyUrl, paisleyApiKey)
-
+    let account_from_user_payload = await createOrUpdateMainAccount()
+    let data = await getCoinbaseBalances(account_from_user_payload)
 });
 

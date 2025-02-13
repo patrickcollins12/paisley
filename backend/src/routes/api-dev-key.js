@@ -1,15 +1,19 @@
 const express = require('express');
-const JWTAuthenticator = require('../JWTAuthenticator.js');
+// const JWTAuthenticator = require('../JWTAuthenticator.js');
 const ApiKeyManager = require('../ApiKeyManager.js');
 
 const router = express.Router();
 const apiKeyManager = new ApiKeyManager();
 
+const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
+
+const disableAuth = false; // false means apply auth, true means disable auth
+
 /**
  * GET /api/dev-key
  * List all API keys for the authenticated user
  */
-router.get('/api/dev-key', JWTAuthenticator.authenticateToken(false), (req, res) => {
+router.get('/api/dev-key', (req, res) => {
     if (!req.user || !req.user.username) {
         return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -24,7 +28,7 @@ router.get('/api/dev-key', JWTAuthenticator.authenticateToken(false), (req, res)
  * GET /api/dev-key/:id
  * Get a specific API key by keyId (optional)
  */
-router.get('/api/dev-key/:id', JWTAuthenticator.authenticateToken(false), (req, res) => {
+router.get('/api/dev-key/:id',  (req, res) => {
     if (!req.user || !req.user.username) {
         return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -45,7 +49,7 @@ router.get('/api/dev-key/:id', JWTAuthenticator.authenticateToken(false), (req, 
  * POST /api/dev-key
  * Generate a new API key for the authenticated user
  */
-router.post('/api/dev-key', JWTAuthenticator.authenticateToken(false), (req, res) => {
+router.post('/api/dev-key', (req, res) => {
     if (!req.user || !req.user.username) {
         return res.status(401).json({ success: false, message: "Unauthorized" });
     }
@@ -60,7 +64,7 @@ router.post('/api/dev-key', JWTAuthenticator.authenticateToken(false), (req, res
  * DELETE /api/dev-key/:id
  * Revoke a specific API key by keyId
  */
-router.delete('/api/dev-key/:id', JWTAuthenticator.authenticateToken(false), (req, res) => {
+router.delete('/api/dev-key/:id', (req, res) => {
     if (!req.user || !req.user.username) {
         return res.status(401).json({ success: false, message: "Unauthorized" });
     }

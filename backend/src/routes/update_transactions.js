@@ -4,8 +4,6 @@ const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RulesClassifier = require('../RulesClassifier');
 
-const JWTAuthenticator = require('../JWTAuthenticator');
-
 router.post('/api/update_transaction', [
   // Validate and sanitize the ID
   body('id').trim().isLength({ min: 1 }).withMessage('ID is required.'),

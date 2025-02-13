@@ -35,6 +35,10 @@ class ExpressServer {
         this.app.use(express.json());
         this.app.use(JWTAuthenticator.authenticateToken(this.globalDisableAuth));
 
+        // for security reasons lets disable some unnecessary headers
+        this.app.set('etag', false);
+        this.app.disable('x-powered-by');
+
         // Logger
         // this.app.use((req, res, next) => {
         //     console.log(`${req.method} ${req.path}`);

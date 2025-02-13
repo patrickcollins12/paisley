@@ -12,6 +12,12 @@ class BankwestCSVParser extends BaseCSVParser {
 
         // what columns from the incoming csv file define a unique record
         this.uniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit']
+
+        // Yes this file is in reverse order with newest transactions at the top.
+        // we always want to process the oldest transactions first to maintain the
+        // correct balance
+        this.must_process_csv_in_reverse = true
+
         // this.oldUniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit' ]
         // this.uniqueColumns = ['datetime', 'description', 'credit', 'debit', 'balance']
         // this.oldUniqueColumns = ['datetime', 'description', 'credit', 'debit']

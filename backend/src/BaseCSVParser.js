@@ -23,7 +23,7 @@ class BaseCSVParser {
         // }
     }
 
-    async parseOld(filePath) {
+    async parseOlder(filePath) {
 
         // this.findAccountNumber()
         let csv
@@ -91,7 +91,7 @@ class BaseCSVParser {
         return this.results
     }
 
-    async parse(filePath) {
+    async parseOld(filePath) {
 
         const csv = this.headers?.length > 0 ?
             CSVParser(this.headers) :
@@ -118,6 +118,51 @@ class BaseCSVParser {
         return this.results;
     }
 
+    async parse(filePath) {
+
+        const mustReverse = this.must_process_csv_in_reverse || false;
+        let parsedRows = [];
+
+        const csv = this.headers?.length > 0 ?
+            CSVParser(this.headers) :
+            CSVParser();
+
+        try {
+
+            // Fully parse CSV first, letting csv-parser do its job,
+
+            const stream = fs.createReadStream(filePath).pipe(csv);
+
+            // yeah it's memory hungry to load the whole file into memory, but
+            // i might need to do this to reverse the order of the rows
+            for await (const originalLine of stream) {
+                parsedRows.push(originalLine); // Collect parsed rows
+            }
+
+            // Reverse the order of rows if needed
+            if (mustReverse) {
+                parsedRows.reverse();
+            }
+
+            // Process parsed rows in order
+            for (const row of parsedRows) {
+                this.originalLine = row;
+                this.results.lines++;
+                await this.processLineAsync();
+            }
+
+        } catch (error) {
+            console.error("Error processing file:", error);
+        }
+
+        this.results.file = path.basename(this.fileName);
+        this.results.account = this.accountid;
+        this.results.parser = this.constructor.name;
+
+        return this.results;
+    }
+
+
     async processLineAsync() {
         try {
             this.processedLine = this.processLine(this.originalLine);
@@ -142,7 +187,7 @@ class BaseCSVParser {
                 if (typeof this.transactionSkipped === 'function') {
                     this.transactionSkipped();
                 }
-                
+
             } else {
                 await this.handleValidRecord();
             }
