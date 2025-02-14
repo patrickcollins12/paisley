@@ -28,7 +28,6 @@ const timezoneMap = {
     // Add more as needed
 };
 
-
 // Coinbase Scraper needs a configuration which looks like the following:
 //     /////////
 //     // Coinbase
@@ -41,7 +40,6 @@ const timezoneMap = {
 //                      jxxxxxxxxxxxxxC/KxxxxJR+8cxxxxxxgC/yxxxw==
 //                      -----END EC PRIVATE KEY-----`
 //   },
-
 const config = (require('../src/Config'));
 config.load()
 
@@ -109,6 +107,7 @@ async function createOrUpdateMainAccount() {
     return account_from_user_payload
 }
 
+////////////////////////
 // Get all accounts from the brokerage API
 // Filter those with a +ve balance, then
 // Save it to the paisley account API
@@ -180,9 +179,6 @@ async function getCoinbaseBalances(account_from_user_payload) {
                     
                 })
 
-                // const spotprice2 = await callCoinbase(`/v2/prices/${code}-AUD/spot`);
-                // const price2 = spotprice2.data.amount;
-                // console.log(`Account: ${uuid} ${code}-AUD \$${(price2 * value).toFixed(2)}\t\t(Volume held:${value}, Spot price:${parseFloat(price2).toFixed(3)})`);
             } catch (error) {
                 console.error('Failed to fetch data:', error.message);
             }
@@ -199,11 +195,8 @@ async function getCoinbaseBalances(account_from_user_payload) {
 }
 
 
-/**
- * Save Coinbase data to the account API (Paisley) by updating only the metadata field.
- * 
- * @param {Object} payload - The request payload
- */
+////////////////////////
+// Save Coinbase data to the account API (Paisley) by updating only the metadata field.
 async function savePaisleyAccount(payload) {
     try {
         const url = `${paisleyUrl}/api/accounts/${payload.id}`
@@ -225,13 +218,8 @@ async function savePaisleyAccount(payload) {
     }
 }
 
-/**
- * Save Coinbase data to the account API (Paisley) by updating only the metadata field.
- * 
- * @param {Object} payload - The request payload
- * @param {string} paisleyUrl - The base URL of the Paisley API
- * @param {string} paisleyApiKey - The API key for authentication
- */
+////////////////////////
+//Save to paisley account_history the balance
 async function savePaisleyBalance(payload) {
     try {
         const url = `${paisleyUrl}/api/account_balance/`
@@ -253,6 +241,7 @@ async function savePaisleyBalance(payload) {
     }
 }
 
+////////////////////////
 async function callCoinbase(requestPath) {
     try {
         // Generate JWT
@@ -292,7 +281,7 @@ async function callCoinbase(requestPath) {
     }
 }
 
-
+////////////////////////
 function convertToIanaTimezone(humanReadableTz) {
     const ianaTz = timezoneMap[humanReadableTz];
 
@@ -304,7 +293,8 @@ function convertToIanaTimezone(humanReadableTz) {
     return ianaTz;
 }
 
-
+////////////////////////
+// MAIN
 test('test', async () => {
     let account_from_user_payload = await createOrUpdateMainAccount()
     let data = await getCoinbaseBalances(account_from_user_payload)
