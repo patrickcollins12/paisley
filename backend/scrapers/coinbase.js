@@ -3,11 +3,31 @@ const { sign } = require('jsonwebtoken');
 const crypto = require('crypto');
 const axios = require('axios');
 
-// TODO.
-// Dynamically consider adding and removing of assets. How to add the parent account etc.
-// How to infer the currency? What currency to store it in?
-// create an account_history route api
-// Fetch the spot price in that currency, then save the price in account_history.
+/**
+ * Converts a human-readable timezone from Coinbase to a valid IANA timezone.
+ *
+ * Coinbase's API returns timezone names in a human-readable format (e.g., "Pacific Time (US & Canada)"),
+ * but most libraries (like Luxon and Moment.js) require IANA timezones (e.g., "America/Los_Angeles").
+ *
+ * ## Updating the Timezone Map:
+ * - This `timezoneMap` contains known mappings from Coinbase's format to IANA format.
+ * - If Coinbase introduces new timezones, update this map accordingly.
+ * - Log unknown timezones for monitoring.
+ *
+ * ## Fallback Behavior:
+ * - If an unknown timezone is encountered, a warning is logged.
+ * - The function returns `"UTC"` as a safe default.
+ */
+const timezoneMap = {
+    "Pacific Time (US & Canada)": "America/Los_Angeles",
+    "Eastern Time (US & Canada)": "America/New_York",
+    "Central Time (US & Canada)": "America/Chicago",
+    "Mountain Time (US & Canada)": "America/Denver",
+    // "Central European Time (CET)": "Europe/Berlin",
+    // "Eastern European Time (EET)": "Europe/Bucharest",
+    // Add more as needed
+};
+
 
 // Coinbase Scraper needs a configuration which looks like the following:
 //     /////////
@@ -38,6 +58,10 @@ async function createOrUpdateMainAccount() {
     let account_from_user_payload = {}
     try {
 
+        // call /v2/user to create the main Coinbase account
+        // this API is not deprecated according to this discord 
+        // chat: https://discord.com/channels/1220414409550336183/1220417437921443861/1339103373588299776
+        const raw_data = await callCoinbase('/v2/user')
         // sample from the /v2/user coinbase api, this is not used
         const sample_data_test = {
             "data": {
@@ -57,13 +81,9 @@ async function createOrUpdateMainAccount() {
                 "email": "pxxxxxxxxxx@gmail.com"
             }
         }
-
-        // call /v2/user to create the main Coinbase account
-        // this API is not deprecated according to this discord 
-        // chat: https://discord.com/channels/1220414409550336183/1220417437921443861/1339103373588299776
-        const raw_data = await callCoinbase('/v2/user')
+        // selectively move it over to payload
         const user_data = raw_data.data
-        console.log(`User data: ${JSON.stringify(user_data, null, 2)}`)
+        // console.log(`User data: ${JSON.stringify(user_data, null, 2)}`)
         account_from_user_payload = {
             "id": user_data.id,
             "institution": "Coinbase",
@@ -79,8 +99,8 @@ async function createOrUpdateMainAccount() {
 
         // Note this is an upsert operation, so will overwrite the existing account 
         // if has been modified manually.
-        saveDataToPaisley(account_from_user_payload, paisleyUrl, paisleyApiKey)
-            .then(response => console.log("API Response:", response))
+        savePaisleyAccount(account_from_user_payload)
+            // .then(response => console.log("API Response:", response))
             .catch(error => console.error("Error:", error));
     } catch (error) {
         console.error('Failed to fetch data:', error.message);
@@ -121,7 +141,6 @@ async function getCoinbaseBalances(account_from_user_payload) {
 
         for (const account of filteredAccounts) {
             try {
-
                 const payload = {
                     "id": account.uuid,
                     "institution": "Coinbase",
@@ -137,16 +156,29 @@ async function getCoinbaseBalances(account_from_user_payload) {
                 };
 
                 // console.log(`Payload: ${JSON.stringify(payload, null, 2)}`)
-                saveDataToPaisley(payload, paisleyUrl, paisleyApiKey)
-                    .then(response => console.log("API Response:", response))
+                savePaisleyAccount(payload)
+                    // .then(response => console.log("API Response:", response))
                     .catch(error => console.error("Error:", error));
 
-                // console.log(`\n\n`)
+                const cryptocode = account.currency
+                const currency = account_from_user_payload.currency
+                const spotpriceJson = await callCoinbase(`/v2/prices/${cryptocode}-${currency}/spot`);
 
-                // const spotprice = await callCoinbase(`/v2/prices/${code}-USD/spot`);
+                const price = spotpriceJson.data.amount;
+                const balance = (price * parseFloat(account.available_balance.value)).toFixed(2);
+                console.log(`Account: ${cryptocode}-${currency} \$${balance}\t\t(Volume held:${account.available_balance.value}, Spot price:${parseFloat(price).toFixed(3)})`);
 
-                // const price = spotprice.data.amount;
-                // // console.log(`Account: ${uuid} ${code}-USD \$${(price * value).toFixed(2)}\t\t(Volume held:${value}, Spot price:${parseFloat(price).toFixed(3)})`);
+                savePaisleyBalance( {
+                    "accountid": account.uuid,
+                    "datetime": new Date().toISOString(),
+                    "balance": balance,
+                    "data": {
+                            "code": cryptocode,
+                            "currency": currency,
+                            "spotprice": price
+                        }
+                    
+                })
 
                 // const spotprice2 = await callCoinbase(`/v2/prices/${code}-AUD/spot`);
                 // const price2 = spotprice2.data.amount;
@@ -171,13 +203,10 @@ async function getCoinbaseBalances(account_from_user_payload) {
  * Save Coinbase data to the account API (Paisley) by updating only the metadata field.
  * 
  * @param {Object} payload - The request payload
- * @param {string} paisleyUrl - The base URL of the Paisley API
- * @param {string} paisleyApiKey - The API key for authentication
  */
-async function saveDataToPaisley(payload, paisleyUrl, paisleyApiKey) {
+async function savePaisleyAccount(payload) {
     try {
         const url = `${paisleyUrl}/api/accounts/${payload.id}`
-
         console.log(`Calling URL: ${url}`)
 
         // Send a PUT request to update only the metadata field
@@ -188,7 +217,35 @@ async function saveDataToPaisley(payload, paisleyUrl, paisleyApiKey) {
             }
         });
 
-        console.log('Successfully updated account metadata:', response.data);
+        // console.log('Successfully updated account metadata:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error saving data to Paisley:', error.response?.data || error.message);
+        throw error;
+    }
+}
+
+/**
+ * Save Coinbase data to the account API (Paisley) by updating only the metadata field.
+ * 
+ * @param {Object} payload - The request payload
+ * @param {string} paisleyUrl - The base URL of the Paisley API
+ * @param {string} paisleyApiKey - The API key for authentication
+ */
+async function savePaisleyBalance(payload) {
+    try {
+        const url = `${paisleyUrl}/api/account_balance/`
+        console.log(`Calling URL: ${url}`)
+
+        // Send a PUT request to update only the metadata field
+        const response = await axios.post(url, payload, {
+            headers: {
+                'x-api-key': paisleyApiKey,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        // console.log('Successfully updated account metadata:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error saving data to Paisley:', error.response?.data || error.message);
@@ -235,30 +292,6 @@ async function callCoinbase(requestPath) {
     }
 }
 
-/**
- * Converts a human-readable timezone from Coinbase to a valid IANA timezone.
- *
- * Coinbase's API returns timezone names in a human-readable format (e.g., "Pacific Time (US & Canada)"),
- * but most libraries (like Luxon and Moment.js) require IANA timezones (e.g., "America/Los_Angeles").
- *
- * ## Updating the Timezone Map:
- * - This `timezoneMap` contains known mappings from Coinbase's format to IANA format.
- * - If Coinbase introduces new timezones, update this map accordingly.
- * - Log unknown timezones for monitoring.
- *
- * ## Fallback Behavior:
- * - If an unknown timezone is encountered, a warning is logged.
- * - The function returns `"UTC"` as a safe default.
- */
-const timezoneMap = {
-    "Pacific Time (US & Canada)": "America/Los_Angeles",
-    "Eastern Time (US & Canada)": "America/New_York",
-    "Central Time (US & Canada)": "America/Chicago",
-    "Mountain Time (US & Canada)": "America/Denver",
-    // "Central European Time (CET)": "Europe/Berlin",
-    // "Eastern European Time (EET)": "Europe/Bucharest",
-    // Add more as needed
-};
 
 function convertToIanaTimezone(humanReadableTz) {
     const ianaTz = timezoneMap[humanReadableTz];
