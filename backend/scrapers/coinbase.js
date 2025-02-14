@@ -2,6 +2,7 @@ import { test } from '@playwright/test';
 const { sign } = require('jsonwebtoken');
 const crypto = require('crypto');
 const axios = require('axios');
+const { DateTime } = require("luxon");
 
 /**
  * Converts a human-readable timezone from Coinbase to a valid IANA timezone.
@@ -162,21 +163,27 @@ async function getCoinbaseBalances(account_from_user_payload) {
                 const cryptocode = account.currency
                 const currency = account_from_user_payload.currency
                 const spotpriceJson = await callCoinbase(`/v2/prices/${cryptocode}-${currency}/spot`);
+                const units = parseFloat(account.available_balance.value)
+                const price = parseFloat(spotpriceJson.data.amount)
+                const balance = (price * units).toFixed(2)
+                console.log(`Account: ${cryptocode}-${currency} \$${balance}\t\t(Units:${units}, Spot price:${price.toFixed(3)})`)
 
-                const price = spotpriceJson.data.amount;
-                const balance = (price * parseFloat(account.available_balance.value)).toFixed(2);
-                console.log(`Account: ${cryptocode}-${currency} \$${balance}\t\t(Volume held:${account.available_balance.value}, Spot price:${parseFloat(price).toFixed(3)})`);
+                const datetime = DateTime.now().setZone(payload.timezone).toISO()
 
-                savePaisleyBalance( {
+                console.log(`Datetime: ${datetime}, timezone: ${payload.timezone}`)
+
+                savePaisleyBalance({
                     "accountid": account.uuid,
-                    "datetime": new Date().toISOString(),
+                    "datetime": datetime,
                     "balance": balance,
                     "data": {
-                            "code": cryptocode,
-                            "currency": currency,
-                            "spotprice": price
-                        }
-                    
+                        "code": cryptocode,
+                        "units": units,
+                        "currency": currency,
+                        "price": price,
+                        "timezone": payload.timezone,
+                    }
+
                 })
 
             } catch (error) {

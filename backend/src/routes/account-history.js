@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { body, query, param, validationResult } = require("express-validator");
+const { body, query, validationResult } = require("express-validator");
 const BankDatabase = require("../BankDatabase"); // Adjust the path as necessary
 
 // Set to false to enforce authentication. Set it to true when doing unit tests
@@ -148,7 +148,7 @@ router.get(
                         t.datetime DESC,
                         account DESC
                 ) WHERE 1=1
-`;
+                `;
         let params = [];
 
         if (accountid) {
