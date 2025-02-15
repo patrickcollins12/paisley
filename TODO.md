@@ -1,7 +1,7 @@
 # TODO
-
-- [ ] check and delete the old swyftx balances from transactions
-- [ ] cutover rest from csv to account/balance
+- [x] cutover coinbase to use util.savetopaisley
+- [x] check and delete the old swyftx balances from transactions
+- [x] cutover rest from csv to account/balance
 - [ ] reimplement accounts page and add some graphs
 - [ ] pull paisley scraper/collector out into a separate project. separate git repo?
 - [ ] alter rules engine to allow s// of description, or do we just do this in the parser

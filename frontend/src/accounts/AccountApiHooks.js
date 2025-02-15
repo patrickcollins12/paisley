@@ -7,7 +7,7 @@ async function fetcher(url) {
   return response.data;
 }
 function useAccountData(accountId = null) {
-  const { data, error, isLoading } = useSWR('balances', fetcher);
+  const { data, error, isLoading } = useSWR('account_balance', fetcher);
 
   if (accountId && !isLoading && !error) {
     // console.log(JSON.stringify(data, null, "\t"))

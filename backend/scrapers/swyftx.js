@@ -6,6 +6,7 @@ const { DateTime } = require("luxon");
 const axios = require('axios').default;
 test.describe.configure({ retries: 0 });
 
+const util = require('../src/ScraperUtil');
 const config = (require('../src/Config'));
 config.load()
 
@@ -149,7 +150,7 @@ async function processOwnedAsset(ownedAsset, user, rates) {
         "parentid": bank_config['account']
     };
 
-    await saveToPaisley(`/api/accounts`, account_update);
+    await util.saveToPaisley(`/api/accounts`, account_update);
 
     let account_history = {
         'datetime': DateTime.now().setZone("Australia/Sydney").toISO(),
@@ -165,84 +166,7 @@ async function processOwnedAsset(ownedAsset, user, rates) {
         }
     };
 
-    await saveToPaisley("/api/account_balance", account_history);
-}
-
-// async function apiCallsToSwyftxOld() {
-//     const accessToken = await getAccessToken()
-
-//     let balances = await apiRequest('/user/balance/', accessToken)
-//     let ownedAssets = balances?.filter(b => parseFloat(b.availableBalance) > 0) || [];
-
-//     let user = await apiRequest('/user/', accessToken)
-//     let rates = await getLiveRates()
-
-//     for (const ownedAsset of ownedAssets) {
-//         let id = ownedAsset["assetId"]
-//         logger.info(`ownedAsset: ${JSON.stringify(ownedAsset)}`)
-
-//         let units = parseFloat(ownedAsset["availableBalance"]) // 0.01982
-//         let name = rates[id]["name"]  // Bitcoin
-//         let asset = rates[id]["code"] // BTC
-//         let price = parseFloat(rates[id]["sell"]) // 150200.78267905
-//         let balance = price * units // 2332.62
-//         let asset_account_id = `${bank_config['account']} ${asset}`
-
-//         let account_update = {
-//             "accountid": asset_account_id,
-//             "institution": "Swyftx",
-//             "holders": user.user.profile.name.first + " " + user.user.profile.name.last,
-//             "type": "crypto",
-//             "timezone": "Australia/Sydney",
-//             "shortname": "Swytfx",
-//             "parentid": bank_config['account'],
-//             // "metadata": JSON.stringify(user.user)
-//         }
-//         await saveToPaisley(`/api/accounts`, account_update)
-
-//         // update account_history
-//         let account_history = {
-//             'datetime': DateTime.now().setZone("Australia/Sydney").toISO(),
-//             "accountid": asset_account_id,
-//             "balance": balance.toFixed(2),
-//             "data": {
-//                 "description": `${asset}: AUD${balance} (${units} @ $${price})`,
-//                 "asset": asset,
-//                 "name": name,
-//                 "units": units,
-//                 "price": price,
-//                 "currency": "AUD"
-//             }
-//         }
-
-//         // logger.info(JSON.stringify(account_history, null, 2))
-//         await saveToPaisley("/api/account_balance", account_history)
-//     }
-
-// }
-
-////////////////////////
-//Save to paisley account_history the balance
-async function saveToPaisley(path, payload) {
-    try {
-
-        const url = `${paisleyUrl}${path}`
-        // logger.info(`Calling URL: ${url} with payload:\n ${JSON.stringify(payload, null, 2)}`)
-
-        const response = await axios.post(url, payload, {
-            headers: {
-                'x-api-key': paisleyApiKey,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        logger.info('Successfully updated account metadata:', response.data);
-        return response.data;
-
-    } catch (error) {
-        logger.error('Error saving data to Paisley:', error.response?.data || error.message);
-        throw error;
-    }
+    await util.saveToPaisley("/api/account_balance", account_history);
 }
 
 test('test', async () => {

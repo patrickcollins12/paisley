@@ -4,42 +4,42 @@ const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 
 const disableAuth = false; // false means apply auth, true means disable auth
 
-router.get('/api/balances', async (req, res) => {
-  let db = new BankDatabase();
-  let query = `select a.*, l.account, t.balance, l.latest_balance_date from 
-  account a
-  LEFT JOIN 'transaction' t on a.accountid = t.account
-  INNER JOIN
-  (select id, account, max(datetime) latest_balance_date from 'transaction' 
-  group by account ) l
-  on t.account = l.account
-  AND t.id = l.id
-  order by a.shortname ASC
-`;
+// router.get('/api/balances', async (req, res) => {
+//   let db = new BankDatabase();
+//   let query = `select a.*, l.account, t.balance, l.latest_balance_date from 
+//   account a
+//   LEFT JOIN 'transaction' t on a.accountid = t.account
+//   INNER JOIN
+//   (select id, account, max(datetime) latest_balance_date from 'transaction' 
+//   group by account ) l
+//   on t.account = l.account
+//   AND t.id = l.id
+//   order by a.shortname ASC
+// `;
 
 
-  try {
-    const stmt = db.db.prepare(query);
-    const rows = stmt.all()
+//   try {
+//     const stmt = db.db.prepare(query);
+//     const rows = stmt.all()
 
-    let accountsObject = {};
-    for (let row of rows) {
-      accountsObject[row.account] = row;
-    }
+//     let accountsObject = {};
+//     for (let row of rows) {
+//       accountsObject[row.account] = row;
+//     }
         
-    // console.log(JSON.stringify(accountsObject,null,"\t"))
-    res.json(accountsObject);
+//     // console.log(JSON.stringify(accountsObject,null,"\t"))
+//     res.json(accountsObject);
 
-  } catch (err) {
-    console.log("error: ", err.message);
-    res.status(400).json({ "error": err.message });
-  }
-});
+//   } catch (err) {
+//     console.log("error: ", err.message);
+//     res.status(400).json({ "error": err.message });
+//   }
+// });
 
 module.exports = router;
 
 /**
- * @swagger
+ * @swagg
  * components:
  *   schemas:
  *     Balance:
@@ -58,7 +58,7 @@ module.exports = router;
  */
 
 /**
- * @swagger
+ * @swagg
  * tags:
  *   name: Balances
  *   description: API for managing bank balances

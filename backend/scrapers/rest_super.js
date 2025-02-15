@@ -2,18 +2,15 @@ import { test, expect } from '@playwright/test';
 const util = require('../src/ScraperUtil');
 const axios = require('axios').default;
 const config = require('../src/Config');
-config.load()
-const bank_config = config['RestSuperScraper'];
-// const path = require('path');
 const { DateTime } = require("luxon");
 const logger = require('../src/Logger');
 
+config.load()
+const bank_config = config['RestSuperScraper'];
 
 test('test', async ({ page }) => {
     test.slow();
-    // return;
 
-    // DEBUG=true npx test
     let DEBUG = process.env.DEBUG === 'true' || process.env.DEBUG === '1';
 
     let userName = bank_config['Username']
@@ -57,31 +54,6 @@ test('test', async ({ page }) => {
     }
 
     logger.info(JSON.stringify(data, null, 2))
-    saveToPaisley("/api/account_balance", data)
+    util.saveToPaisley("/api/account_balance", data)
     
 });
-
-////////////////////////
-// TODO move this to a common file out of swyftx, coinbase and rest_super
-//Save to paisley account_history the balance
-async function saveToPaisley(path, payload) {
-    try {
-
-        const url = `${config['paisleyUrl']}${path}`
-        // logger.info(`Calling URL: ${url} with payload:\n ${JSON.stringify(payload, null, 2)}`)
-
-        const response = await axios.post(url, payload, {
-            headers: {
-                'x-api-key': config['paisleyApiKey'],
-                'Content-Type': 'application/json'
-            }
-        });
-
-        logger.info('Successfully updated account metadata:', response.data);
-        return response.data;
-
-    } catch (error) {
-        logger.error('Error saving data to Paisley:', error.response?.data || error.message);
-        throw error;
-    }
-}

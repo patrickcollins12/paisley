@@ -3,6 +3,7 @@ const { sign } = require('jsonwebtoken');
 const crypto = require('crypto');
 const axios = require('axios');
 const { DateTime } = require("luxon");
+const util = require('../src/ScraperUtil');
 
 /**
  * Converts a human-readable timezone from Coinbase to a valid IANA timezone.
@@ -48,9 +49,6 @@ const bank_config = config['CoinbaseScraper'];
 
 let keyName = bank_config['keyName']
 let keySecret = bank_config['keySecret']
-
-let paisleyUrl = config['paisleyUrl']
-let paisleyApiKey = config['paisleyApiKey']
 
 ////////////////////////
 async function createOrUpdateMainAccount() {
@@ -98,9 +96,9 @@ async function createOrUpdateMainAccount() {
 
         // Note this is an upsert operation, so will overwrite the existing account 
         // if has been modified manually.
-        savePaisleyAccount(account_from_user_payload)
-            // .then(response => console.log("API Response:", response))
-            .catch(error => console.error("Error:", error));
+        util.saveToPaisley("/api/accounts", account_from_user_payload)
+
+
     } catch (error) {
         console.error('Failed to fetch data:', error.message);
     }
@@ -156,9 +154,7 @@ async function getCoinbaseBalances(account_from_user_payload) {
                 };
 
                 // console.log(`Payload: ${JSON.stringify(payload, null, 2)}`)
-                savePaisleyAccount(payload)
-                    // .then(response => console.log("API Response:", response))
-                    .catch(error => console.error("Error:", error));
+                util.saveToPaisley("/api/accounts", payload)
 
                 const cryptocode = account.currency
                 const currency = account_from_user_payload.currency
@@ -172,19 +168,21 @@ async function getCoinbaseBalances(account_from_user_payload) {
 
                 console.log(`Datetime: ${datetime}, timezone: ${payload.timezone}`)
 
-                savePaisleyBalance({
-                    "accountid": account.uuid,
-                    "datetime": datetime,
-                    "balance": balance,
-                    "data": {
-                        "code": cryptocode,
-                        "units": units,
-                        "currency": currency,
-                        "price": price,
-                        "timezone": payload.timezone,
-                    }
+                util.saveToPaisley(
+                    "/api/account_balance/",
+                    {
+                        "accountid": account.uuid,
+                        "datetime": datetime,
+                        "balance": balance,
+                        "data": {
+                            "code": cryptocode,
+                            "units": units,
+                            "currency": currency,
+                            "price": price,
+                            "timezone": payload.timezone,
+                        }
 
-                })
+                    })
 
             } catch (error) {
                 console.error('Failed to fetch data:', error.message);
@@ -199,53 +197,6 @@ async function getCoinbaseBalances(account_from_user_payload) {
         console.error('Failed to fetch data:', error.message);
     }
 
-}
-
-
-////////////////////////
-// Save Coinbase data to the account API (Paisley) by updating only the metadata field.
-async function savePaisleyAccount(payload) {
-    try {
-        const url = `${paisleyUrl}/api/accounts`
-        console.log(`Calling URL: ${url}`)
-
-        // Send a PUT request to update only the metadata field
-        const response = await axios.post(url, payload, {
-            headers: {
-                'x-api-key': paisleyApiKey,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        // console.log('Successfully updated account metadata:', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('Error saving data to Paisley:', error.response?.data || error.message);
-        throw error;
-    }
-}
-
-////////////////////////
-//Save to paisley account_history the balance
-async function savePaisleyBalance(payload) {
-    try {
-        const url = `${paisleyUrl}/api/account_balance/`
-        console.log(`Calling URL: ${url}`)
-
-        // Send a PUT request to update only the metadata field
-        const response = await axios.post(url, payload, {
-            headers: {
-                'x-api-key': paisleyApiKey,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        // console.log('Successfully updated account metadata:', response.data);
-        return response.data;
-    } catch (error) {
-        console.error('Error saving data to Paisley:', error.response?.data || error.message);
-        throw error;
-    }
 }
 
 ////////////////////////
