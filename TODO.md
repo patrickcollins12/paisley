@@ -1,19 +1,23 @@
 # TODO
-- [ ] implement logging
-- [ ] cutover swyftx and rest to use account history api.
+
+- [ ] check and delete the old swyftx balances from transactions
+- [ ] cutover rest from csv to account/balance
+- [ ] reimplement accounts page and add some graphs
 - [ ] pull paisley scraper/collector out into a separate project. separate git repo?
+- [ ] alter rules engine to allow s// of description, or do we just do this in the parser
 - [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 - [ ] Add kv logging for events. Events could include playwright runs, balance checks, logins.
 - [ ] Maybe balances go to events as well?
-
-- [ ] alter rules engine to allow s// of description, or do we just do this in the parser
-- [x] Add rules to the dropdown
-- [x] Add filter_save to the backend as kv pair
 - [ ] Add string (contains/regex) to Account/Tags/Party Filter, do tests too
 - [ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 - [ ] Simon: Sync url with filters
 - [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
+- [x] implement logging
+- [x] cutover swyftx and rest to use account history api.
+- [x] Add rules to the dropdown
+- [x] Add filter_save to the backend as kv pair
+
 
 # PROJECTS
 

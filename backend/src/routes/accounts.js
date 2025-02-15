@@ -37,10 +37,48 @@ router.get('/api/accounts/:id', async (req, res) => {
 });
 
 /**
+ * UPSERT /api/accounts
+ * Create or update an account
+ */
+router.post('/api/accounts', async (req, res) => {
+    try {
+        const { accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata } = req.body;
+
+        // Ensure accountid is provided
+        if (!accountid) {
+            return res.status(400).json({ success: false, message: "Missing required field: accountid" });
+        }
+
+        const query = `
+            INSERT INTO account (accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(accountid) DO UPDATE SET 
+                institution = excluded.institution,
+                name = excluded.name,
+                holders = excluded.holders,
+                currency = excluded.currency,
+                type = excluded.type,
+                timezone = excluded.timezone,
+                shortname = excluded.shortname,
+                parentid = excluded.parentid,
+                metadata = excluded.metadata`;
+
+        const stmt = db.db.prepare(query);
+        stmt.run(accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata);
+
+        res.json({ success: true, message: "Account upserted successfully", accountid });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Database error", error: error.message });
+    }
+});
+
+
+
+/**
  * UPSERT /api/accounts/:id
  * Create or update an account
  */
-router.put('/api/accounts/:id', async (req, res) => {
+router.post('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { institution, name, holders, currency, type, timezone, shortname, parentid, metadata } = req.body;
@@ -200,7 +238,7 @@ module.exports = router;
 /**
  * @swagger
  * /api/accounts/{id}:
- *   put:
+ *   post:
  *     summary: Create or update an account
  *     description: If the account exists, update it. If not, create a new account.
  *     tags: [Accounts]

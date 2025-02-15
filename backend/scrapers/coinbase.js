@@ -84,7 +84,7 @@ async function createOrUpdateMainAccount() {
         const user_data = raw_data.data
         // console.log(`User data: ${JSON.stringify(user_data, null, 2)}`)
         account_from_user_payload = {
-            "id": user_data.id,
+            "accountid": user_data.id,
             "institution": "Coinbase",
             "name": "Coinbase", // account name
             "holders": user_data.name,
@@ -142,7 +142,7 @@ async function getCoinbaseBalances(account_from_user_payload) {
         for (const account of filteredAccounts) {
             try {
                 const payload = {
-                    "id": account.uuid,
+                    "accountid": account.uuid,
                     "institution": "Coinbase",
                     "name": account.name,
                     "holders": account_from_user_payload.holders,
@@ -206,11 +206,11 @@ async function getCoinbaseBalances(account_from_user_payload) {
 // Save Coinbase data to the account API (Paisley) by updating only the metadata field.
 async function savePaisleyAccount(payload) {
     try {
-        const url = `${paisleyUrl}/api/accounts/${payload.id}`
+        const url = `${paisleyUrl}/api/accounts`
         console.log(`Calling URL: ${url}`)
 
         // Send a PUT request to update only the metadata field
-        const response = await axios.put(url, payload, {
+        const response = await axios.post(url, payload, {
             headers: {
                 'x-api-key': paisleyApiKey,
                 'Content-Type': 'application/json'

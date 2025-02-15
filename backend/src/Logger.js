@@ -2,40 +2,41 @@ const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
 const config = require('../src/Config');
+config.load();
 
-config.load(); // Ensure config is loaded
-
-// Load log level with a default
 const logLevel = config['log_level'] || 'info';
+const logFile = config['log_file'] || 'paisley.log';
+const logDirectory = config['log_directory'] || 
+    (() => { throw new Error("Missing required 'log_directory' in config."); })();
+fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory, { recursive: true });
+const logFilePath = path.join(logDirectory, logFile);
 
-// Ensure log_directory is set (mandatory)
-const logDirectory = config['log_directory'];
-if (!logDirectory) {
-    throw new Error("Missing required 'log_directory' in config.");
-}
 
-// Ensure the log directory exists
-if (!fs.existsSync(logDirectory)) {
-    fs.mkdirSync(logDirectory, { recursive: true });
-}
+const logFormat = winston.format.printf(({ timestamp, level, message }) =>
+    `${timestamp} [${level.toUpperCase()}]: ${message}`
+);
+
 
 // Create logger
 const logger = winston.createLogger({
     level: logLevel,
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.printf(({ timestamp, level, message }) =>
-            `${timestamp} [${level.toUpperCase()}]: ${message}`
-        )
-    ),
     transports: [
         new winston.transports.Console({
-            format: winston.format.colorize(),
+            level: 'info',
+            format: winston.format.combine(
+                winston.format.colorize(),
+                winston.format.simple()
+            ),
         }),
         new winston.transports.File({
-            filename: path.join(logDirectory, 'app.log'),
-            maxsize: 5 * 1024 * 1024, // 5MB per file
-            maxFiles: 5, // Keep last 5 logs
+            filename: logFilePath,
+            level: 'info',
+            format: winston.format.combine(
+                winston.format.timestamp(),
+                logFormat
+            ),
+            maxsize: 50 * 1024 * 1024, // 50MB per file
+            maxFiles: 5,
         })
     ]
 });

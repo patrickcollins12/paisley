@@ -2,8 +2,12 @@ const path = require('path');
 const os = require('os');
 
 class Config  {
+    constructor() {
+        this.loaded = false; // Track if load() has been called
+    }
 
     load(configPath) {
+        if (this.loaded) return; // Prevent re-loading
 
         if (configPath && configPath !== "") {
             this.configFilePath = configPath
@@ -29,12 +33,7 @@ class Config  {
         this.parsers  = path.join(__dirname, "..", "csv_parsers");
         this.scrapers = path.join(__dirname, "..", "scrapers");
 
-        // for (const [key,val] of Object.entries(config) ) {
-        //     if (this[key]) {
-        //         throw new Error("Config loader namespace clash:", key)
-        //     }
-        //     this[key] = val;
-        // }
+        this.loaded = true;
     }
 
 }
