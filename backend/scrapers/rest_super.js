@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test';
 const util = require('../src/ScraperUtil');
-
+const axios = require('axios').default;
 const config = require('../src/Config');
 config.load()
 const bank_config = config['RestSuperScraper'];
-const path = require('path');
+// const path = require('path');
 const { DateTime } = require("luxon");
+const logger = require('../src/Logger');
+
 
 test('test', async ({ page }) => {
     test.slow();
@@ -46,27 +48,40 @@ test('test', async ({ page }) => {
     let rawBalance = await page.locator('#prominentCurrentBalance').innerText();
     let cleanBalance = util.cleanPrice(rawBalance);
 
-    // setup the csv filename
     const dated = DateTime.now().setZone("Australia/Sydney").toISODate();
-    // DateTime.local().setZone()
 
-    let fn = `${bank_config['identifier']}_balance_${dated}.csv`
-    let outCSVFile = path.join(config['csv_watch'], fn);
+    let data = {
+        'accountid': bank_config['account'],
+        'datetime': DateTime.now().setZone("Australia/Sydney"),
+        'balance': cleanBalance
+    }
 
-    // setup the csv data
-    let data = [
-        {
-            'datetime': DateTime.now().setZone("Australia/Sydney"),
-            'account': bank_config['account'],
-            'description': "Balance check",
-            'balance': cleanBalance,
-            'type': "BAL"
-        }
-    ]
-
-    // console.log(data)
-    console.log(outCSVFile)
-
-    await util.saveDataToCSV(outCSVFile, data);
-    // await util.saveCSVFromPromise(bank_config, downloadPromise)
+    logger.info(JSON.stringify(data, null, 2))
+    saveToPaisley("/api/account_balance", data)
+    
 });
+
+////////////////////////
+// TODO move this to a common file out of swyftx, coinbase and rest_super
+//Save to paisley account_history the balance
+async function saveToPaisley(path, payload) {
+    try {
+
+        const url = `${config['paisleyUrl']}${path}`
+        // logger.info(`Calling URL: ${url} with payload:\n ${JSON.stringify(payload, null, 2)}`)
+
+        const response = await axios.post(url, payload, {
+            headers: {
+                'x-api-key': config['paisleyApiKey'],
+                'Content-Type': 'application/json'
+            }
+        });
+
+        logger.info('Successfully updated account metadata:', response.data);
+        return response.data;
+
+    } catch (error) {
+        logger.error('Error saving data to Paisley:', error.response?.data || error.message);
+        throw error;
+    }
+}

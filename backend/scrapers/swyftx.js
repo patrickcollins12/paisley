@@ -223,7 +223,6 @@ async function processOwnedAsset(ownedAsset, user, rates) {
 
 ////////////////////////
 //Save to paisley account_history the balance
-
 async function saveToPaisley(path, payload) {
     try {
 
