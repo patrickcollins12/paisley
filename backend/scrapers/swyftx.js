@@ -1,14 +1,29 @@
 import { test } from '@playwright/test';
 
-const util = require('../src/ScraperUtil');
+// const util = require('../src/ScraperUtil');
+// const path = require('path');
 const config = (require('../src/Config'));
 const { DateTime } = require("luxon");
 const axios = require('axios').default;
-const path = require('path');
+test.describe.configure({ retries: 0 });
 
 config.load()
+
+const logger = require('../src/Logger');
+
+logger.info('Application started');
+logger.warn('This is a warning message');
+logger.error('Something went wrong!');
+
+// exit the test
+process.exit(1);
+
+let paisleyUrl = config['paisleyUrl']
+let paisleyApiKey = config['paisleyApiKey']
+
 const bank_config = config['SwyftxScraper'];
 let API_Key = bank_config['API_Key']
+
 
 async function getAccessToken() {
     try {
@@ -17,11 +32,20 @@ async function getAccessToken() {
             { apiKey: API_Key });
         return response.data.accessToken;
     } catch (error) {
-        console.log(error);
+        // console.log(error);
+        console.error(`Request failed with status ${error.response.status}`);
+        console.error(JSON.stringify(error.response.data, null, 2)); // Pretty print JSON response
+
     }
 }
 
 async function getBalance(accessToken) {
+
+    if (!accessToken) {
+        console.error("getAccessToken() returned undefined. Cannot proceed.");
+        return;
+    }
+
     try {
         const response = await axios.get(
             "https://api.swyftx.com.au/user/balance/", {
@@ -31,14 +55,10 @@ async function getBalance(accessToken) {
             }
         });
 
-        // [
-        //     { assetId: 1, availableBalance: '0', stakingBalance: '0' },
-        //     { assetId: 2, availableBalance: '0', stakingBalance: '0' },
-        //     { assetId: 3, availableBalance: '0.01982', stakingBalance: '0' }
-        //  ]
         return response.data;
     } catch (error) {
-        console.log(error);
+        console.error(`Request failed with status ${error.response.status}`);
+        console.error(JSON.stringify(error.response.data, null, 2)); // Pretty print JSON response
     }
 }
 
@@ -55,7 +75,7 @@ async function getLiveRates() {
         //   },
 
     } catch (error) {
-        console.log(error);
+        // console.log(error);
     }
 }
 
@@ -63,45 +83,82 @@ async function apiCallsToSwyftx() {
     let balances = await getBalance(await getAccessToken())
     let rates = await getLiveRates()
 
-    let output = []
-    for (const ownedAsset of balances) {
-        let id = ownedAsset["assetId"]
-        if (rates[id]) {
-            let myBalance = rates[id]["sell"] * ownedAsset["availableBalance"] 
-            let units = parseFloat(ownedAsset["availableBalance"]).toFixed(6)
-            let n = rates[id]["name"]
-            let c = rates[id]["code"]
-            let p = parseFloat(rates[id]["sell"]).toFixed(2)
-            if (myBalance && myBalance > 0) {
-                let entry = {
-                    'datetime': DateTime.now().setZone("Australia/Sydney").toISO(),
-                    "account": bank_config['account'],
-                    "description": `${n}: ${units} ${c} @ $${p} AUD`,
-                    "balance": myBalance.toFixed(2),
-                    "type": "BAL"
+    balances?.filter(b => parseFloat(b.availableBalance) > 0)
+        .forEach(ownedAsset => {
+            let id = ownedAsset["assetId"]
+            console.log(`ownedAsset: ${JSON.stringify(ownedAsset)}`)
+
+            let units = parseFloat(ownedAsset["availableBalance"]) // 0.01982
+            let name = rates[id]["name"]  // Bitcoin
+            let asset = rates[id]["code"] // BTC
+            let price = parseFloat(rates[id]["sell"]) // 150200.78267905
+            let balance = price * units // 2332.62
+
+            let entry = {
+                'datetime': DateTime.now().setZone("Australia/Sydney").toISO(),
+                "accountid": bank_config['account'],
+                "balance": balance.toFixed(2),
+                "data": {
+                    "description": `${asset}: ${units} ${asset} @ $${price} AUD`,
+                    "asset": code,
+                    "name": name,
+                    "units": units,
+                    "price": price,
+                    "currency": "AUD"
                 }
-                output.push( entry )
             }
 
-        }
-    }
-    return output
-    // console.log(balances)
-    // console.log(rates)
+            console.log(entry)
+            // savePaisleyBalance(entry)
+
+        });
+
 }
 
 test('test', async () => {
 
     let data = await apiCallsToSwyftx()
-
-    // setup the csv filename
-    const dated = DateTime.now().setZone("Australia/Sydney").toISODate();
-    let fn = `${bank_config['identifier']}_balance_${dated}.csv`
-    let outCSVFile = path.join(config['csv_watch'], fn);
-    
     // console.log(data)
+    // // setup the csv filename
+    // // this is the old code that used to save to CSV
+    // const dated = DateTime.now().setZone("Australia/Sydney").toISODate();
+    // let fn = `${bank_config['identifier']}_balance_${dated}.csv`
+    // let outCSVFile = path.join(config['csv_watch'], fn);
+    // await util.saveDataToCSV(outCSVFile, data);
+    // const oldCSVFormat = {
+    //     datetime: '2025-02-15T13:31:45.679+11:00',
+    //     account: 'swyftx_pcollins1',
+    //     description: 'Bitcoin: 0.019821 BTC @ $153049.68 AUD',
+    //     balance: '3033.54',
+    //     type: 'BAL'
+    // }
 
-    await util.saveDataToCSV(outCSVFile, data);
 
 });
 
+
+////////////////////////
+//Save to paisley account_history the balance
+
+async function savePaisleyBalance(payload) {
+    try {
+
+        const url = `${paisleyUrl}/api/account_balance/`
+        console.log(`Calling URL: ${url}`)
+
+        // Send a PUT request to update only the metadata field
+        const response = await axios.post(url, payload, {
+            headers: {
+                'x-api-key': paisleyApiKey,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        // console.log('Successfully updated account metadata:', response.data);
+        return response.data;
+
+    } catch (error) {
+        console.error('Error saving data to Paisley:', error.response?.data || error.message);
+        throw error;
+    }
+}

@@ -1,4 +1,7 @@
 # TODO
+- [ ] implement logging
+- [ ] cutover swyftx and rest to use account history api.
+- [ ] pull paisley scraper/collector out into a separate project. separate git repo?
 - [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 - [ ] Add kv logging for events. Events could include playwright runs, balance checks, logins.
