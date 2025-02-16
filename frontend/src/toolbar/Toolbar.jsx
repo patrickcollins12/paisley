@@ -80,9 +80,11 @@ function Toolbar({ dataTable }) {
 
       </div>
 
-      <div className='flex flex-row-reverse basis-1/2 space-x-2 space-x-reverse'>
-        <ColumnSelector dataTable={dataTable} />
-      </div>
+      {dataTable && (
+        <div className='flex flex-row-reverse basis-1/2 space-x-2 space-x-reverse'>
+          <ColumnSelector dataTable={dataTable} />
+        </div>
+      )}
     </div>
   )
 }
