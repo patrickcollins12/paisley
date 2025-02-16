@@ -145,7 +145,7 @@ async function processOwnedAsset(ownedAsset, user, rates) {
         "shortname": asset_name,
         "holders": fullName,
         "currency": currency,
-        "type": "crypto",
+        "type": "Crypto",
         "timezone": "Australia/Sydney",
         "parentid": bank_config['account']
     };

@@ -87,7 +87,7 @@ async function createOrUpdateMainAccount() {
             "name": "Coinbase", // account name
             "holders": user_data.name,
             "currency": user_data.native_currency,
-            "type": "crypto",
+            "type": "Crypto",
             "timezone": convertToIanaTimezone(user_data.time_zone),
             "shortname": "Coinbase",
             // "parentid": null,
@@ -145,14 +145,15 @@ async function getCoinbaseBalances(account_from_user_payload) {
                     "name": account.name,
                     "holders": account_from_user_payload.holders,
                     "currency": account_from_user_payload.currency,
-                    "type": "crypto",
+                    "type": "Crypto",
                     "status": (account.active === true) ? "active" : "inactive",
                     "timezone": account_from_user_payload.timezone,
                     "shortname": "Coinbase " + account.currency, // Coinbase BTC
-                    "parentid": account_from_user_payload.id,
+                    "parentid": account_from_user_payload.accountid,
                     "metadata": JSON.stringify(account)
                 };
 
+                // console.log(`parentid: ${JSON.stringify(account_from_user_payload, null, 2)}`)
                 // console.log(`Payload: ${JSON.stringify(payload, null, 2)}`)
                 util.saveToPaisley("/api/accounts", payload)
 
