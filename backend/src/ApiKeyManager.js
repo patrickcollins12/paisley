@@ -7,32 +7,31 @@ class ApiKeyManager {
 
     constructor(configFileName) {
 
-        if (!configFileName) {
-            configFileName = config['api_keys_file']
+        this.configFileName = configFileName || config['api_keys_file'];
+        this.apiKeys = {};
+    
+        // Load existing users from the configuration file if it exists
+        if (this.configFileName) {
+            this.loadApiKeys();
         }
 
-        this.configFileName = configFileName;
-        this.apiKeys = {};
-
-        // Load existing users from the configuration file during initialization
-        this.loadApiKeys();
     }
 
     loadApiKeys() {
+        if (!this.configFileName) {
+            // No config file specified, just use an empty object
+            return;
+        }
+    
         try {
-            this.apiKeys = JSON.parse(fs.readFileSync(this.configFileName, 'utf-8'));
-        } catch (error) {
-            console.warn(`Error loading API keys file: ${error.message}`);
-            this.apiKeys = {};
-
-            // If the file doesn't exist or is empty, initialize an empty users object
-            if (error.code === 'ENOENT') {
-                console.warn(`Configuration file not found in apiKeysFile: '${this.configFileName}'. Initializing empty user list.`);
-                this.apiKeys = {};
+            if (fs.existsSync(this.configFileName)) {
+                this.apiKeys = JSON.parse(fs.readFileSync(this.configFileName, 'utf-8'));
             } else {
-                console.error(`Error loading API Keys from file: ${error.message}`);
+                console.warn(`Configuration file '${this.configFileName}' not found. Using empty API keys list.`);
             }
-
+        } catch (error) {
+            console.error(`Error loading API keys from file '${this.configFileName}': ${error.message}`);
+            this.apiKeys = {};
         }
     }
 
