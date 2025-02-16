@@ -7,19 +7,20 @@ async function fetcher(url) {
   return response.data;
 }
 function useAccountData(accountId = null) {
-  const { data, error, isLoading } = useSWR('account_balance', fetcher);
+  const { data, error, isLoading } = useSWR('accounts', fetcher);
+  const accounts = data?.accounts
+  console.log(JSON.stringify(accounts, null, "\t"))
 
   if (accountId && !isLoading && !error) {
-    // console.log(JSON.stringify(data, null, "\t"))
     return {
-      data: (accountId in data) ? data[accountId] : null,
+      data: (accountId in accounts) ? accounts[accountId] : null,
       error,
       isLoading
     }
   }
 
   return {
-    data,
+    "data": accounts,
     error,
     isLoading
   };

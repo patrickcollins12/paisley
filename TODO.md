@@ -1,4 +1,6 @@
 # TODO
+- [ ] make api keys file optional ApiKeyManager.js
+- [ ] create a jwt key on install
 - [x] cutover coinbase to use util.savetopaisley
 - [x] check and delete the old swyftx balances from transactions
 - [x] cutover rest from csv to account/balance
