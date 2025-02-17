@@ -45,6 +45,9 @@ function Root() {
             <Link to="/rules" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
               Rules
             </Link>
+            <Link to="/visualise" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
+              Visualise
+            </Link>
           </nav>
           <div className="flex flex-row w-full items-center gap-3 md:ml-auto md:gap-2 lg:gap-2">
             <form className="ml-auto flex-1 sm:flex-initial">

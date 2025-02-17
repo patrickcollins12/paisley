@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root.jsx'
 import { Route as TreemapImport } from './routes/treemap.jsx'
 import { Route as IndexImport } from './routes/index.jsx'
+import { Route as VisualiseIndexImport } from './routes/visualise.index.jsx'
 import { Route as TransactionsIndexImport } from './routes/transactions.index.jsx'
 import { Route as SettingsIndexImport } from './routes/settings.index.jsx'
 import { Route as RulesIndexImport } from './routes/rules.index.jsx'
@@ -32,6 +33,12 @@ const TreemapRoute = TreemapImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+})
+
+const VisualiseIndexRoute = VisualiseIndexImport.update({
+  id: '/visualise/',
+  path: '/visualise/',
   getParentRoute: () => rootRoute,
 })
 
@@ -89,6 +96,7 @@ const rootRouteChildren = {
   RulesIndexRoute: RulesIndexRoute,
   SettingsIndexRoute: SettingsIndexRoute,
   TransactionsIndexRoute: TransactionsIndexRoute,
+  VisualiseIndexRoute: VisualiseIndexRoute,
 }
 
 export const routeTree = rootRoute._addFileChildren(rootRouteChildren)
@@ -107,7 +115,8 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)
         "/login/",
         "/rules/",
         "/settings/",
-        "/transactions/"
+        "/transactions/",
+        "/visualise/"
       ]
     },
     "/": {
@@ -136,6 +145,9 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)
     },
     "/transactions/": {
       "filePath": "transactions.index.jsx"
+    },
+    "/visualise/": {
+      "filePath": "visualise.index.jsx"
     }
   }
 }
