@@ -1,10 +1,14 @@
 # TODO
-- [ ] make api keys file optional ApiKeyManager.js
+- [ ] reimplement accounts page and add some graphs
+       - [x] design account page.
+       - [x] add new account button.
+       - [x] add account details page.
+       - [ ] add account graph page. [list|graph]
+- [x] make api keys file optional ApiKeyManager.js
 - [ ] create a jwt key on install
 - [x] cutover coinbase to use util.savetopaisley
 - [x] check and delete the old swyftx balances from transactions
 - [x] cutover rest from csv to account/balance
-- [ ] reimplement accounts page and add some graphs
 - [ ] pull paisley scraper/collector out into a separate project. separate git repo?
 - [ ] alter rules engine to allow s// of description, or do we just do this in the parser
 - [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
