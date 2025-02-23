@@ -12,15 +12,16 @@ class TransactionQuery {
         this.db = new BankDatabase()
     }
 
-        // Resets the SQL and parameters to their base queries
-        _resetQueries() {
-            this.where = ""
-            this.order_by = ""
-            this.limit = ""
+    // Resets the SQL and parameters to their base queries
+    _resetQueries() {
+        this.where = ""
+        this.order_by = ""
+        this.limit = ""
 
-            this.params = []
-            this.limitParams = []
-        }
+        this.params = []
+        this.limitParams = []
+    }
+    
 
     // Processes all of the params and sets up the where, order by and limit clauses.
     processParams() {
@@ -31,6 +32,12 @@ class TransactionQuery {
         this._processOrderByParams()
         this._processPaginationParams()
         this._processLimitOffsetParams()
+    }
+
+
+    // Helper function to determine if paging should be applied
+    isPagingEnabled(limitOffsetEnabled) {
+        return limitOffsetEnabled && !this.pagingDisabled;
     }
 
     /**
@@ -52,7 +59,7 @@ class TransactionQuery {
         }
 
         // Append the LIMIT clause if pagination is enabled
-        if (limitOffsetEnabled) {
+        if (this.isPagingEnabled(limitOffsetEnabled)) {
             query += this.limit;
         }
 
@@ -63,14 +70,13 @@ class TransactionQuery {
         const sizeQuery = TransactionQuery.allTransactionsSizeQuery + this.where
         return sizeQuery
     }
-
+    
     getParams(limitOffsetEnabled = true) {
-        if (limitOffsetEnabled) {
-            return [...this.params, ...this.limitParams]
+        if (this.isPagingEnabled(limitOffsetEnabled)) {
+            return [...this.params, ...this.limitParams];
         } else {
-            return this.params
+            return this.params;
         }
-
     }
 
     getSummaryOfTransactions() {
@@ -95,6 +101,7 @@ class TransactionQuery {
             credit_total: Math.abs(summaryrows[0].credit_total),
             amount_total: Math.abs(summaryrows[0].amount_total),
             pageSize: this.pageSize,
+            pagingDisabled: this.pagingDisabled,
             page: this.pageNumber,
             // TODO: remove this soon for prod
             where: cln(this.where)
@@ -122,9 +129,14 @@ class TransactionQuery {
 
     _processPaginationParams() {
         // Pagination parameters setup
-        this.pageNumber = this.queryParams.page ? parseInt(this.queryParams.page, 10) : 1;
-        this.pageSize = this.queryParams.page_size ? parseInt(this.queryParams.page_size, 10) : 1000;
-        this.pageOffset = (this.pageNumber - 1) * this.pageSize;
+        if (this.queryParams.paging_disabled) {
+            this.pagingDisabled = true
+        } else {
+            this.pagingDisabled = false
+            this.pageNumber = this.queryParams.page ? parseInt(this.queryParams.page, 10) : 1;
+            this.pageSize = this.queryParams.page_size ? parseInt(this.queryParams.page_size, 10) : 1000;
+            this.pageOffset = (this.pageNumber - 1) * this.pageSize;
+        }
     }
 
     // Order By

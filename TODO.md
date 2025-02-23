@@ -1,11 +1,14 @@
 # TODO
 - [ ] add treemap to visualize page
-
-       - [ ] kill the backend script?
-       - [ ] get the width and height correctly
-       - [ ] try to get rid of the title space at the top
-       - [ ] turn off paging 
        - [ ] set default filters
+       - [ ] get it working with demo db
+       - [ ] add some options: group by party, first tag, all tags (double count)
+       - [x] if party exists, show that, else show description
+       - [x] try to get rid of the title space at the top
+       - [x] compare it to the old system
+       - [x] kill the backend script?
+       - [x] get the width and height correctly
+       - [x] turn off paging 
        - [x] see if we can use TransactionQuery from VisualisePage, and move the tree hierarchy creation to the frontend
        - [x] add echarts to the frontend
        - [x] generate the backend script

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Toolbar from "@/toolbar/Toolbar.jsx";
 import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx";
 import { useSearch } from "@/components/search/SearchContext.jsx";
+import { useTheme } from "@/components/theme-provider";
 import { DateTime } from "luxon";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
@@ -9,13 +10,39 @@ import * as echarts from "echarts";
 export default function VisualisePage() {
   const searchContext = useSearch();
   const [option, setOption] = useState(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const chartRef = useRef(null);
+  const { theme } = useTheme();
+
 
   const { data, isLoading, error } = useFetchTransactions({
     pageIndex: 0,
-    pageSize: 10000000,
+    // pageSize: 1000, // unlimited page size
+    pagingDisabled: true,
     filters: searchContext.getFilters(),
     orderBy: null,
   });
+
+  // Dynamically update chart size
+  const updateSize = () => {
+    if (chartRef.current) {
+      const rect = chartRef.current.getBoundingClientRect();
+      const h = window.innerHeight - rect.top - 10
+      const w = window.innerWidth - rect.left - 10
+      console.log("updateSize", h, w)
+
+      setDimensions({ height: h, width: w });
+    }
+  };
+
+
+  useEffect(() => {
+    updateSize(); // Initial sizing on mount
+
+    window.addEventListener("resize", updateSize); // Resize listener
+    return () => window.removeEventListener("resize", updateSize); // Cleanup
+  }, []);
+
 
   useEffect(() => {
     if (data && data.results) {
@@ -34,6 +61,7 @@ export default function VisualisePage() {
               txnStr = `<div>
                         <div>${info.data.description}</div>
                         <div>${info.data.date}</div>
+                        <div>Party: ${info.data.partyString}</div>
                         <div>${info.data.account_shortname} (${info.data.account_number})</div>
                         </div>`;
             }
@@ -51,7 +79,7 @@ export default function VisualisePage() {
                     `;
           },
         },
-        // title: {
+
         //   text: "Income and Expenses Jan-Dec 2024",
         //   subtext: "Exclude transfers and share proceeds",
         //   left: "center",
@@ -60,6 +88,10 @@ export default function VisualisePage() {
           {
             name: "Income and Expenses",
             type: "treemap",
+            left: 0,
+            top: 0,
+            bottom: 50,
+            right: 0,
             visibleMin: 300,
             label: {
               show: true,
@@ -146,25 +178,30 @@ export default function VisualisePage() {
   return (
     <>
       <Toolbar />
+
       {isLoading && <div>Loading transactions...</div>}
       {error && <div>Error loading transactions: {error.message}</div>}
       {!isLoading && !error && (!data || !data.results) && (
         <div>No data available</div>
       )}
-      {!isLoading && !error && data && (
-        <>
-          {/* <div>Transactions: {data.results.length}</div> */}
-          {option && (
-            <div style={{ width: `1400px`, height: `700px` }}>
-              <ReactECharts
-                option={option}
-                style={{ width: "100%", height: "100%" }}
-                lazyUpdate={true}
-              />
-            </div>
-          )}
-        </>
-      )}
+
+
+      <div
+        ref={chartRef}
+        style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}
+        className="overflow-auto"
+      >
+
+        {!isLoading && !error && data && option && (
+          <ReactECharts
+            option={option}
+            style={{ width: "100%", height: "100%" }}
+            lazyUpdate={true}
+            theme={{ theme }}
+          />
+        )}
+      </div>
+
     </>
   );
 
@@ -198,10 +235,11 @@ export default function VisualisePage() {
       ),
     };
 
-    node.path = `${node.description}`;
-    node.name = node.description;
     node.tagsString = row.tags?.join(", ");
     node.partyString = row.party?.join(", ");
+
+    node.path = `${node.description}`;
+    node.name = (node.partyString !=="Uncategorized") ? node.partyString : node.description;
 
     const tag = row.tags[0];
     const segments = tag.split(/\s*>\s*/);

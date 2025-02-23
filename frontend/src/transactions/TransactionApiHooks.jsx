@@ -65,6 +65,7 @@ async function fetcher([url, options]) {
     params: {
       page: options?.pageIndex + 1,
       page_size: options?.pageSize,
+      paging_disabled: options?.pagingDisabled,
       order_by: options?.orderBy ? `${options.orderBy.field},${options.orderBy.dir}` : null,
       description: options?.descriptionFilter,
       rule: options?.ruleFilter,
