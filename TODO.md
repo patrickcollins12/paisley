@@ -1,27 +1,23 @@
 # TODO
 - [ ] add treemap to visualize page
        - [ ] set default filters
-       - [ ] get it working with demo db
        - [ ] add some options: group by party, first tag, all tags (double count)
-       - [x] if party exists, show that, else show description
-       - [x] try to get rid of the title space at the top
-       - [x] compare it to the old system
-       - [x] kill the backend script?
-       - [x] get the width and height correctly
-       - [x] turn off paging 
-       - [x] see if we can use TransactionQuery from VisualisePage, and move the tree hierarchy creation to the frontend
-       - [x] add echarts to the frontend
-       - [x] generate the backend script
 - [ ] reimplement accounts page and add some graphs
-       - [x] design account page.
+       - [x] design accounts page.
        - [x] add new account button.
        - [x] add account details page.
+       - [ ] implement the accounts page
+              - [ ] first draft implementation done
+              - [ ] get max date from child accounts
+              - [ ] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
+       - [ ] design the account page with new and editing
        - [ ] add account graph page. [list|graph]
 - [ ] fix/finish install
        - [ ] create a jwt key on install
        - [ ] bring demo DB up to date
 - [ ] improved logging: change console.log-->logger.info on the server, parsers, importers and classifiers
-- [ ] paisley backend on beelink feels pretty important!
+- [ ] paisley backend on beelink. feels pretty important!
+
 
 One day:
 - [ ] pull paisley scraper/collector out into a separate project. separate git repo?
@@ -29,6 +25,7 @@ One day:
 - [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 - [ ] Add kv logging for events. Events could include playwright runs, failures, logins.
+
 
 
 - [x] make api keys file optional ApiKeyManager.js
@@ -101,4 +98,14 @@ Closed bugs/tickets
 - [x] Account Filter is saving on load: "Saving: isFilterActive: false, pickerMode: "is", selectedOptions: []" (15m)
 - [x] Add onKeyDown escape propagates all the way up to close the popover (30m)
 - [x] Once and for all fix ReactSelect and make it the new class on Rules, Transactions and the Filter. Make it a new class created for the Account Toolbar panel. Let's make that the standard for everything as it has some nice abstractions including options for coloredPills and isCreatable.
+- [x] add treemap to visualize page
+       - [x] if party exists, show that, else show description
+       - [x] try to get rid of the title space at the top
+       - [x] compare it to the old system
+       - [x] kill the backend script?
+       - [x] get the width and height correctly
+       - [x] turn off paging 
+       - [x] see if we can use TransactionQuery from VisualisePage, and move the tree hierarchy creation to the frontend
+       - [x] add echarts to the frontend
+       - [x] generate the backend script
 

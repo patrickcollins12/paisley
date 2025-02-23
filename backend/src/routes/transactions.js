@@ -21,9 +21,8 @@ router.get('/api/transactions', async (req, res) => {
     return res.status(400).json({ errors: errors.array() });
   }
 
-    let db = new BankDatabase();
+  let db = new BankDatabase();
 
-    // console.log(JSON.stringify(req.query,null,"\t"))
   let tq
   try {
 
@@ -43,7 +42,7 @@ router.get('/api/transactions', async (req, res) => {
     let resultSummary = tq.getSummaryOfTransactions()
 
     // page of results query = actual query results
-    let finalResults = tq.getTransactions(true,true)
+    let finalResults = tq.getTransactions(true, true)
 
     res.json(
       {

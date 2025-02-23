@@ -4,13 +4,54 @@ const BankDatabase = require('../BankDatabase');
 const router = express.Router();
 const db = new BankDatabase();
 
+// this query fetches the latest balance for each account
+// it does this by combining the latest transaction and account_history records
+// and then selecting the latest of those
+// it then joins this with the account table to get the account details
+const sql = `
+SELECT a.*,
+       b.balance,
+       b.datetime as balance_datetime,
+       b.src as balance_source
+FROM account a
+LEFT JOIN (
+    SELECT account,
+           MAX(datetime) AS datetime,
+           balance,
+           src
+    FROM (
+        SELECT account,
+               MAX(t.datetime) as datetime,
+               rowid, -- i was hoping to get this working
+               balance,
+               'transaction' AS src
+        FROM 'transaction' t
+        GROUP BY account
+
+        UNION ALL
+
+        SELECT accountid AS account,
+               datetime,
+               MAX(rowid) AS rowid,
+               balance,
+               'account_history' AS src
+        FROM "account_history"
+        GROUP BY accountid
+		
+    ) AS combined
+    GROUP BY account
+) AS b
+ON a.accountid = b.account
+WHERE 1=1
+`
+
 /**
  * GET /api/accounts
  * Retrieve all accounts
  */
 router.get('/api/accounts', async (req, res) => {
     try {
-        const accounts = db.db.prepare("SELECT * FROM account").all();
+        const accounts = db.db.prepare(sql).all();
         res.json({ success: true, accounts });
     } catch (error) {
         res.status(500).json({ success: false, message: "Database error", error: error.message });
@@ -24,7 +65,7 @@ router.get('/api/accounts', async (req, res) => {
 router.get('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const account = db.db.prepare("SELECT * FROM account WHERE accountid = ?").get(id);
+        const account = db.db.prepare(`${sql} AND accountid = ?`).get(id);
 
         if (!account) {
             return res.status(404).json({ success: false, message: "Account not found" });

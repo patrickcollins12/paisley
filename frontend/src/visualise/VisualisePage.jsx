@@ -49,6 +49,7 @@ export default function VisualisePage() {
       const tree = turnTransactionQueryIntoTreemapStucture(data.results);
 
       setOption({
+      
         tooltip: {
           formatter: function (info) {
             const treePath = info.treePathInfo
