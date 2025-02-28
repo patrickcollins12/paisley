@@ -31,7 +31,7 @@ const AccountsPage = () => {
   };
 
   const isStale = (date) => (new Date() - new Date(date)) / (1000 * 60 * 60 * 24) > 30;
-  
+
   useEffect(() => {
     if (data) {
       // Custom sort order for account types
@@ -43,33 +43,35 @@ const AccountsPage = () => {
         "Credit",
         "Mortgage",
       ];
-  
+
+      console.log('data', JSON.stringify(data, null, 2))
+      // const rawAccounts = data.accounts
       // Filter out inactive accounts and child accounts
       const activeAccounts = data.filter((acc) => acc.status !== "inactive");
       const parentAccounts = activeAccounts.filter((acc) => !acc.parentid);
-  
+
       // Calculate combined balance and latest datetime from child accounts
       const calculateAccountDetails = (parentId) => {
         const childAccounts = activeAccounts.filter((acc) => acc.parentid === parentId);
-  
+
         // Sum child balances
         const childBalances = childAccounts.reduce((sum, child) => sum + child.balance, 0);
-  
+
         // Find the latest datetime among child accounts
         const latestChildDatetime = childAccounts.reduce((latest, child) => {
           return !latest || new Date(child.datetime) > new Date(latest)
             ? child.datetime
             : latest;
         }, null);
-  
+
         const parentAccount = activeAccounts.find((acc) => acc.accountid === parentId);
-  
+
         return {
           balance: (parentAccount ? parentAccount.balance : 0) + childBalances,
           datetime: latestChildDatetime || (parentAccount ? parentAccount.datetime : null),
         };
       };
-  
+
       // Update parent accounts with combined balance and latest datetime
       const updatedAccounts = parentAccounts.map((account) => {
         const { balance, datetime } = calculateAccountDetails(account.accountid);
@@ -79,20 +81,20 @@ const AccountsPage = () => {
           datetime,
         };
       });
-  
+
       // Sort accounts by custom sortOrder
       const sortedAccounts = updatedAccounts.sort((a, b) => {
         const indexA = sortOrder.indexOf(a.type);
         const indexB = sortOrder.indexOf(b.type);
-  
+
         // Accounts with undefined types or not in sortOrder are pushed to the end
         return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
       });
-  
+
       setAccounts(sortedAccounts);
     }
   }, [data]);
-  
+
 
   // calculate total assets, liabilities and net worth
   const totalAssets = accounts
@@ -187,6 +189,7 @@ const AccountsPage = () => {
                 <TableRow
                   key={index}
                   className="border-t bg-opacity-90 transition duration-150 cursor-pointer"
+                  onClick={() => navigate({ to: `/account/${account.accountid}` })}
                 >
                   <TableCell className="p-4 font-medium hover:underline whitespace-normal break-words">
                     {account.shortname}

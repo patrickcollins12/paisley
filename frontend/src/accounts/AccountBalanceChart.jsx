@@ -6,7 +6,6 @@ import { useTheme } from "@/components/theme-provider";
 import { Badge } from "@/components/ui/badge"
 const routeApi = getRouteApi('/account/$accountId');
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
-// import useAccountData from "@/accounts/AccountApiHooks.js";
 
 // Function to calculate the start date based on the selected period
 const calculateStartDate = (period) => {
@@ -39,7 +38,6 @@ const calculateStartDate = (period) => {
     return newStartDate ? newStartDate.toISOString().split('T')[0] : null; // Format to 'YYYY-MM-DD'
 };
 
-
 const AccountBalanceChart = ({ accountId }) => {
     const { theme } = useTheme();
 
@@ -54,10 +52,6 @@ const AccountBalanceChart = ({ accountId }) => {
         setSelectedPeriod(defaultPeriod);
     }, []);
 
-    // grab the path parameter from the URL
-    // const { accountId } = routeApi.useParams();
-
-    // const { data, error, isLoading } = useAccountHistoryData(accountId, "2022-12-01");
     // // Fetch data using the custom hook
     const { data, error, isLoading } = useAccountHistoryData(accountId, startDate);
     // const { accountData, accountError, accountIsLoading } = useAccountData(accountId);
@@ -77,11 +71,32 @@ const AccountBalanceChart = ({ accountId }) => {
         setStartDate(calculatedStartDate);
     };
 
+    function updateBalances(data) {
+        const balances = [...data.balances]; // Clone to avoid mutating original
+        const dates = [...data.dates];
+      
+        if (balances.length === 0 || dates.length === 0) return { balances, dates };
+      
+        const lastDate = new Date(dates[dates.length - 1]);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to start of day
+      
+        // If the last recorded balance is older than 1 day ago, add today's date and the last balance
+        if (lastDate < today) {
+          balances.push(balances[balances.length - 1]); // Duplicate last balance
+          dates.push(today.toISOString()); 
+        }
+      
+        return { balances, dates };
+      }
+
+      
     useEffect(() => {
         if (data && !isLoading) {
 
-            const balances = data.balances
-            const dates = data.dates
+            const updatedData = updateBalances(data);
+            const balances = updatedData.balances
+            const dates = updatedData.dates
 
             setOption({
                 tooltip: {

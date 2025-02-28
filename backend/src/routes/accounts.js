@@ -52,7 +52,7 @@ WHERE 1=1
 router.get('/api/accounts', async (req, res) => {
     try {
         const accounts = db.db.prepare(sql).all();
-        res.json({ success: true, accounts });
+        res.json({ success: true, account: accounts });
     } catch (error) {
         res.status(500).json({ success: false, message: "Database error", error: error.message });
     }

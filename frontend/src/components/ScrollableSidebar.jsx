@@ -7,7 +7,7 @@ export function ScrollableSidebar({ children, className = "" }) {
   const updateHeight = () => {
     if (divRef.current) {
       const topPosition = divRef.current.getBoundingClientRect().top;
-      setDivHeight(window.innerHeight - topPosition - 5);
+      setDivHeight(window.innerHeight - topPosition - 50);
     }
   };
 
