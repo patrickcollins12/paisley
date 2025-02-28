@@ -18,16 +18,30 @@ class KeyValueStore {
     `);
   }
 
-  setKey(namespace, key, value) {
+  getKey(namespace, key) {
     try {
-      const stmt = this.db.prepare('INSERT INTO store (namespace, key, value) VALUES (?, ?, ?)');
-      stmt.run(namespace, key, value);
-      return { message: 'Key created successfully' };
+      const stmt = this.db.prepare('SELECT value FROM store WHERE namespace = ? AND key = ?');
+      const row = stmt.get(namespace, key);
+      return row ? row.value : null; // Return the value if found, otherwise null
     } catch (err) {
-      throw new Error(err.message);
+      throw new Error(`Database error: ${err.message}`);
     }
   }
 
+  setKey(namespace, key, value) {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT INTO store (namespace, key, value)
+        VALUES (?, ?, ?)
+        ON CONFLICT(namespace, key) DO UPDATE SET value = excluded.value
+      `);
+      stmt.run(namespace, key, value);
+      return { message: 'Key upserted successfully' };
+    } catch (err) {
+      throw new Error(`Database upsert error: ${err.message}`);
+    }
+  }
+  
   listKeys(namespace) {
     try {
       const stmt = this.db.prepare('SELECT key, value FROM store WHERE namespace = ?');

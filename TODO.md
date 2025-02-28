@@ -6,18 +6,20 @@
        - [x] design accounts page.
        - [x] add new account button.
        - [x] add account details page.
-       - [ ] implement the accounts page
-              - [ ] first draft implementation done
+       - [ ] finish implementing the accounts page
+              - [x] first draft implementation done
+              - [ ] it's too wide. add institution and hide it
+              - [ ] add currency.js conversion to accounts page
               - [ ] get max date from child accounts
               - [ ] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
-       - [ ] design the account page with new and editing
+       
+       - [ ] design the account page with new and editing, use the sexy graph format from Ben's app
        - [ ] add account graph page. [list|graph]
 - [ ] fix/finish install
        - [ ] create a jwt key on install
        - [ ] bring demo DB up to date
 - [ ] improved logging: change console.log-->logger.info on the server, parsers, importers and classifiers
 - [ ] paisley backend on beelink. feels pretty important!
-
 
 One day:
 - [ ] pull paisley scraper/collector out into a separate project. separate git repo?

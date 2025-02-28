@@ -49,7 +49,7 @@ export default function VisualisePage() {
       const tree = turnTransactionQueryIntoTreemapStucture(data.results);
 
       setOption({
-      
+
         tooltip: {
           formatter: function (info) {
             const treePath = info.treePathInfo
@@ -240,7 +240,7 @@ export default function VisualisePage() {
     node.partyString = row.party?.join(", ");
 
     node.path = `${node.description}`;
-    node.name = (node.partyString !=="Uncategorized") ? node.partyString : node.description;
+    node.name = (node.partyString !== "Uncategorized") ? node.partyString : node.description;
 
     const tag = row.tags[0];
     const segments = tag.split(/\s*>\s*/);

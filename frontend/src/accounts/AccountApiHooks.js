@@ -11,6 +11,7 @@ function useAccountData(accountId = null) {
   const accounts = data?.accounts
 
   if (accountId && !isLoading && !error) {
+    
     return {
       data: (accountId in accounts) ? accounts[accountId] : null,
       error,

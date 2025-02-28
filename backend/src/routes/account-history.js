@@ -95,9 +95,6 @@ router.get(
                             WHERE t2.account = t.account
                                 AND t2.datetime = t.datetime
                         )
-                    ORDER BY 
-                        t.datetime DESC,
-                        account DESC
                 ) WHERE 1=1
                 `;
         let params = [];
@@ -114,7 +111,7 @@ router.get(
             query += ` AND datetime <= ?`;
             params.push(to);
         }
-        query += ` ORDER BY accountid ASC, datetime DESC`;
+        query += ` ORDER BY accountid ASC, datetime ASC`;
 
         try {
             const stmt = db.db.prepare(query);
