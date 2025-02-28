@@ -35,15 +35,8 @@ const AccountPage = () => {
                 "filters": [
                     {
                         "field": "account_shortname",
-                        "operatorDefinition": {
-                            "id": "lookup_is",
-                            "label": "is",
-                            "operator": "in",
-                            "short": ""
-                        },
-                        "value": [
-                            accountData?.shortname
-                        ]
+                        "operatorDefinition": { "operator": "in" },
+                        "value": [ accountData?.shortname ]
                     }
                 ],
             }
