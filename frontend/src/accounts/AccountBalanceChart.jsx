@@ -41,9 +41,9 @@ const calculateStartDate = (period) => {
 
 const AccountBalanceChart = ({ accountId, category }) => {
     const { theme } = useTheme();
-
     const [option, setOption] = useState({});                   // echarts options
-    const defaultPeriod = '3m';                                 // Default selected period
+    const periods = ['5d', '1m', '3m', '1y', '2y', 'All'];
+    const defaultPeriod = '1y';                                 // Default selected period
     const sd = calculateStartDate(defaultPeriod);        // Calculate start date based on the default period
     const [startDate, setStartDate] = useState(null);           // dynamic graph start date
     const [selectedPeriod, setSelectedPeriod] = useState(sd);
@@ -57,7 +57,6 @@ const AccountBalanceChart = ({ accountId, category }) => {
     const { data, error, isLoading } = useAccountHistoryData(accountId, startDate);
 
     // Array of period labels
-    const periods = ['5d', '1m', '3m', '1y', '2y', 'All'];
 
     // Handle badge click
     const handleBadgeClick = (period) => {
@@ -153,7 +152,7 @@ const AccountBalanceChart = ({ accountId, category }) => {
                         },
                         max: function (value) {
                             return category === "liability" ?
-                                value.max - ((value.min - value.max) * 0.4):
+                                value.max - ((value.min - value.max) * 0.4) :
                                 value.max + (value.max * 0.01)
 
                         }

@@ -9,9 +9,9 @@ import AccountDetailsTable from './AccountDetailsTable.jsx'
 import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
 import TransactionCard from "@/transactions/TransactionCard.jsx"
-import { use } from "react";
-import { formatCurrency } from "@/lib/localisation_utils.js";
-import logos from './Logos.js';
+import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
+
+import logos from '/public/logos/logos.json'; 
 
 const AccountPage = () => {
 
@@ -84,12 +84,10 @@ const AccountPage = () => {
                             <div>
                                 <span className="text-4xl font-extrabold">{data && formatCurrency(data.balance)}</span>
                                 <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
-                                <div className="text-xs">Updated: {data && data.balance_datetime}</div>
                                 {data &&
                                     <AccountBalanceChart accountId={data.accountid} category={data.category} />
                                 }
                             </div>
-
 
                         </CardContent>
                     </Card>
@@ -101,6 +99,8 @@ const AccountPage = () => {
                     <Card className="text-sm w-[450px]">
                         <CardHeader>
                             <CardTitle>Recent Transactions</CardTitle>
+                            <div className="text-xs mb-3">Last transaction: {data && formatDate(data.balance_datetime)}</div>
+
                             {/* <CardDescription>
                                 transactions currently match this rule
                             </CardDescription> */}
