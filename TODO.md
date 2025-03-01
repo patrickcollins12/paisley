@@ -2,19 +2,25 @@
 - [ ] add treemap to visualize page
        - [ ] set default filters
        - [ ] add some options: group by party, first tag, all tags (double count)
-- [ ] reimplement accounts page and add some graphs
-       - [x] design accounts page.
-       - [x] add new account button.
-       - [x] add account details page.
-       - [ ] finish implementing the accounts page
-              - [x] first draft implementation done
-              - [ ] it's too wide. add institution and hide it
-              - [ ] add currency.js conversion to accounts page
-              - [ ] get max date from child accounts
-              - [ ] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
-       
-       - [ ] design the account page with new and editing, use the sexy graph format from Ben's app
-       - [ ] add account graph page. [list|graph]
+- [ ] accounts page
+       - [x] first draft implementation done
+       - [ ] roll-up sub accounts
+       - [ ] add a sparkline (react-sparklines or chartist.js offer simpler, more minimal designs)
+       - [ ] it's too wide. add institution to the table but hide it
+       - [ ] add currency.js route conversion to accounts page
+       - [ ] get max date from child accounts
+       - [ ] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
+- [ ] account page       
+       - [ ] New bar graph: transactions per day. Modify account_history route to also give transaction count per day:
+              SELECT t.account, DATE(t.datetime) AS dt, t.balance, count(*) AS cnt FROM 'transaction' t WHERE t.account = '302985 1360851' GROUP BY DATE(datetime) ORDER BY dt DESC
+       - [ ] "Last updated" date human readable --> Today 00:30am AEST
+       - [ ] where to source logo for each account? where to store that?
+       - [ ] graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
+       - [ ] roll-up sub accounts (and show assets?)
+       - [ ] edit account details
+       - [ ] add new account (scraper?). review what belongs on account table vs config vs code
+       - [x] design the account page with new and editing, use the sexy graph format from Ben's app
+       - [x] add account graph page. [list|graph]
 - [ ] fix/finish install
        - [ ] create a jwt key on install
        - [ ] bring demo DB up to date

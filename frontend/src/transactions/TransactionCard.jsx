@@ -28,7 +28,9 @@ export default function TransactionCard({ data }) {
             {data.description}
           </div>
           <div>
-            {formatAmountCell(data.amount)}
+            {formatAmountCell(data.amount)}<br/>
+            {/* {formatAmountCell(data.balance)} */}
+            
           </div>
         </div>
         <div className="flex flex-row">

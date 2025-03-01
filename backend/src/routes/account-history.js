@@ -90,10 +90,11 @@ router.get(
                         -- , 'transaction' as source
                     FROM 'transaction' t
                     WHERE t.rowid = (
-                            SELECT MAX(t2.rowid)
-                            FROM 'transaction' t2
-                            WHERE t2.account = t.account
-                                AND t2.datetime = t.datetime
+                            SELECT 
+                                MAX(t2.rowid)
+                                FROM 'transaction' t2
+                                WHERE t2.account = t.account
+                                    AND t2.datetime = t.datetime
                         )
                 ) WHERE 1=1
                 `;

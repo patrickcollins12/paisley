@@ -52,7 +52,7 @@ async function updater(id, data) {
 }
 
 async function fetcher([url, options]) {
-  console.log('fetcher', options);
+  // console.log('fetcher', options);
 
   const filters = options.filters?.reduce((accumulator, filter) => {
     const filterKey = `filter[${filter.field}][${filter.operatorDefinition.operator}]`;

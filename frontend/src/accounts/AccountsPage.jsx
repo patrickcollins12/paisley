@@ -44,7 +44,7 @@ const AccountsPage = () => {
         "Mortgage",
       ];
 
-      console.log('data', JSON.stringify(data, null, 2))
+      // console.log('data', JSON.stringify(data, null, 2))
       // const rawAccounts = data.accounts
       // Filter out inactive accounts and child accounts
       const activeAccounts = data.filter((acc) => acc.status !== "inactive");

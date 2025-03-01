@@ -10,10 +10,8 @@ import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
 import TransactionCard from "@/transactions/TransactionCard.jsx"
 import { use } from "react";
-
-function addCommas(number) {
-    return number?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-}
+import { formatCurrency } from "@/lib/localisation_utils.js";
+import logos from './Logos.js';
 
 const AccountPage = () => {
 
@@ -23,11 +21,13 @@ const AccountPage = () => {
     // Fetch data using the custom hook
     const { data, error, isLoading } = useAccountData(accountId);
 
-    const { data: accountData, error: accountError, isLoading: accountLoading } = useAccountData(accountId);
+    // const { data: accountData, error: accountError, isLoading: accountLoading } = useAccountData(accountId);
 
-    // Fetch transactions only when `accountData?.shortname` is available
+    let logoObject = (data) ? logos[data.institution] : null
+
+    // Fetch transactions `accountData?.shortname` is valid
     const { data: transactionData, error: transactionError, isLoading: transactionLoading } = useFetchTransactions(
-        accountData?.shortname
+        data?.shortname
             ? {
                 pageIndex: 0,
                 pageSize: 40,
@@ -36,7 +36,7 @@ const AccountPage = () => {
                     {
                         "field": "account_shortname",
                         "operatorDefinition": { "operator": "in" },
-                        "value": [ accountData?.shortname ]
+                        "value": [data?.shortname]
                     }
                 ],
             }
@@ -56,15 +56,22 @@ const AccountPage = () => {
 
             <div className="container mx-auto p-4">
                 <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+
+
+
+
                     <Card className="text-sm">
                         <CardHeader>
                             <CardTitle>
                                 <div className="flex col-2 items-center justify-between items-end gap-3">
                                     <span>
                                         <div>{data && data.shortname}</div>
-                                        <div className="text-xs opacity-50 font-normal">{accountId}</div>
+                                        <div className="text-xs opacity-50 font-normal mt-2">{accountId}</div>
                                     </span>
-                                    <span className=""><img className="h-8" src="https://cdn.brandfetch.io/idIJhwG1L0/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B"></img></span>
+                                    { logoObject && logoObject.location &&
+                                        <span className={`p-3 border ${logoObject.background || ''} rounded-lg`}>
+                                            <img className="h-8" src={`${logoObject.location}`}/>
+                                        </span> }
                                 </div>
                             </CardTitle>
 
@@ -75,25 +82,20 @@ const AccountPage = () => {
                         <CardContent>
 
                             <div>
-                                <span className="text-4xl font-extrabold">${data && addCommas(data.balance)}</span>
+                                <span className="text-4xl font-extrabold">{data && formatCurrency(data.balance)}</span>
                                 <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
                                 <div className="text-xs">Updated: {data && data.balance_datetime}</div>
-
-                                <AccountBalanceChart accountId={data && data.accountid} />
+                                {data &&
+                                    <AccountBalanceChart accountId={data.accountid} category={data.category} />
+                                }
                             </div>
 
 
                         </CardContent>
                     </Card>
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>Details</CardTitle>
-                            {/* <CardDescription>Last updated: 25 Feb 2025</CardDescription> */}
-                        </CardHeader>
-                        <CardContent className="">
-                            <AccountDetailsTable data={data} />
-                        </CardContent>
-                    </Card>
+
+
+
 
 
                     <Card className="text-sm w-[450px]">
@@ -110,6 +112,22 @@ const AccountPage = () => {
                             </ScrollableSidebar>
                         </CardContent>
                     </Card>
+
+
+
+
+                    <Card className="text-sm">
+                        <CardHeader>
+                            <CardTitle>Details</CardTitle>
+                            {/* <CardDescription>Last updated: 25 Feb 2025</CardDescription> */}
+                        </CardHeader>
+                        {data &&
+                            <CardContent className="">
+                                <AccountDetailsTable data={data} />
+                            </CardContent>
+                        }
+                    </Card>
+
                     {/* 
                     <Card className="text-sm">
                         <CardHeader>

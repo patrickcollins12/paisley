@@ -6,6 +6,7 @@ import { useTheme } from "@/components/theme-provider";
 import { Badge } from "@/components/ui/badge"
 const routeApi = getRouteApi('/account/$accountId');
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
+import { formatCurrency } from "@/lib/localisation_utils.js";
 
 // Function to calculate the start date based on the selected period
 const calculateStartDate = (period) => {
@@ -38,7 +39,7 @@ const calculateStartDate = (period) => {
     return newStartDate ? newStartDate.toISOString().split('T')[0] : null; // Format to 'YYYY-MM-DD'
 };
 
-const AccountBalanceChart = ({ accountId }) => {
+const AccountBalanceChart = ({ accountId, category }) => {
     const { theme } = useTheme();
 
     const [option, setOption] = useState({});                   // echarts options
@@ -54,12 +55,6 @@ const AccountBalanceChart = ({ accountId }) => {
 
     // // Fetch data using the custom hook
     const { data, error, isLoading } = useAccountHistoryData(accountId, startDate);
-    // const { accountData, accountError, accountIsLoading } = useAccountData(accountId);
-
-    // TODO: make this work in local currencies.
-    function formatCurrency(value) {
-        return '$' + echarts.format.addCommas(value.toFixed(2))
-    }
 
     // Array of period labels
     const periods = ['5d', '1m', '3m', '1y', '2y', 'All'];
@@ -71,26 +66,27 @@ const AccountBalanceChart = ({ accountId }) => {
         setStartDate(calculatedStartDate);
     };
 
+    // TODO: this is gpt shit, move this server side and clean it up
     function updateBalances(data) {
         const balances = [...data.balances]; // Clone to avoid mutating original
         const dates = [...data.dates];
-      
+
         if (balances.length === 0 || dates.length === 0) return { balances, dates };
-      
+
         const lastDate = new Date(dates[dates.length - 1]);
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Normalize to start of day
-      
+
         // If the last recorded balance is older than 1 day ago, add today's date and the last balance
         if (lastDate < today) {
-          balances.push(balances[balances.length - 1]); // Duplicate last balance
-          dates.push(today.toISOString()); 
+            balances.push(balances[balances.length - 1]); // Duplicate last balance
+            dates.push(today.toISOString());
         }
-      
-        return { balances, dates };
-      }
 
-      
+        return { balances, dates };
+    }
+
+
     useEffect(() => {
         if (data && !isLoading) {
 
@@ -115,14 +111,7 @@ const AccountBalanceChart = ({ accountId }) => {
 
                     }
                 },
-                // legend: {
-                //     data: ['Line 1', 'Line 2', 'Line 3', 'Line 4', 'Line 5']
-                // },
-                // toolbox: {
-                //     feature: {
-                //         saveAsImage: {}
-                //     }      
-                // },
+
                 feature: {
                     dataZoom: {
                         yAxisIndex: 'none'
@@ -158,10 +147,15 @@ const AccountBalanceChart = ({ accountId }) => {
                         show: false,
                         // min: "dataMin",
                         min: function (value) {
-                            const val = value.min - ((value.max - value.min) * 0.4)
-                            // value.calcmin = val
-                            // console.log(value)
-                            return val
+                            return category === "liability" ?
+                                value.min + value.min * 0.01 :
+                                value.min - ((value.max - value.min) * 0.4)
+                        },
+                        max: function (value) {
+                            return category === "liability" ?
+                                value.max - ((value.min - value.max) * 0.4):
+                                value.max + (value.max * 0.01)
+
                         }
                     }
                 ],
@@ -181,7 +175,7 @@ const AccountBalanceChart = ({ accountId }) => {
                             opacity: 0.9,
                             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                                 {
-                                    offset: 0,
+                                    offset: category === "liability" ? 1 : 0,
                                     color: 'rgb(128, 255, 165)'
                                 },
                                 // {
@@ -189,7 +183,7 @@ const AccountBalanceChart = ({ accountId }) => {
                                 //     color: 'rgba(128, 255, 164, 0.5)'
                                 // },
                                 {
-                                    offset: 1,
+                                    offset: category === "liability" ? 0 : 1,
                                     color: 'rgb(128, 255, 165, 0)'
                                 }
                             ])
@@ -217,7 +211,7 @@ const AccountBalanceChart = ({ accountId }) => {
                 />
             )}
 
-            <div className="mb-2">
+            <div className="mt-2 mb-2">
                 {periods.map((period) => (
                     <button
                         key={period}
