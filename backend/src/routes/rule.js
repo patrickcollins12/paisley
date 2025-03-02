@@ -2,6 +2,7 @@ const express = require('express');
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RulesClassifier = require('../RulesClassifier');
 const RuleToSqlParser = require('../RuleToSqlParser');
+const logger = require('../Logger');
 
 const disableAuth = false; // false means apply auth, true means disable auth
 
@@ -23,30 +24,110 @@ router.get('/api/rule/:id',
         }
     });
 
-// Create a new rule
-router.post('/api/rule', async (req, res) => {
-    const db = new BankDatabase().db;
-    const { rule, group, tag, party, comment } = req.body;
+const { body, validationResult } = require('express-validator');
 
-    if (!rule) {
-        return res.status(400).send({ error: 'Required data missing' });
+router.post(
+    '/api/rule',
+    [
+        // Validate & Sanitize Rule
+        body('rule')
+            .trim()
+            .notEmpty().withMessage('Rule is required')
+            .custom((value) => {
+                try {
+                    const parser = new RuleToSqlParser();
+                    parser.parse(value);
+                    return true; // Validation passes
+                } catch (error) {
+                    throw new Error(`Invalid rule syntax: ${error.message}`);
+                }
+            }),
+
+        // Validate Group (optional)
+        body('group')
+            .optional()
+            .isString().withMessage('Group must be a string')
+            .trim(),
+
+        // Validate Tag (must be an array of strings)
+        body('tag')
+            .optional()
+            .isArray().withMessage('Tag must be an array of strings')
+            .custom((value) => value.every(item => typeof item === 'string'))
+            .withMessage('All tag elements must be strings'),
+
+        // Validate Party (must be an array of strings)
+        body('party')
+            .optional()
+            .isArray().withMessage('Party must be an array of strings')
+            .custom((value) => value.every(item => typeof item === 'string'))
+            .withMessage('All party elements must be strings'),
+
+        // Validate Comment (optional)
+        body('comment')
+            .optional()
+            .isString().withMessage('Comment must be a string')
+            .trim()
+    ],
+    async (req, res) => {
+        // Check validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        // Extract validated inputs
+        const { rule, group, tag, party, comment } = req.body;
+        const db = new BankDatabase().db;
+
+        try {
+            // Insert rule into the database
+            const query = 'INSERT INTO "rule" (rule, "group", tag, party, comment) VALUES (?, ?, ?, ?, ?)';
+            const result = db.prepare(query).run(
+                rule,
+                group || null,
+                JSON.stringify(tag || []),
+                JSON.stringify(party || []),
+                comment || null
+            );
+            const id = result.lastInsertRowid;
+
+            // Apply classification
+            const classifier = new RulesClassifier();
+            const cnt = classifier.applyOneRule(id);
+            logger.info(`New rule: ${id}, ${JSON.stringify(req.body)}, classified ${cnt} transactions`);
+
+            res.status(201).send({ id: id, classified: cnt, message: `Rule created and classified ${cnt} txns` });
+        } catch (error) {
+            res.status(400).send({ error: error.message });
+        }
     }
+);
 
-    try {
-        const query = 'INSERT INTO "rule" (rule, "group", tag, party, comment) VALUES (?, ?, ?, ?, ?)'
-        const result = db.prepare(query).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment);
-        const id = result.lastInsertRowid
+// // Create a new rule
+// router.post('/api/rule', async (req, res) => {
+//     const db = new BankDatabase().db;
+//     const { rule, group, tag, party, comment } = req.body;
 
-        // // Classify this new rule across all transactions
-        const classifier = new RulesClassifier()
-        const cnt = classifier.applyOneRule(id)
-        console.log(`New rule: ${id}, ${req.body}, ${query}, ${cnt}`)
+//     if (!rule) {
+//         return res.status(400).send({ error: 'Required data missing' });
+//     }
 
-        res.status(201).send({ id: id, classified: cnt, message: `Rule created and classified ${cnt} txns` });
-    } catch (error) {
-        res.status(400).send({ error: error.message });
-    }
-});
+//     try {
+//         const query = 'INSERT INTO "rule" (rule, "group", tag, party, comment) VALUES (?, ?, ?, ?, ?)'
+//         const result = db.prepare(query).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment);
+//         const id = result.lastInsertRowid
+
+//         // // Classify this new rule across all transactions
+//         const classifier = new RulesClassifier()
+//         const cnt = classifier.applyOneRule(id)
+//         logger.info(`New rule: ${id}, ${req.body}, ${query}, ${cnt}`)
+
+//         res.status(201).send({ id: id, classified: cnt, message: `Rule created and classified ${cnt} txns` });
+//     } catch (error) {
+//         res.status(400).send({ error: error.message });
+//     }
+// });
 
 
 // Function to handle classification asynchronously
@@ -91,7 +172,7 @@ router.patch('/api/rule/:id', async (req, res) => {
             const parser = new RuleToSqlParser();
             parser.parse(rule);
         }
-    
+
         // if you get this far then the parser hasn't thrown and the rule is 👍
         // so we (1) update the rule in the database
         db.prepare(sql).run(rule, group, JSON.stringify(tag), JSON.stringify(party), comment, id);
