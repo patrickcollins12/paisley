@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { getRouteApi, Link } from "@tanstack/react-router"
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import { useTheme } from "@/components/theme-provider";
-import { Badge } from "@/components/ui/badge"
-const routeApi = getRouteApi('/account/$accountId');
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
 
 import { formatCurrency } from "@/lib/localisation_utils.js";
-
 
 const AccountBalanceChart = ({ accountId, category, startDate }) => {
     const { theme } = useTheme();
@@ -129,7 +125,6 @@ const AccountBalanceChart = ({ accountId, category, startDate }) => {
             });
         }
     }, [data]);
-
 
     return (
         <>

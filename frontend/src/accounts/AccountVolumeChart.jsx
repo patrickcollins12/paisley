@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { getRouteApi } from "@tanstack/react-router"
 import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
 import { useTheme } from "@/components/theme-provider";
-const routeApi = getRouteApi('/account/$accountId');
-// import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
 import useAccountTransactionVolume from "@/accounts/AccountTransactionVolumeApiHooks.js";
 
 const AccountVolumeChart = ({ accountId, startDate }) => {
     const { theme } = useTheme();
     const [option, setOption] = useState({});                   // echarts options
-
     const { data, error, isLoading } = useAccountTransactionVolume(accountId, startDate);
 
     // echarts options
@@ -93,7 +89,7 @@ const AccountVolumeChart = ({ accountId, startDate }) => {
 
     // main jsx
     return (
-        <>{data && data.length > 0 && option && (
+        <>{!error && data && data.length > 0 && option && (
             <>
                 <div style={{ height: `30px` }}>
                     <ReactECharts

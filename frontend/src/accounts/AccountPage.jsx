@@ -1,21 +1,31 @@
+// react, routing, icons, shadn
 import React, { useState, useEffect } from "react";
 import { getRouteApi, Link } from "@tanstack/react-router"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle, } from "@/components/ui/card"
-const routeApi = getRouteApi('/account/$accountId');
+
+// main page components
 import AccountBalanceChart from './AccountBalanceChart.jsx'
 import AccountVolumeChart from './AccountVolumeChart.jsx'
-import useAccountData from "@/accounts/AccountApiHooks.js";
-import AccountDetailsTable from './AccountDetailsTable.jsx'
-import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
-import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
-import TransactionCard from "@/transactions/TransactionCard.jsx"
-import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
 import ChartTimeSelection from "./ChartTimeSelection";
+import AccountDetailsTable from './AccountDetailsTable.jsx'
+import TransactionCard from "@/transactions/TransactionCard.jsx"
+import ScrollableSidebar from "@/components/ScrollableSidebar.jsx"
 
+//data loaders
+import { useAccountData} from "@/accounts/AccountApiHooks.js";
+import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 
+// utils
+import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
+
+// what is the account id?
+const routeApi = getRouteApi('/account/$accountId');
+
+// load the logos, feel free to edit this and contribute
 import logos from '/public/logos/logos.json';
 
+// main component
 const AccountPage = () => {
 
     // grab the path parameter from the URL
@@ -24,11 +34,12 @@ const AccountPage = () => {
     // Fetch data using the custom hook
     const { data, error, isLoading } = useAccountData(accountId);
 
-    // const { data: accountData, error: accountError, isLoading: accountLoading } = useAccountData(accountId);
+    // dynamic graph start dates from the badge clicker called ChartTimeSelection
+    const [startDate, setStartDate] = useState(null);  
 
-    const [startDate, setStartDate] = useState(null);           // dynamic graph start date
-
-    let logoObject = (data) ? logos[data.institution] : null
+    // once the data is loaded, fetch the right insitutional logo, 
+    // out of the logos object loaded earlier
+    let logoObject = data ? logos[data.institution] : null
 
     // Fetch transactions `accountData?.shortname` is valid
     const { data: transactionData, error: transactionError, isLoading: transactionLoading } = useFetchTransactions(
@@ -100,7 +111,7 @@ const AccountPage = () => {
                                         <AccountVolumeChart accountId={data.accountid} startDate={startDate}/>
                                     }
                                 </div>
-                                
+
                                 <div className="mt-2 mb-2">
                                     <ChartTimeSelection onStartDateChange={setStartDate}/>
                                 </div>
@@ -110,8 +121,6 @@ const AccountPage = () => {
 
                         </CardContent>
                     </Card>
-
-
 
 
 
