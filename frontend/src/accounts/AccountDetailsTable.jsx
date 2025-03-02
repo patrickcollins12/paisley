@@ -10,6 +10,19 @@ const AccountDetailsTable = ({ data }) => {
         "metadata"
     ]);
 
+    // balance_datetime --> Balance Datetime
+    // TimeZone --> Time Zone
+    function formatCamelCase(str) {
+        return str
+            .replace(/_/g, " ")
+            .replace(/([a-z])([A-Z])/g, "$1 $2")
+            .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
+            .toLowerCase()
+            .replace(/(?:^|\s)\S/g, function (a) {
+                return a.toUpperCase();
+            });
+    }
+
     // Parse `meta` if it exists and is a valid JSON string
     let metaData = null;
     if (data?.metadata) {
@@ -29,13 +42,12 @@ const AccountDetailsTable = ({ data }) => {
                             .filter(([key, value]) => !suppressedKeys.has(key) && value !== null)
                             .map(([key, value]) => (
                                 <tr key={key}>
-                                    <td className="font-bold pr-3">{key}</td>
+                                    <td className="font-bold pr-3">{formatCamelCase(key)}</td>
                                     <td>{String(value)}</td>
                                 </tr>
                             ))}
                 </tbody>
             </table>
-
 
             {/* Meta Data Table */}
             {metaData && (

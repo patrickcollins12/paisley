@@ -125,6 +125,58 @@ router.get(
     }
 );
 
+
+router.get(
+    "/api/account_transaction_volume",
+    [
+        query("accountid").optional().isString().withMessage("Account ID must be a string"),
+        query("from").optional().isISO8601().withMessage("Invalid 'from' date"),
+        query("to").optional().isISO8601().withMessage("Invalid 'to' date"),
+    ],
+    async (req, res) => {
+        let db = new BankDatabase();
+        let { accountid, from, to } = req.query;
+
+        let params = [];
+        let query = `
+            SELECT 
+                t.account, 
+                DATE(t.datetime) AS date, 
+                COUNT(*) AS transaction_count 
+            FROM 'transaction' t 
+            WHERE 1=1
+            `;  
+
+        // Dynamically build conditions
+        if (accountid) {
+            query += " AND t.account = ?";
+            params.push(accountid);
+        }
+        if (from) {
+            query += " AND t.datetime >= ?";
+            params.push(from);
+        }
+        if (to) {
+            query += " AND t.datetime <= ?";
+            params.push(to);
+        }
+
+        // Final GROUP BY and ORDER BY
+        query += " GROUP BY t.account, DATE(t.datetime) ORDER BY date DESC";
+
+        console.log(query, params);
+
+        try {
+            const stmt = db.db.prepare(query);
+            const rows = stmt.all(...params);
+            res.json(rows);
+        } catch (err) {
+            console.error("Error fetching account transaction volume:", err.message);
+            res.status(500).json({ error: err.message });
+        }
+    }
+);
+
 module.exports = router;
 
 /**
@@ -236,4 +288,59 @@ module.exports = router;
  *     responses:
  *       200:
  *         description: A list of balance history entries.
+ */
+
+/**
+ * @swagger
+ * /api/account_transaction_volume:
+ *   get:
+ *     summary: Get account transaction volume
+ *     description: Returns aggregated transaction volume for a given account, filtered by date range.
+ *     tags:
+ *       - Accounts
+ *     parameters:
+ *       - in: query
+ *         name: accountid
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: The account ID to filter transactions.
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: The start date (ISO 8601 format) for filtering transactions.
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date
+ *         required: false
+ *         description: The end date (ISO 8601 format) for filtering transactions.
+ *     responses:
+ *       200:
+ *         description: Successful response with transaction volume data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   account:
+ *                     type: string
+ *                     description: The account ID.
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *                     description: The transaction date.
+ *                   transaction_count:
+ *                     type: integer
+ *                     description: The count of transactions for that date.
+ *       400:
+ *         description: Invalid query parameters.
+ *       500:
+ *         description: Internal server error.
  */

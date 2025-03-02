@@ -11,9 +11,9 @@ async function fetcher([url, id, from, to]) {
   return response.data;
 }
 
-function useAccountHistoryData(id, from, to) {
-  const { data, error, isLoading } = useSWR(['account_history', id, from, to], fetcher);
-  
+function useAccountTransactionVolume(id, from, to) {
+  const { data, error, isLoading } = useSWR(['account_transaction_volume', id, from, to], fetcher);
+
   return {
     data,
     error,
@@ -21,4 +21,4 @@ function useAccountHistoryData(id, from, to) {
   };
 }
 
-export default useAccountHistoryData;
+export default useAccountTransactionVolume;

@@ -6,92 +6,23 @@ import { useTheme } from "@/components/theme-provider";
 import { Badge } from "@/components/ui/badge"
 const routeApi = getRouteApi('/account/$accountId');
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
+
 import { formatCurrency } from "@/lib/localisation_utils.js";
 
-// Function to calculate the start date based on the selected period
-const calculateStartDate = (period) => {
-    const today = new Date();
-    let newStartDate;
 
-    switch (period) {
-        case '5d':
-            newStartDate = new Date(today.setDate(today.getDate() - 5));
-            break;
-        case '1m':
-            newStartDate = new Date(today.setMonth(today.getMonth() - 1));
-            break;
-        case '3m':
-            newStartDate = new Date(today.setMonth(today.getMonth() - 3));
-            break;
-        case '1y':
-            newStartDate = new Date(today.setFullYear(today.getFullYear() - 1));
-            break;
-        case '2y':
-            newStartDate = new Date(today.setFullYear(today.getFullYear() - 2));
-            break;
-        case 'All':
-            newStartDate = null; // Or set to the earliest date available
-            break;
-        default:
-            newStartDate = null;
-    }
-
-    return newStartDate ? newStartDate.toISOString().split('T')[0] : null; // Format to 'YYYY-MM-DD'
-};
-
-const AccountBalanceChart = ({ accountId, category }) => {
+const AccountBalanceChart = ({ accountId, category, startDate }) => {
     const { theme } = useTheme();
     const [option, setOption] = useState({});                   // echarts options
-    const periods = ['5d', '1m', '3m', '1y', '2y', 'All'];
-    const defaultPeriod = '1y';                                 // Default selected period
-    const sd = calculateStartDate(defaultPeriod);        // Calculate start date based on the default period
-    const [startDate, setStartDate] = useState(null);           // dynamic graph start date
-    const [selectedPeriod, setSelectedPeriod] = useState(sd);
-
-    useEffect(() => {
-        setStartDate(sd);
-        setSelectedPeriod(defaultPeriod);
-    }, []);
 
     // // Fetch data using the custom hook
     const { data, error, isLoading } = useAccountHistoryData(accountId, startDate);
 
-    // Array of period labels
-
-    // Handle badge click
-    const handleBadgeClick = (period) => {
-        setSelectedPeriod(period);
-        const calculatedStartDate = calculateStartDate(period);
-        setStartDate(calculatedStartDate);
-    };
-
-    // TODO: this is gpt shit, move this server side and clean it up
-    function updateBalances(data) {
-        const balances = [...data.balances]; // Clone to avoid mutating original
-        const dates = [...data.dates];
-
-        if (balances.length === 0 || dates.length === 0) return { balances, dates };
-
-        const lastDate = new Date(dates[dates.length - 1]);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize to start of day
-
-        // If the last recorded balance is older than 1 day ago, add today's date and the last balance
-        if (lastDate < today) {
-            balances.push(balances[balances.length - 1]); // Duplicate last balance
-            dates.push(today.toISOString());
-        }
-
-        return { balances, dates };
-    }
-
-
     useEffect(() => {
         if (data && !isLoading) {
 
-            const updatedData = updateBalances(data);
-            const balances = updatedData.balances
-            const dates = updatedData.dates
+            // const updatedData = updateBalances(data);
+            // const balances = updatedData.balances
+            // const dates = updatedData.dates
 
             setOption({
                 tooltip: {
@@ -136,8 +67,8 @@ const AccountBalanceChart = ({ accountId, category }) => {
                     {
                         show: false,
                         type: 'category',
-                        boundaryGap: false,
-                        data: dates
+                        boundaryGap: true,
+                        data: data.map(item => item.datetime)
                     }
                 ],
                 yAxis: [
@@ -158,6 +89,7 @@ const AccountBalanceChart = ({ accountId, category }) => {
                         }
                     }
                 ],
+
                 series: [
                     {
                         // name: 'Bankwest Offset Balance',
@@ -190,10 +122,10 @@ const AccountBalanceChart = ({ accountId, category }) => {
                         // emphasis: {
                         //     focus: 'series'
                         // },
-                        data: balances
+                        data: data.map(item => item.balance)
                     }
-
                 ]
+
             });
         }
     }, [data]);
@@ -210,19 +142,7 @@ const AccountBalanceChart = ({ accountId, category }) => {
                 />
             )}
 
-            <div className="mt-2 mb-2">
-                {periods.map((period) => (
-                    <button
-                        key={period}
-                        onClick={() => handleBadgeClick(period)}
-                        className="mr-2"
-                    >
-                        <Badge variant={selectedPeriod === period ? "default" : "secondary"}>
-                            {period}
-                        </Badge>
-                    </button>
-                ))}
-            </div>
+            
         </>
     )
 };

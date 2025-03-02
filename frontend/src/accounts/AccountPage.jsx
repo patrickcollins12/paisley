@@ -4,14 +4,17 @@ import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle, } from "@/components/ui/card"
 const routeApi = getRouteApi('/account/$accountId');
 import AccountBalanceChart from './AccountBalanceChart.jsx'
+import AccountVolumeChart from './AccountVolumeChart.jsx'
 import useAccountData from "@/accounts/AccountApiHooks.js";
 import AccountDetailsTable from './AccountDetailsTable.jsx'
 import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
 import TransactionCard from "@/transactions/TransactionCard.jsx"
 import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
+import ChartTimeSelection from "./ChartTimeSelection";
 
-import logos from '/public/logos/logos.json'; 
+
+import logos from '/public/logos/logos.json';
 
 const AccountPage = () => {
 
@@ -22,6 +25,8 @@ const AccountPage = () => {
     const { data, error, isLoading } = useAccountData(accountId);
 
     // const { data: accountData, error: accountError, isLoading: accountLoading } = useAccountData(accountId);
+
+    const [startDate, setStartDate] = useState(null);           // dynamic graph start date
 
     let logoObject = (data) ? logos[data.institution] : null
 
@@ -57,9 +62,6 @@ const AccountPage = () => {
             <div className="container mx-auto p-4">
                 <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 
-
-
-
                     <Card className="text-sm">
                         <CardHeader>
                             <CardTitle>
@@ -68,10 +70,10 @@ const AccountPage = () => {
                                         <div>{data && data.shortname}</div>
                                         <div className="text-xs opacity-50 font-normal mt-2">{accountId}</div>
                                     </span>
-                                    { logoObject && logoObject.location &&
+                                    {logoObject && logoObject.location &&
                                         <span className={`p-3 border ${logoObject.background || ''} rounded-lg`}>
-                                            <img className="h-8" src={`${logoObject.location}`}/>
-                                        </span> }
+                                            <img className="h-8" src={`${logoObject.location}`} />
+                                        </span>}
                                 </div>
                             </CardTitle>
 
@@ -80,14 +82,31 @@ const AccountPage = () => {
                             </CardDescription> */}
                         </CardHeader>
                         <CardContent>
+                            <>
+                                <div>
+                                    {data && data.balance &&
+                                        <>
+                                            <span className="text-4xl font-extrabold">{data && formatCurrency(data.balance)}</span>
+                                            <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
+                                            <AccountBalanceChart accountId={data.accountid} category={data.category} startDate={startDate}/>
 
-                            <div>
-                                <span className="text-4xl font-extrabold">{data && formatCurrency(data.balance)}</span>
-                                <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
-                                {data &&
-                                    <AccountBalanceChart accountId={data.accountid} category={data.category} />
-                                }
-                            </div>
+
+                                        </>
+                                    }
+                                </div>
+
+                                <div>
+                                    {data &&
+                                        <AccountVolumeChart accountId={data.accountid} startDate={startDate}/>
+                                    }
+                                </div>
+                                
+                                <div className="mt-2 mb-2">
+                                    <ChartTimeSelection onStartDateChange={setStartDate}/>
+                                </div>
+
+                            </>
+
 
                         </CardContent>
                     </Card>
@@ -121,119 +140,12 @@ const AccountPage = () => {
                             <CardTitle>Details</CardTitle>
                             {/* <CardDescription>Last updated: 25 Feb 2025</CardDescription> */}
                         </CardHeader>
-                        {data &&
-                            <CardContent className="">
+                        <CardContent className="">
+                            {data &&
                                 <AccountDetailsTable data={data} />
-                            </CardContent>
-                        }
-                    </Card>
-
-                    {/* 
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>Card Title 2</CardTitle>
-                            <CardDescription>Description for card 2.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p>Content of card 2.</p>
+                            }
                         </CardContent>
-                        <CardFooter>
-                            <p>Footer of card 2.</p>
-                        </CardFooter>
                     </Card>
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>Card Title 3</CardTitle>
-                            <CardDescription>Description for card 3.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p>Content of card 3.</p>
-                        </CardContent>
-                        <CardFooter>
-                            <p>Footer of card 3.</p>
-                        </CardFooter>
-                    </Card>
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>Card Title 4</CardTitle>
-                            <CardDescription>Description for card 4.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            This page needs a:
-                            <ul>
-                                <li>Nice summary card with balance</li>
-                                <li>Editable fields</li>
-                                <li>Balance trend</li>
-                                <li>Interest trend</li>
-                                <li>10 most recent transactions with a link to Transactions page</li>
-                            </ul>
-
-                        </CardContent>
-                        <CardFooter>
-                            <p>Footer of card 4.</p>
-                        </CardFooter>
-                    </Card>
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>Card Title 5</CardTitle>
-                            <CardDescription>Description for card 5.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p>Content of card 5.</p>
-                        </CardContent>
-                        <CardFooter>
-                            <p>Footer of card 5.</p>
-                        </CardFooter>
-                    </Card>
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>Card Title 6</CardTitle>
-                            <CardDescription>Description for card 6.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p>Content of card 6.</p>
-                        </CardContent>
-                        <CardFooter>
-                            <p>Footer of card 6.</p>
-                        </CardFooter>
-                    </Card>
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>Card Title 7</CardTitle>
-                            <CardDescription>Description for card 7.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p>Content of card 7.</p>
-                        </CardContent>
-                        <CardFooter>
-                            <p>Footer of card 7.</p>
-                        </CardFooter>
-                    </Card>
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>Card Title 8</CardTitle>
-                            <CardDescription>Description for card 8.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p>Content of card 8.</p>
-                        </CardContent>
-                        <CardFooter>
-                            <p>Footer of card 8.</p>
-                        </CardFooter>
-                    </Card>
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>Card Title 9</CardTitle>
-                            <CardDescription>Description for card 9.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p>Content of card 9.</p>
-                        </CardContent>
-                        <CardFooter>
-                            <p>Footer of card 9.</p>
-                        </CardFooter>
-                    </Card>
-                     */}
 
                 </div>
             </div>

@@ -3,22 +3,22 @@
        - [ ] set default filters
        - [ ] add some options: group by party, first tag, all tags (double count)
 - [ ] accounts page
-       - [x] first draft implementation done
        - [ ] roll-up sub accounts
        - [ ] add a sparkline (react-sparklines or chartist.js offer simpler, more minimal designs)
-       - [ ] it's too wide. add institution to the table but hide it
+       - [ ] table is too wide. add institution to the table but hide it
        - [ ] add currency.js route conversion to accounts page
-       - [ ] get max date from child accounts
        - [ ] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
-- [ ] account page       
+       - [x] get max date from child accounts
+       - [x] first draft implementation done
+- [ ] account page
        - [ ] New bar graph: transactions per day. Modify account_history route to also give transaction count per day:
               SELECT t.account, DATE(t.datetime) AS dt, t.balance, count(*) AS cnt FROM 'transaction' t WHERE t.account = '302985 1360851' GROUP BY DATE(datetime) ORDER BY dt DESC
-       - [ ] "Last updated" date human readable --> Today 00:30am AEST
-       - [ ] where to source logo for each account? where to store that?
        - [ ] graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
        - [ ] roll-up sub accounts (and show assets?)
-       - [ ] edit account details
+       - [ ] add/edit account details
        - [ ] add new account (scraper?). review what belongs on account table vs config vs code
+       - [x] "Last updated" date human readable --> Today 00:30am AEST
+       - [x] where to source logo for each account? where to store that?
        - [x] design the account page with new and editing, use the sexy graph format from Ben's app
        - [x] add account graph page. [list|graph]
 - [ ] fix/finish install
