@@ -1,26 +1,20 @@
 # TODO
-- [ ] add treemap to visualize page
+- [ ] visualize page
+       - [ ] add $ to main categories
        - [ ] set default filters
        - [ ] add some options: group by party, first tag, all tags (double count)
 - [ ] accounts page
        - [ ] roll-up sub accounts
+       - [ ] consolidate utils and Intl.NumberFormat
        - [ ] add a sparkline (react-sparklines or chartist.js offer simpler, more minimal designs)
        - [ ] table is too wide. add institution to the table but hide it
        - [ ] add currency.js route conversion to accounts page
        - [ ] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
-       - [x] get max date from child accounts
-       - [x] first draft implementation done
 - [ ] account page
-       - [ ] New bar graph: transactions per day. Modify account_history route to also give transaction count per day:
-              SELECT t.account, DATE(t.datetime) AS dt, t.balance, count(*) AS cnt FROM 'transaction' t WHERE t.account = '302985 1360851' GROUP BY DATE(datetime) ORDER BY dt DESC
        - [ ] graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
        - [ ] roll-up sub accounts (and show assets?)
        - [ ] add/edit account details
        - [ ] add new account (scraper?). review what belongs on account table vs config vs code
-       - [x] "Last updated" date human readable --> Today 00:30am AEST
-       - [x] where to source logo for each account? where to store that?
-       - [x] design the account page with new and editing, use the sexy graph format from Ben's app
-       - [x] add account graph page. [list|graph]
 - [ ] fix/finish install
        - [ ] create a jwt key on install
        - [ ] bring demo DB up to date
@@ -33,9 +27,19 @@ One day:
 - [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
 - [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 - [ ] Add kv logging for events. Events could include playwright runs, failures, logins.
+- [ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
+- [ ] Simon: Sync url with filters
+- [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 
 
-
+- [x] New bar graph: transactions per day. Modify account_history route to also give transaction count per day:
+       SELECT t.account, DATE(t.datetime) AS dt, t.balance, count(*) AS cnt FROM 'transaction' t WHERE t.account = '302985 1360851' GROUP BY DATE(datetime) ORDER BY dt DESC
+- [x] "Last updated" date human readable --> Today 00:30am AEST
+- [x] where to source logo for each account? where to store that?
+- [x] design the account page with new and editing, use the sexy graph format from Ben's app
+- [x] add account graph page. [list|graph]
+- [x] get max date from child accounts
+- [x] first draft implementation done
 - [x] make api keys file optional ApiKeyManager.js
 - [x] cutover coinbase to use util.savetopaisley
 - [x] check and delete the old swyftx balances from transactions
@@ -47,10 +51,6 @@ One day:
 - [x] Add filter_save to the backend as kv pair
 - [x] Maybe balances go to events as well? (WON'T DO)
 - [x] Add string (contains/regex) to Account/Tags/Party Filter, do tests too (WON'T DO)
-- [ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
-- [ ] Simon: Sync url with filters
-- [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
-
 
 # PROJECTS
 
