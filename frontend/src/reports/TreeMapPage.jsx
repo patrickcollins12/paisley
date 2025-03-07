@@ -88,9 +88,9 @@ export default function TreeMapPage() {
   const { update: updateTransaction } = useUpdateTransaction();
 
   function handleTransactionUpdate(id, transactionData) {
-    console.log('handleTransactionUpdate:begin', id, transactionData);
+    // console.log('handleTransactionUpdate:begin', id, transactionData);
     updateTransaction(id, transactionData).then(result => {
-      console.log('update transaction result', result);
+      // console.log('update transaction result', result);
     });
   }
 

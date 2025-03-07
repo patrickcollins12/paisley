@@ -2,7 +2,7 @@ import useSWR from "swr";
 import httpClient from "@/lib/httpClient.js"
 
 async function updater(id, data) {
-  console.log('updater', id, data);
+  // console.log('updater', id, data);
   try {
 
     if (id === undefined) {
@@ -34,7 +34,7 @@ async function updater(id, data) {
     }
 
     if (update) {
-      console.log("POST: ", JSON.stringify(requestBody, null, "\t"))
+      // console.log("POST: ", JSON.stringify(requestBody, null, "\t"))
 
       const response = await httpClient.post('update_transaction', requestBody);
       if (response.data.success) {

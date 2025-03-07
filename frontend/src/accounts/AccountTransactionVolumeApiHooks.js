@@ -8,7 +8,7 @@ async function fetcher([url, id, from, to]) {
   if (from) params.append('from', from);
   if (to) params.append('to', to);
   const newUrl = `${url}?${params.toString()}`
-  console.log(`newUrl: ${newUrl}`)
+  // console.log(`newUrl: ${newUrl}`)
   const response = await httpClient.get(newUrl);
   return response.data;
 }

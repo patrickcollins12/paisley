@@ -92,7 +92,7 @@ export function ReactSelect({ coloredPills, value, options, onChange, valueAsArr
 
 
   useEffect(() => {
-    console.log("ReactSelect value updated:", value);
+    // console.log("ReactSelect value updated:", value);
   }, [value]);
   
   useEffect(() => {

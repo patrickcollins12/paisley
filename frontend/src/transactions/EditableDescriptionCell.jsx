@@ -47,10 +47,10 @@ export function EditableDescriptionCell({ row, columnId, table }) {
     }
 
     function saveDescription(newVal) {
-        console.log(JSON.stringify(table.options.meta,null,"\t"))
+        // console.log(JSON.stringify(table.options.meta,null,"\t"))
         table.options.meta?.updateData(index, columnId, newVal);
         updateTransaction(row.original.id, { description: sanitize(newVal) }).then(success => {
-            if (success) console.log('Transaction successfully updated');
+            // if (success) console.log('Transaction successfully updated');
         });
     }
 
@@ -79,7 +79,7 @@ export function EditableDescriptionCell({ row, columnId, table }) {
 
     function revertChanges() {
         revertedWasClickedRef.current = true;
-        console.log(`Reverting to ${initialDescription}. ${revertedWasClickedRef}`)
+        // console.log(`Reverting to ${initialDescription}. ${revertedWasClickedRef}`)
         setIsFocused(false)
         setEditFieldValue(initialDescription)
         setHasBeenEdited(false);

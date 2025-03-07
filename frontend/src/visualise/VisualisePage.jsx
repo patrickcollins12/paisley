@@ -29,7 +29,7 @@ export default function VisualisePage() {
       const rect = chartRef.current.getBoundingClientRect();
       const h = window.innerHeight - rect.top - 10
       const w = window.innerWidth - rect.left - 10
-      console.log("updateSize", h, w)
+      // console.log("updateSize", h, w)
 
       setDimensions({ height: h, width: w });
     }

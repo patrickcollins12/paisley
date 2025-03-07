@@ -23,7 +23,7 @@ export function AutoCategorizeSwitch({ id, autoCategorizeValue, onAutoCategorize
           body: body
         });
         const responseData = await response.json();
-        console.log(`Call to update_transaction succeeded: ${JSON.stringify(responseData)}\nBody: ${body}`);
+        // console.log(`Call to update_transaction succeeded: ${JSON.stringify(responseData)}\nBody: ${body}`);
       } catch (error) {
         console.error(`Failed to post tags: ${error}\nBody: ${body}`);
       }

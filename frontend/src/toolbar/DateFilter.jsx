@@ -86,7 +86,7 @@ export default function DateFilter({operators}) {
   }
 
   const updateFilters = (dateRange, rangeName = null) => {
-    console.log('DateFilter.updateFilters', dateRange, rangeName, operatorDef);
+    // console.log('DateFilter.updateFilters', dateRange, rangeName, operatorDef);
 
     const filters = []
     if (dateRange?.from) {

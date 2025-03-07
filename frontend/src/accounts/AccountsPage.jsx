@@ -26,7 +26,7 @@ const AccountsPage = () => {
   const formatCurrency = (amount, currency) => {
     if (!amount) return "";
 
-    console.log(`amount: ${amount}, currency: ${currency}`);
+    // console.log(`amount: ${amount}, currency: ${currency}`);
     const formattedAmount = amount
       .toLocaleString("en-AU", { style: "currency", currency: "AUD" })
       .replace("A$", "$");

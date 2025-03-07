@@ -89,7 +89,7 @@ export function TransactionTagsDisplay({ type, data, manual, auto, rules, full, 
         updateHandler(id, updatedTransaction);
 
         setAutoCategorize(_autoCategorize);
-        console.log(`_autoCategorize: ${_autoCategorize}, manualTags: ${manualTags}, autoTags: ${autoTags}, updatedManualTags: ${updatedManualTags}`)
+        // console.log(`_autoCategorize: ${_autoCategorize}, manualTags: ${manualTags}, autoTags: ${autoTags}, updatedManualTags: ${updatedManualTags}`)
 
         setManualTags(updatedManualTags);
     }

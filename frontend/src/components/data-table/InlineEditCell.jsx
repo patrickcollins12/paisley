@@ -15,7 +15,7 @@ export default function InlineEditCell({id, name, value, onUpdate, ...props}) {
     onUpdate(id, {
       [name]: newValue
     }).catch(error => {
-      console.log('Inline Edit Error: ', error);
+      console.error('Inline Edit Error: ', error);
       setCellValue(value);
     });
   }
