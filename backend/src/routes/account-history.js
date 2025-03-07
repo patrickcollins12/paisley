@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { body, query, validationResult } = require("express-validator");
-const BankDatabase = require("../BankDatabase"); // Adjust the path as necessary
+const BankDatabase = require("../BankDatabase"); 
+const logger = require("../Logger"); 
 
 // Set to false to enforce authentication. Set it to true when doing unit tests
 const disableAuth = false;
@@ -42,7 +43,7 @@ router.post(
             res.status(201).json({ historyid: result.lastInsertRowid, message: "Balance recorded" });
         } catch (err) {
 
-            console.error("Error inserting balance:", err.message);
+            logger.error(`Error inserting balance: ${err.message}`);
 
             if (err.message.includes("FOREIGN KEY constraint failed")) {
                 return res.status(400).json({ error: `Account ID '${accountid}' does not exist.` });
@@ -121,7 +122,7 @@ router.get(
             const rows = stmt.all(...params);
             res.json(rows);
         } catch (err) {
-            console.error("Error fetching account history:", err.message);
+            logger.error(`Error fetching account history: ${err.message}`);
             res.status(500).json({ error: err.message });
         }
     }
@@ -166,14 +167,14 @@ router.get(
         // Final GROUP BY and ORDER BY
         query += " GROUP BY t.account, DATE(t.datetime) ORDER BY date DESC";
 
-        // console.log(query, params);
+        // logger.info(`${query}, ${params}`);
 
         try {
             const stmt = db.db.prepare(query);
             const rows = stmt.all(...params);
             res.json(rows);
         } catch (err) {
-            console.error("Error fetching account transaction volume:", err.message);
+            logger.error(`Error fetching account transaction volume: ${err.message}`);
             res.status(500).json({ error: err.message });
         }
     }

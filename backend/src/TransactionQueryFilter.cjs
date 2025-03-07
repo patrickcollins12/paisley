@@ -1,3 +1,5 @@
+const logger = require('./Logger');
+
 class TransactionQueryFilter {
 
     constructor(filterObj) {
@@ -8,7 +10,7 @@ class TransactionQueryFilter {
     }
 
     _processFilterParams() {
-        // console.log("FILTER!", JSON.stringify(this.filter, null, "\t"))
+        // logger.info("FILTER!", JSON.stringify(this.filter, null, "\t"))
 
         for (const [field, filter] of Object.entries(this.filter)) {
 

@@ -1,5 +1,6 @@
 const { DateTime } = require('luxon');
 let chalk;
+const logger = require('./Logger');
 
 class ParseResults {
 
@@ -90,10 +91,10 @@ class ParseResults {
     async print() {
         await this.loadChalk();
 
-        console.log(`${chalk.magenta(this.parser)} ${chalk.blue(this.file)}`)
+        logger.info(`${chalk.magenta(this.parser)} ${chalk.blue(this.file)}`)
 
         if (!this.lines) {
-            console.log(chalk.red(`   No transactions in file`))
+            logger.info(chalk.red(`   No transactions in file`))
             return
         }
 
@@ -109,19 +110,19 @@ class ParseResults {
         }
 
         const percent_imported = this.lines > 0 ? Math.round((this.inserted / this.lines) * 100) : 0;
-        console.log(color(`   ${this.inserted} of ${this.lines}, ${percent_imported}% imported (${this.skipped} skipped)`))
+        logger.info(color(`   ${this.inserted} of ${this.lines}, ${percent_imported}% imported (${this.skipped} skipped)`))
 
         if (this.dates?.in_file) {
             const from_date = DateTime.fromJSDate(this.dates?.in_file[0]).toFormat('yyyy-MM-dd');
             const to_date = DateTime.fromJSDate(this.dates?.in_file[1]).toFormat('yyyy-MM-dd');
 
             if (! to_date.startsWith('0000')) {
-                console.log(chalk.gray(`   ${from_date} to ${to_date}`))
+                logger.info(chalk.gray(`   ${from_date} to ${to_date}`))
             }
         }
 
-        // console.log(JSON.stringify(this, null, "\t"))
-        console.log()
+        // logger.info(JSON.stringify(this, null, "\t"))
+
 
     }
 

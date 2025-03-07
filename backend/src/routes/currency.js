@@ -5,7 +5,7 @@ const { query, validationResult } = require('express-validator');
 const router = express.Router();
 const KeyValueStore = require('../KeyValueStore');
 const store = new KeyValueStore();
-const logger = require('../logger'); // Ensure you have a logger module
+const logger = require('../Logger'); // Ensure you have a logger module
 
 /*
 OK before I park this here is where I got up to.

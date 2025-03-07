@@ -1,6 +1,7 @@
 const Database = require('better-sqlite3');
 const config = require('./Config');
 const fs = require('fs');
+const logger = require('./Logger');
 
 class BankDatabase {
 
@@ -24,7 +25,7 @@ class BankDatabase {
             }
 
             // Enable this to turn on logging:
-            // this.db = new Database(path, {verbose: console.log});
+            // this.db = new Database(path, {verbose: logger.info});
             this.db = new Database(path);
 
             // this.db = this.createDbProxy(this.db);
@@ -34,9 +35,9 @@ class BankDatabase {
             this.addRegex()
             this.regexCache = new Map();  // Cache for storing compiled regex objects
             
-            console.log(`Connected to SQLite database: ${path}`);
+            logger.info(`Connected to SQLite database: ${path}`);
         } catch (err) {
-            console.error("Connect error: ", err);
+            logger.error(`Connect error: ${err}`);
         }
 
         // if (!dbPath) {
@@ -111,8 +112,8 @@ class BankDatabase {
                     const stripCharacter = (str, char) => str.startsWith(char) ? str.slice(1) : str;
                     regexPattern = stripCharacter(regexPattern, '/');  // Output: 'example'
 
-                    // console.log(">>pattern: ",pattern)
-                    // console.log(">>regexPattern: ",regexPattern)
+                    // logger.info(`>>pattern: ${pattern}`)
+                    // logger.info(`>>regexPattern: ${regexPattern}`)
 
                     regex = new RegExp(regexPattern, flags);  // Try compiling the regex
                     this.regexCache.set(pattern, regex);      // Cache the compiled regex

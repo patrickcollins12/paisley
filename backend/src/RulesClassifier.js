@@ -2,6 +2,7 @@ const BankDatabase = require('./BankDatabase');
 const config = require('./Config');
 const RuleToSqlParser = require('./RuleToSqlParser');
 const TransactionQuery = require('./TransactionQuery.cjs');
+const logger = require('./Logger');
 
 // dragons here.
 
@@ -33,7 +34,7 @@ class RulesClassifier {
 
         const fetchSql = TransactionQuery.allTransactionsQuery +
             ` AND ${ruleWhereClause} ${txidsCondition}`
-        // console.log(`fetchSql: ${fetchSql}`)
+        // logger.info(`fetchSql: ${fetchSql}`)
         const fetchStmt = this.db.db.prepare(fetchSql);
         let transactions = fetchStmt.all(params);
 
@@ -70,12 +71,12 @@ class RulesClassifier {
                 partyJson = JSON.stringify({ party: party, rule: rule_id })
             }
 
-            // console.log(`>> ${partyJson}` )
+            // logger.info(`>> ${partyJson}` )
             updateStmt.run(tagJson, partyJson, transaction.id);
 
         });
 
-        // console.log(`Rows updated: ${transactions.length}`);
+        // logger.info(`Rows updated: ${transactions.length}`);
         return transactions.length
     }
 
@@ -96,7 +97,7 @@ class RulesClassifier {
                 party = '{}'
             ${txidsCondition}`
 
-        // console.log(`resetTagsQuery: ${resetTagsQuery}`)
+        // logger.info(`resetTagsQuery: ${resetTagsQuery}`)
         const stmt = this.db.db.prepare(resetTagsQuery)
         // stmt.run(params);
         try {
@@ -104,7 +105,7 @@ class RulesClassifier {
                 stmt.run(params);
             })();
         } catch (error) {
-            console.error("Error updating transactions:", error);
+            logger.error(`Error updating transactions: ${error}`);
         }
 
     }
@@ -129,7 +130,7 @@ class RulesClassifier {
             )
 
         } catch (e) {
-            console.log("Rule processing failed(1):", rule, e)
+            logger.error(`Rule processing failed(1): ${rule}, ${e}`)
         }
 
         return cnt
@@ -187,7 +188,7 @@ class RulesClassifier {
                 )
             }
             catch (e) {
-                console.log(`Rule processing failed(2): ${e}\n   ${JSON.stringify(rule)}\n`)
+                logger.error(`Rule processing failed(2): ${e}\n   ${JSON.stringify(rule)}\n`)
             }
 
         }

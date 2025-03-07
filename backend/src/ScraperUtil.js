@@ -24,7 +24,7 @@ async function saveCSVFromPromise(config, dir, download) {
     const fileName = [config['identifier'], process.pid, download.suggestedFilename()].join('_');
     let csv_location = path.join(dir, fileName);
     await download.saveAs(csv_location);
-    console.log(`Saved to ${csv_location}`);
+    logger.info(`Saved to ${csv_location}`);
 }
 
 /**
@@ -34,7 +34,7 @@ async function saveCSVFromPromise(config, dir, download) {
  */
 async function saveDataToCSV(filename, data) {
     if (!data || data.length === 0) {
-        console.log('No data to write');
+        logger.error('No data to write');
         throw new Error("Empty data object, no CSV to write");
     }
 

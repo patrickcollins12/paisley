@@ -3,7 +3,7 @@ const CSVParserFactory = require('./CSVParserFactory');
 const FileWatcher = require('./FileWatcher');
 const FileMover = require('./FileMover');
 const RulesClassifier = require('./RulesClassifier');
-
+const logger = require('./Logger');
 class TransactionFileProcessor {
     constructor() {
         this.parsers = {};
@@ -34,14 +34,14 @@ class TransactionFileProcessor {
                 }
                 this.parseResultsBatch.push(parseResults);
             } catch (error) {
-                console.error("Error processing file:", error);
+                logger.error(`Error processing file: ${error}`);
             }
         };
 
         const fileWatcher = new FileWatcher(processFile, this.finishedBatchOfFiles.bind(this));
 
         fileWatcher.startWatching(watchDir, processedDir);
-        console.log("Watching for CSV files");
+        logger.info("Watching for CSV files");
 
         return this;
     }
@@ -61,10 +61,10 @@ class TransactionFileProcessor {
         }
 
         // CLASSIFY THE RECENTLY ADDED TRANSACTIONS
-        console.log("Starting classification");
+        logger.info("Starting classification");
         this.classifier.applyAllRules(insertedIds);
-        console.log(`Finished processing batch of ${insertedIds.length}`);
-        // console.log(`Batch details:\n${JSON.stringify(this.parseResultsBatch, null, "\t")}`);
+        logger.info(`Finished processing batch of ${insertedIds.length}`);
+        // logger.info(`Batch details:\n${JSON.stringify(this.parseResultsBatch, null, "\t")}`);
 
         this.parseResultsBatch = [];
     }

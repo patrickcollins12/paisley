@@ -3,7 +3,7 @@ const router = express.Router();
 const { validationResult } = require('express-validator');
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RuleToSqlParser = require('../RuleToSqlParser');
-
+const logger = require('../Logger.js');
 const { validateTransactions } = require('../transactions_validator');
 const TransactionQuery = require('../TransactionQuery.cjs');
 
@@ -31,7 +31,7 @@ router.get('/api/transactions', async (req, res) => {
     tq.processParams()
 
   } catch (err) {
-    // console.debug("rule error: ", err);
+    // logger.info(`rule error: ${err}`);
     res.status(500).json({ "error": err.message });
     return
   }
@@ -51,7 +51,7 @@ router.get('/api/transactions', async (req, res) => {
       });
 
   } catch (err) {
-    console.error("error: ", err);
+    logger.error(`error: ${err}`);
     res.status(500).json({ "error": err.message });
     return
   }

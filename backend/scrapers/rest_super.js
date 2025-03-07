@@ -67,13 +67,16 @@ test('test', async ({ page }) => {
 
 
     // download the transaction history
-    // TODO... the waits arent quite working
     await page.getByRole('link', { name: 'Your account' }).click();
+    await page.getByRole('heading', { name: 'Balance enquiry' }).click();
     await page.getByRole('link', { name: 'Transaction history' }).click();
+    await page.getByRole('heading', { name: 'Transaction history' }).click();
     await page.getByLabel('Custom period').check();
+    await page.getByRole('link', { name: 'Export' }).click();
     const downloadPromise = page.waitForEvent('download');
     await page.getByRole('link', { name: 'CSV' }).click();
     const download = await downloadPromise;
     await util.saveCSVFromPromise(bank_config, config['csv_watch'], download)
 
+    
 });

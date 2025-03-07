@@ -2,13 +2,14 @@
 const os = require('os');
 const path = require('path');
 const minimist = require('minimist');
+const logger = require('../src/Logger');
 
 // load command line arguments
 const args = minimist(process.argv);
 
 // load the config
 const config = require('../src/Config');
-// console.log("args:",args);
+// logger.info(`args: ${args}`);
 config.load(args["config"])
 
 const RulesClassifier = require('../src/RulesClassifier');
@@ -16,6 +17,6 @@ const RulesClassifier = require('../src/RulesClassifier');
 const classifier = new RulesClassifier()
 
 // CLASSIFY THE RECENTLY ADDED TRANSACTIONS
-console.log("ready to classify")
+logger.info("ready to classify")
 classifier.applyAllRules()
-console.log("Finished processing");
+logger.info("Finished processing");

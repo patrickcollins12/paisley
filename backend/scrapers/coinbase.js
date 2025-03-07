@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const axios = require('axios');
 const { DateTime } = require("luxon");
 const util = require('../src/ScraperUtil');
+const logger = require('../src/Logger');
 
 /**
  * Converts a human-readable timezone from Coinbase to a valid IANA timezone.
@@ -80,7 +81,7 @@ async function createOrUpdateMainAccount() {
         }
         // selectively move it over to payload
         const user_data = raw_data.data
-        // console.log(`User data: ${JSON.stringify(user_data, null, 2)}`)
+        // logger.info(`User data: ${JSON.stringify(user_data, null, 2)}`)
         account_from_user_payload = {
             "accountid": user_data.id,
             "institution": "Coinbase",
@@ -100,7 +101,7 @@ async function createOrUpdateMainAccount() {
 
 
     } catch (error) {
-        console.error('Failed to fetch data:', error.message);
+        logger.error(`Failed to fetch data: ${error.message}`);
     }
 
     return account_from_user_payload
@@ -153,8 +154,8 @@ async function getCoinbaseBalances(account_from_user_payload) {
                     "metadata": JSON.stringify(account)
                 };
 
-                // console.log(`parentid: ${JSON.stringify(account_from_user_payload, null, 2)}`)
-                // console.log(`Payload: ${JSON.stringify(payload, null, 2)}`)
+                // logger.info(`parentid: ${JSON.stringify(account_from_user_payload, null, 2)}`)
+                // logger.info(`Payload: ${JSON.stringify(payload, null, 2)}`)
                 util.saveToPaisley("/api/accounts", payload)
 
                 const cryptocode = account.currency
@@ -163,11 +164,11 @@ async function getCoinbaseBalances(account_from_user_payload) {
                 const units = parseFloat(account.available_balance.value)
                 const price = parseFloat(spotpriceJson.data.amount)
                 const balance = (price * units).toFixed(2)
-                console.log(`Account: ${cryptocode}-${currency} \$${balance}\t\t(Units:${units}, Spot price:${price.toFixed(3)})`)
+                logger.info(`Account: ${cryptocode}-${currency} \$${balance}\t\t(Units:${units}, Spot price:${price.toFixed(3)})`)
 
                 const datetime = DateTime.now().setZone(payload.timezone).toISO()
 
-                console.log(`Datetime: ${datetime}, timezone: ${payload.timezone}`)
+                logger.info(`Datetime: ${datetime}, timezone: ${payload.timezone}`)
 
                 util.saveToPaisley(
                     "/api/account_balance/",
@@ -186,16 +187,16 @@ async function getCoinbaseBalances(account_from_user_payload) {
                     })
 
             } catch (error) {
-                console.error('Failed to fetch data:', error.message);
+                logger.error(`Failed to fetch data: ${error.message}`);
             }
 
-            // console.log(JSON.stringify(data2.data, null, 2));
+            // logger.info(JSON.stringify(data2.data, null, 2));
 
             // x.push(account)
         }
 
     } catch (error) {
-        console.error('Failed to fetch data:', error.message);
+        logger.error(`Failed to fetch data: ${error.message}`);
     }
 
 }
@@ -235,7 +236,7 @@ async function callCoinbase(requestPath) {
         // Return JSON response
         return response.data;
     } catch (error) {
-        console.error('Error calling Coinbase API:', error.response?.data || error.message);
+        logger.error(`Error calling Coinbase API: ${error.response?.data || error.message}`);
         throw error;
     }
 }
@@ -245,7 +246,7 @@ function convertToIanaTimezone(humanReadableTz) {
     const ianaTz = timezoneMap[humanReadableTz];
 
     if (!ianaTz) {
-        console.warn(`⚠️ Unknown timezone received: "${humanReadableTz}". Defaulting to UTC.`);
+        logger.warn(`⚠️ Unknown timezone received: "${humanReadableTz}". Defaulting to UTC.`);
         return "UTC"; // Safe fallback
     }
 

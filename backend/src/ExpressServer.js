@@ -7,6 +7,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 // const conditionalAuth = require('./ConditionalAuth');
 const JWTAuthenticator = require('./JWTAuthenticator');
+const logger = require('./Logger');
 
 class ExpressServer {
     constructor({ enableApiDocs = true, port = 4000, globalDisableAuth = false }) {
@@ -25,7 +26,7 @@ class ExpressServer {
             this.setupSwaggerDocs();
         }
         else {
-            console.log("Swagger API docs NOT enabled")
+            logger.info("Swagger API docs NOT enabled")
         }
 
     }
@@ -41,14 +42,14 @@ class ExpressServer {
 
         // Logger
         // this.app.use((req, res, next) => {
-        //     console.log(`${req.method} ${req.path}`);
+        //     logger.info(`${req.method} ${req.path}`);
         //     next();
         // });
     }
 
     loadRoutes() {  
         if (this.globalDisableAuth) {
-            console.warn("Warning: Disabling auth globally for express.")
+            logger.warn("Warning: Disabling auth globally for express.")
         }
 
         const routes = this.getRoutes();
@@ -105,13 +106,13 @@ class ExpressServer {
         const swaggerDocs = swaggerJsdoc(swaggerOptions);
         const apidocs = '/api/docs'
         this.app.use(apidocs, swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-        console.log(`Swagger backend API docs enabled at ${apidocs}`)
+        logger.info(`Swagger backend API docs enabled at ${apidocs}`)
 
     }
     async start() {
         return new Promise((resolve, reject) => {
             this.server = this.app.listen(this.port, () => {
-                console.log(`Paisley backend API server is running on port ${this.port}`);
+                logger.info(`Paisley backend API server is running on port ${this.port}`);
                 resolve();
             }).on('error', reject);
         });
@@ -124,7 +125,7 @@ class ExpressServer {
                     if (err) {
                         return reject(err);
                     }
-                    console.log(`Server on port ${this.port} has been stopped.`);
+                    logger.info(`Server on port ${this.port} has been stopped.`);
                     resolve();
                 });
             });

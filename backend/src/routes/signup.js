@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../Config');
 const manager = new UserManager(config['users_file'])
 const JWT_SECRET = config['jwt'] || 'not_sec'; 
+const logger = require('../Logger.js');
 
 const disableAuth = true; // false means apply auth, true means disable auth
 

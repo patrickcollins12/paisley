@@ -1,5 +1,4 @@
 import { test } from '@playwright/test';
-import { table } from 'console';
 const { DateTime } = require("luxon");
 
 const util = require('../src/ScraperUtil');
@@ -167,7 +166,7 @@ async function processMortgageAccounts(page, tableObj) {
     .filter(row =>
       row.Link?.startsWith('/CMWeb/AccountManage/AccountManage.aspx'));
 
-  // console.log("Filtered Accounts:", filteredAccounts);
+  // logger.info(`Filtered Accounts: ${filteredAccounts}`);
 
   for (const obj of filteredAccounts) {
     const link = baseUrl + obj['Link']

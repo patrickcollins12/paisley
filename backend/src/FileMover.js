@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const path = require('path');
+const logger = require('./Logger');
 
 class FileMover {
     static async moveFile(baseDir, sourcePath, destinationDir) {
@@ -15,7 +16,7 @@ class FileMover {
 
         // Move the file
         await fs.rename(sourcePath, destinationPath);
-        console.log(`Moved "${sourcePath}" to ${destinationPath}`);
+        logger.info(`Moved "${sourcePath}" to ${destinationPath}`);
     }
 }
 

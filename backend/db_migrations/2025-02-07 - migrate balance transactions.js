@@ -3,6 +3,7 @@ const config = require('../src/Config');
 config.load()
 const BankDatabase = require('../src/BankDatabase'); // Adjust the path as necessary
 let db = new BankDatabase();
+const logger = require('../src/Logger');
 
 // clear account history!
 // db.db.prepare("delete from account_history").run();
@@ -14,7 +15,7 @@ from 'transaction' t where type='BAL' and account like ?
 
 const query = db.db.prepare(sql);
 query.all("RES010%").forEach(row => {
-    console.log(row.account, row.balance)
+    logger.info(`${row.account}, ${row.balance}`)
     const filejson = JSON.stringify( {"file": row.file} )
     const insertstmt = db.db.prepare('INSERT INTO account_history (accountid, datetime, balance, data) VALUES (?, ?, ?, ?)');
     insertstmt.run(row.account, row.datetime, row.balance, filejson);
@@ -45,7 +46,7 @@ query.all("RES010%").forEach(row => {
 //         }
 //     }
 
-//     console.log(JSON.stringify(data, null, 2))
+//     logger.info(JSON.stringify(data, null, 2))
 
 //     util.saveToPaisley(
 //         "/api/account_balance",

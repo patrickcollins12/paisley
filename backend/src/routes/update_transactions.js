@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RulesClassifier = require('../RulesClassifier');
+const logger = require('../Logger.js');
 
 router.post('/api/update_transaction', [
   // Validate and sanitize the ID
@@ -77,19 +78,19 @@ router.post('/api/update_transaction', [
                  VALUES (${placeholders.join(', ')})
                  ON CONFLICT(id) DO UPDATE SET ${updateSet.join(', ')};`;
 
-    // console.log(query)
+    // logger.info(query)
     db.db.prepare(query).run(params);
 
     // Reclassify all of the rules onto this txid
     // Performance optimization... this could be expensive
     const classifier = new RulesClassifier();
     const cnt = classifier.applyAllRules([id])
-    console.log(`Reapplied all rules to ${id} and matched ${cnt} rules`)
+    logger.info(`Reapplied all rules to ${id} and matched ${cnt} rules`)
 
     res.json({ "success": true });
 
   } catch (err) {
-    console.log("error: ", err);
+    logger.error(`error: ${err}`);
     res.status(400).json({ "error": err.message });
   }
 });

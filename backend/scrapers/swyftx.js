@@ -25,7 +25,6 @@ async function getAccessToken() {
             { apiKey: API_Key });
         return response.data.accessToken;
     } catch (error) {
-        // console.log(error);
         logger.error(`Request failed with status ${error.response.status}`);
         logger.error(JSON.stringify(error.response.data, null, 2)); // Pretty print JSON response
 
@@ -79,7 +78,7 @@ async function getLiveRates() {
         //   },
 
     } catch (error) {
-        // console.log(error);
+        logger.error(`Request to getLiveRates() failed with status ${JSON.stringify(error.response)}`);
     }
 }
 
@@ -173,7 +172,7 @@ test('test', async () => {
 
     let data = await apiCallsToSwyftx()
 
-    // console.log(data)
+    // logger.info(data)
     // // setup the csv filename
     // // this is the old code that used to save to CSV
     // const dated = DateTime.now().setZone("Australia/Sydney").toISODate();

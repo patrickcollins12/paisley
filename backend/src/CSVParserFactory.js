@@ -2,6 +2,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const readline = require('readline');
 const config = require('./Config');
+const logger = require('./Logger');
 
 class CSVParserFactory {
     // constructor(config, db) {
@@ -19,7 +20,6 @@ class CSVParserFactory {
         try {
             let parserDir = config.parsers;
             if (parserDir.startsWith("./")) {
-                // console.log(`${parserDir} starts with ./`)
                 parserDir = path.join(__dirname, parserDir)
             }
             const files = await fs.readdir(parserDir);
@@ -33,12 +33,14 @@ class CSVParserFactory {
                     Parser.config = config[Parser.name];
                 } catch { }
 
-                console.log(`Loaded parser: ${file}`);
+                // logger.info(`Loaded parser: ${file}`);
                 // await processFile(filePath); // Replace this with actual processing logic
             }));
+            logger.info(`Loaded all CSV parsers`);
+
             return true;
         } catch (error) {
-            console.error('Error processing classes:', error);
+            logger.error(`Error processing classes: ${error}`);
             throw error;
         }
     }
@@ -49,7 +51,7 @@ class CSVParserFactory {
     //     if (parser) {
     //         //   var accountid = parser.extractAccountFromFileName(filePath);
     //         //   var accountid = parser.extractAccountFromFileName(filePath);
-    //         console.log(`Using ${parser.identifier} parser for file ${file}`);
+    //         logger.info(`Using ${parser.identifier} parser for file ${file}`);
     //         //   parser.setDB(bankdb);
     //         parser.bankdb = this.bankdb;
     //         parser.fileName = file;
@@ -57,7 +59,7 @@ class CSVParserFactory {
     //         return true;
     //     }
     //     else {
-    //         console.log(`Couldn't find parser for file ${file}`);
+    //         logger.info(`Couldn't find parser for file ${file}`);
     //         return false;
     //     }
     // }
@@ -86,8 +88,8 @@ class CSVParserFactory {
             //     try {
             //         for (const [pattern, accountid] of Object.entries(cfg.accountExpands)) {
             //             if (fileName.includes(pattern)) {
-            //                 console.log(`setting accountid: ${accountid}`)
-            //                 console.log(`${parserName} for ${fileName} with accountid ${accountid}`)
+            //                 logger.info(`setting accountid: ${accountid}`)
+            //                 logger.info(`${parserName} for ${fileName} with accountid ${accountid}`)
             //                 selectedParser = true;
             //                 parser.accountid = accountid
             //                 break;
@@ -105,7 +107,7 @@ class CSVParserFactory {
             // }
             if (!selectedParser) {
                 if (parser.matchesFileName(fileName)) {
-                    console.log(`${parserName} for ${fileName} with accountid ${parser.accountid}`)
+                    logger.info(`${parserName} for ${fileName} with accountid ${parser.accountid}`)
                     selectedParser = true;
                     // extractAccountFromFileName
                     break;

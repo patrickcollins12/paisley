@@ -3,13 +3,13 @@ const ExpressServer = require('./src/ExpressServer');
 const config = require('./src/Config');
 const TransactionFileProcessor = require('./src/TransactionFileProcessor');
 const PlaywrightRunner = require('./src/PlaywrightRunner');
-
+const logger = require('./src/Logger');
 // Load command line arguments
 const args = minimist(process.argv);
 
 // Show help if --help is present
 if (args.help) {
-    console.log(`
+    logger.info(`
   Usage: node index.js [options]
   
   Options:

@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const config = require('./Config');
+const logger = require('./Logger');
 
 class UserManager {
     constructor(configFileName) {
@@ -31,10 +32,10 @@ class UserManager {
         } catch (error) {
             // If the file doesn't exist or is empty, initialize an empty users object
             if (error.code === 'ENOENT') {
-                console.warn(`Configuration file not found: ${this.configFileName}, initializing empty user list.`);
+                logger.warn(`Configuration file not found: ${this.configFileName}, initializing empty user list.`);
                 this.users = {};
             } else {
-                console.error(`Error loading users from file: ${error.message}`);
+                logger.error(`Error loading users from file: ${error.message}`);
             }
         }
     }
@@ -45,7 +46,7 @@ class UserManager {
             const data = JSON.stringify(this.users, null, 4);
             fs.writeFileSync(this.configFileName, data, 'utf-8');
         } catch (error) {
-            console.error(`Error saving users to file: ${error.message}`);
+            logger.error(`Error saving users to file: ${error.message}`);
         }
     }
 

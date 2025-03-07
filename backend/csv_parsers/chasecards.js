@@ -42,7 +42,7 @@ class ChaseCardsCSVParser extends BaseCSVParser {
 
         processed.type = l['Type']
         processed.balance = l['Balance']
-        // console.log("csvline:",l)
+        // logger.info(`csvline: ${l}`)
 
         return processed
     }

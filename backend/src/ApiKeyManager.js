@@ -2,7 +2,7 @@ const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const config = require('./Config');
-
+const logger = require('./Logger');
 class ApiKeyManager {
 
     constructor(configFileName) {
@@ -27,10 +27,10 @@ class ApiKeyManager {
             if (fs.existsSync(this.configFileName)) {
                 this.apiKeys = JSON.parse(fs.readFileSync(this.configFileName, 'utf-8'));
             } else {
-                console.warn(`Configuration file '${this.configFileName}' not found. Using empty API keys list.`);
+                logger.warn(`Configuration file '${this.configFileName}' not found. Using empty API keys list.`);
             }
         } catch (error) {
-            console.error(`Error loading API keys from file '${this.configFileName}': ${error.message}`);
+            logger.error(`Error loading API keys from file '${this.configFileName}': ${error.message}`);
             this.apiKeys = {};
         }
     }
@@ -40,7 +40,7 @@ class ApiKeyManager {
             const data = JSON.stringify(this.apiKeys, null, 4);
             fs.writeFileSync(this.configFileName, data, 'utf-8');
         } catch (error) {
-            console.error(`Error saving API keys: ${error.message}`);
+            logger.error(`Error saving API keys: ${error.message}`);
         }
     }
 

@@ -2,6 +2,7 @@ const playwright = require("playwright"); // ^1.42.1
 import { test } from '@playwright/test';
 // const { test } = require('@playwright/test');
 const { DateTime } = require("luxon");
+const logger = require('../src/Logger');
 
 const util = require('../src/ScraperUtil');
 const config = require('../src/Config');
@@ -30,9 +31,9 @@ test('test', async ({ page }) => {
   await page2.getByLabel('Customer ID', { exact: true }).press('Tab');
 
   // debug
-  // console.log(await page.content());
+  // logger.info(`${await page.content()}`);
   // await page.screenshot({ path: "test.png", fullPage: true });
-  // console.log("here")
+  // logger.info("here")
 
   await page2.getByLabel('Password').fill(bank_config['Password']);
   await page2.locator('label').filter({ hasText: 'Remember customer ID Not recommended on public or shared devices' }).locator('span').nth(1).click();

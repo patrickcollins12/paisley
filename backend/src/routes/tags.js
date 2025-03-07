@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
-
+const logger = require('../Logger.js');
 // const JWTAuthenticator = require('../JWTAuthenticator');
 const disableAuth = false; // false means apply auth, true means disable auth
 
@@ -52,7 +52,7 @@ router.get('/api/tags', async (req, res) => {
     res.json(result.sort());
     // res.json(rows);
   } catch (err) {
-    console.log("error: ", err.message);
+    logger.error(`error: ${err.message}`);
     res.status(400).json({ "error": err.message });
   }
 });

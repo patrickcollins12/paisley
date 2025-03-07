@@ -3,7 +3,7 @@ const router = express.Router();
 const BankDatabase = require('../BankDatabase'); // Adjust the path as necessary
 const RulesClassifier = require('../RulesClassifier'); // Adjust the path as necessary
 const config = require('../Config');
-
+const logger = require('../Logger.js');
 const disableAuth = false; // false means apply auth, true means disable auth
 
 router.get('/api/rules',
@@ -48,7 +48,7 @@ router.get('/api/rules',
 
       res.json(rows);
     } catch (err) {
-      console.log("error: ", err.message);
+      logger.error(`error: ${err.message}`);
       res.status(400).json({ "error": err.message });
     }
 
@@ -64,14 +64,14 @@ router.get('/api/rerun_rules',
     try {
 
       let classifier = new RulesClassifier();
-      console.log("Starting full classification")
+      logger.info("Starting full classification")
       classifier.applyAllRules()
-      console.log("   Finished processing");
+      logger.info("   Finished processing");
 
       res.json("finished processing");
 
     } catch (err) {
-      console.log("error: ", err.message);
+      logger.error(`error: ${err.message}`);
       res.status(400).json({ "error": err.message });
     }
 

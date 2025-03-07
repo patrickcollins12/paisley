@@ -114,7 +114,7 @@ class TransactionQuery {
 
         const query = this.getTransactionQuery(limitOffsetEnabled, true)
 
-        // console.log("xxxx",query)
+        // logger.info("xxxx",query)
         const stmt = this.db.db.prepare(query);
         let rows = stmt.all(this.getParams(limitOffsetEnabled));
 

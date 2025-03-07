@@ -54,7 +54,7 @@ class WestpacCSVParser extends BaseCSVParser {
         try {
             acc = this.bankconfig.firstLinePatterns[acc];
         } catch {
-            console.error("this.bankconfig.firstLinePatterns is empty")
+            logger.error("this.bankconfig.firstLinePatterns is empty")
             return
         }
 
@@ -66,7 +66,7 @@ class WestpacCSVParser extends BaseCSVParser {
         processed.credit = l['Credit Amount']
         processed.balance = l['Balance']
         processed.type = l['Categories']
-        // console.log("csvline:",l)
+        // logger.info(`csvline: ${l}`)
 
         this.mustExistBeforeSaving = ['datetime','account','description','debit or credit','balance']
         

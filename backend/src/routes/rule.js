@@ -180,7 +180,7 @@ router.patch('/api/rule/:id', async (req, res) => {
         // Call classifyRuleAsync without awaiting it
         // await classifyRuleAsync(id)
         classifyRuleAsync(id).catch(error => {
-            console.error('Error during classification:', error);
+            logger.error(`Error during classification: ${error}`);
         });
 
         // Respond to the client immediately

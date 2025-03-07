@@ -71,7 +71,7 @@ class BankwestCSVParser extends BaseCSVParser {
             let revised_description = desc.replace(re, "")
             revised_description = revised_description.replace(/\s+/g, " ").trim()
 
-            // save these console.log's to a buffer for later printing
+            // save these log entry's to a buffer for later printing
             this.debug_str = `Revised ${orig_datetime} to ${new_datetime} based on ${desc}\n`
             this.debug_str += `Revised description ${revised_description}`
 
@@ -106,10 +106,10 @@ class BankwestCSVParser extends BaseCSVParser {
         processed.datetime = this.convertToLocalTime(l['Transaction Date']);
 
         if (this.extractDateFromDescription(processed)) {
-            // console.log("datetime >>", processed.datetime)
-            // console.log("description >>", processed.description)    
-            // console.log("revised_description >>", processed.revised_description)  
-            // console.log("")  
+            // logger.info("datetime >>", processed.datetime)
+            // logger.info("description >>", processed.description)    
+            // logger.info("revised_description >>", processed.revised_description)  
+            // logger.info("")  
         }
 
         let bsb = l['BSB Number'].replace("-", "")

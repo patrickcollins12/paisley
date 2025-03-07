@@ -51,7 +51,7 @@ class BaseCSVParser {
                     this.results.setMinMaxDate("in_file", processedLine['datetime'])
 
                     const isAlreadyInserted = this.isAlreadyInserted(processedLine);
-                    // console.log("Isalreadyinserted:",isAlreadyInserted)
+                    // logger.info(`Isalreadyinserted: ${isAlreadyInserted}`)
 
                     let isValid = true;
                     try {
@@ -69,13 +69,13 @@ class BaseCSVParser {
                     }
                     catch (error) {
                         // Handle the invalid record case
-                        console.log('Invalid record encountered:', error);
+                        logger.error(`Invalid record encountered: ${error}`);
                         this.results.invalid++; // Assuming you're tracking invalid records
                         // Other error handling logic here
                     }
 
                 } catch (error) {
-                    console.error("Error:", error);
+                    logger.error(`Error: ${error}`);
                     // Handle the error appropriately
                 }
             }
@@ -87,7 +87,7 @@ class BaseCSVParser {
         this.results['file'] = path.basename(this.fileName);
         this.results['account'] = this.accountid
         this.results['parser'] = this.constructor.name
-        // console.log(this.results)
+        // logger.info(this.results)
 
         return this.results
     }
@@ -107,7 +107,7 @@ class BaseCSVParser {
                 await this.processLineAsync();
             }
         } catch (error) {
-            console.error("Error processing file:", error);
+            logger.error(`Error processing file: ${error}`);
         } finally {
             stream.destroy();
         }
@@ -153,7 +153,7 @@ class BaseCSVParser {
             }
 
         } catch (error) {
-            console.error("Error processing file:", error);
+            logger.error(`Error processing file: ${error}`);
         }
 
         this.results.file = path.basename(this.fileName);
@@ -170,7 +170,7 @@ class BaseCSVParser {
 
             if (!this.processedLine?.datetime) {
                 this.results.skipped++;
-                // console.log("here1",  this.originalLine, this.processedLine)
+                // logger.info(`here1 ${this.originalLine} ${this.processedLine}`)
                 return;
             }
 
@@ -182,7 +182,7 @@ class BaseCSVParser {
 
             if (this.isAlreadyInserted()) {
                 this.results.skipped++;
-                logger.info(`skipping because already inserted: ${JSON.stringify(this.processedLine)}`);
+                // logger.info(`skipping because already inserted: ${JSON.stringify(this.processedLine)}`);
 
                 this.results.setMinMaxDate("skipped", this.processedLine['datetime']);
 
@@ -195,7 +195,7 @@ class BaseCSVParser {
                 await this.handleValidRecord();
             }
         } catch (error) {
-            console.error("Error processing line:", error);
+            logger.error(`Error processing line: ${error}`);
             this.results.invalid++;
         }
     }
@@ -213,7 +213,7 @@ class BaseCSVParser {
             }
 
         } catch (error) {
-            console.log('Invalid record encountered:', error);
+            logger.error(`Invalid record encountered: ${error}`);
             this.results.invalid++;
         }
     }
@@ -332,7 +332,7 @@ class BaseCSVParser {
         if (r.length > 1) throw new Error('Error: Multiple records found.');
         const exists = r.length === 1
         // if (exists) {
-        //     console.log(`Exists\n-------\nOriginal: ${JSON.stringify(this.originalLine,null,"\t")}\nProcessed: ${JSON.stringify(this.processedLine,null,"\t")}\n${sha}`)
+        //     logger.info(`Exists\n-------\nOriginal: ${JSON.stringify(this.originalLine,null,"\t")}\nProcessed: ${JSON.stringify(this.processedLine,null,"\t")}\n${sha}`)
         // }
 
         return exists;
@@ -367,19 +367,19 @@ class BaseCSVParser {
         try {
             const transactionResult = updateTransaction.run(newId, oldId);
             if (transactionResult.changes > 0) {
-                console.log(`Updated transaction record: ${oldId} to ${newId}`);
+                logger.info(`Updated transaction record: ${oldId} to ${newId}`);
             }
         } catch (error) {
-            console.log('Error updating transaction table:', error.message);
+            logger.error(`Error updating transaction table: ${error.message}`);
         }
 
         try {
             const enrichedResult = updateEnriched.run(newId, oldId);
             if (enrichedResult.changes > 0) {
-                console.log(`Updated transaction_enriched record: ${oldId} to ${newId}`);
+                logger.info(`Updated transaction_enriched record: ${oldId} to ${newId}`);
             }
         } catch (error) {
-            console.log('Error updating transaction_enriched table:', error.message);
+            logger.error(`Error updating transaction_enriched table: ${error.message}`);
         }
     }
 
@@ -399,21 +399,20 @@ class BaseCSVParser {
         try {
             for (const [pattern, accountid] of Object.entries(this.bankconfig.fileExpands)) {
                 if (fileName.includes(pattern)) {
-                    console.log(`setting accountid: ${accountid}`)
+                    logger.info(`setting accountid: ${accountid}`)
                     this.accountid = accountid
                     found = true; break;
                 }
             }
         }
         catch (error) {
-            console.log('error:', error)
+            logger.error(`error: ${error}`)
         }
         return found;
     }
 
     async extractAccountBySecondLine() {
 
-        // console.log(this);
         return new Promise((resolve, reject) => {
             const rl = readline.createInterface({
                 input: fs.createReadStream(this.fileName),
@@ -431,7 +430,7 @@ class BaseCSVParser {
                         for (const [pattern, accountid] of Object.entries(this.bankconfig.firstLinePatterns)) {
                             if (line.includes(pattern)) {
                                 this.accountid = accountid
-                                console.log(`setting accountid: ${accountid}`)
+                                logger.info(`setting accountid: ${accountid}`)
                                 resolve(true);
                                 rl.close();
                                 return

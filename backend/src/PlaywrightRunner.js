@@ -5,7 +5,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const { pid } = require('node:process');
 var cron = require('node-cron');
-
+const logger = require('./Logger');
 class PlaywrightRunner {
     constructor() {
     }
@@ -19,14 +19,14 @@ class PlaywrightRunner {
 
         // scraper enabled?
         if (config.enable_scraper == false) { 
-            console.warn(`Warn: Scraper disabled 'enable_scraper: ${config.enable_scraper}'`)
-            return 
+            logger.warn(`Warn: Scraper disabled 'enable_scraper: ${config.enable_scraper}'`);
+            return;
         }
 
         // run at startup
         if (config.scrape_at_startup) {
-            console.log(`Running playwright 'scrape_at_startup: ${config.scrape_at_startup}'`);
-            this.start()
+            logger.info(`Running playwright 'scrape_at_startup: ${config.scrape_at_startup}'`);
+            this.start();
         }
 
         // cron.schedule('1-5 * * * *', () => {
@@ -34,8 +34,8 @@ class PlaywrightRunner {
         if (cronstr) {
             if (cron.validate(cronstr)) {
                 cron.schedule(cronstr, () => {
-                    console.log('Scheduled playwright run starting now:', cronstr);
-                    this.start()
+                    logger.info(`Scheduled playwright run starting now: ${cronstr}`);
+                    this.start();
                 });
             } else {
                 throw new Error(`Invalid cron schedule string - scheduled_scrape_cron: ${cronstr}`)
@@ -49,7 +49,7 @@ class PlaywrightRunner {
 
     parseResults(data) {
         try {
-            // console.log(data)
+            // logger.info(data);
 
             // Parse the JSON data
             const jsonData = JSON.parse(data);
@@ -88,15 +88,14 @@ class PlaywrightRunner {
                 });
             });
 
-            console.log(resultsSummary)
-            // console.log(JSON.stringify(scrapeData,null,"\t"))
-            // console.log(JSON.stringify(jsonData.stats,null,"\t"))
-
+            logger.info(resultsSummary);
+            // logger.info(JSON.stringify(scrapeData, null, "\t"));
+            // logger.info(JSON.stringify(jsonData.stats, null, "\t"));
 
             // TODO: Save the resultsSummary to the log
 
         } catch (error) {
-            console.error('Error loading or processing the JSON file:', error);
+            logger.error(`Error loading or processing the JSON file: ${error}`);
         }
     }
 
@@ -131,12 +130,12 @@ class PlaywrightRunner {
         // PROCESS STDOUT
         npx.stdout.on('data', (data) => {
             // TODO where to log this "error" output?
-            // console.log(data.toString());
+            // logger.info(data.toString());
         });
 
         // PROCESS STDERR
         npx.stderr.on('data', (data) => {
-            // console.error(`stderr: ${data.toString()}`);
+            logger.error(`stderr: ${data.toString()}`);
         });
 
         npx.on('close', async (code) => {
@@ -145,10 +144,10 @@ class PlaywrightRunner {
                     const data = await this.loadResultsFromFile(jsontmpfile);
                     this.parseResults(data);
                 } else {
-                    console.error(`Unexpected exit code: ${code}`);
+                    logger.error(`Unexpected exit code: ${code}`);
                 }
             } catch (error) {
-                console.error('Error loading or parsing results:', error);
+                logger.error(`Error loading or parsing results: ${error}`);
             } finally {
                 try {
                     await fs.unlink(jsontmpfile);

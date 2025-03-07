@@ -244,7 +244,7 @@ class Transaction {
         }
 
         // let str = `${dateFormatted}, ${merchant.account}, ${description}, ${this.credit}, ${this.debit}, ${bal}, ${cats}`
-        // console.log(str)
+        // logger.info(str)
 
     }
 }
@@ -252,7 +252,7 @@ class Transaction {
 function convertAndLogCsv(data) {
     // Check for empty data
     if (data.length === 0) {
-        console.log('No data available');
+        logger.info('No data available');
         return;
     }
 
