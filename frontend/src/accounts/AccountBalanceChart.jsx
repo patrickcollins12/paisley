@@ -25,10 +25,15 @@ const AccountBalanceChart = ({ accountId, category, startDate }) => {
                     trigger: 'axis',
                     // formatter: '{b0}<br>${c0}',
                     formatter: function (params) {
-                        const name = params[0].name
-                        const data = params[0].data
-                        return `${name}<br><b>${formatCurrency(data)}</b>`
+                        const key = params[0]?.data[0]
+                        const val = params[0]?.data[1]
+                        return `${key}<br><b>Balance: ${formatCurrency(val)}</b>`
                     },
+                    // formatter: function (params) {
+                    //     const key = params[0]?.data[0]
+                    //     const val = Math.abs(params[0]?.data[1])
+                    //     return `${key}<br><b>transactions: ${val}</b>`
+                    // },
                     axisPointer: {
                         type: 'line',
                         label: {
@@ -62,9 +67,9 @@ const AccountBalanceChart = ({ accountId, category, startDate }) => {
                 xAxis: [
                     {
                         show: false,
-                        type: 'category',
+                        type: 'time',
                         boundaryGap: true,
-                        data: data.map(item => item.datetime)
+                        // data: data.map(item => item.datetime)
                     }
                 ],
                 yAxis: [
@@ -118,7 +123,8 @@ const AccountBalanceChart = ({ accountId, category, startDate }) => {
                         // emphasis: {
                         //     focus: 'series'
                         // },
-                        data: data.map(item => item.balance)
+                        // data: data.map(item => item.datetime)
+                        data: data.map(item => [item.datetime, item.balance])
                     }
                 ]
 

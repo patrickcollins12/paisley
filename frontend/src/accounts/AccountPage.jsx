@@ -10,10 +10,10 @@ import AccountVolumeChart from './AccountVolumeChart.jsx'
 import ChartTimeSelection from "./ChartTimeSelection";
 import AccountDetailsTable from './AccountDetailsTable.jsx'
 import TransactionCard from "@/transactions/TransactionCard.jsx"
-import ScrollableSidebar from "@/components/ScrollableSidebar.jsx"
+import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
 
 //data loaders
-import { useAccountData} from "@/accounts/AccountApiHooks.js";
+import useAccountData from "@/accounts/AccountApiHooks.js";
 import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 
 // utils

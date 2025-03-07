@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/components/ui/card"
 
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft, AlertCircle } from "lucide-react"
 
 import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
 import { useFetchRule, useUpdateRules } from "@/rules/RuleApiHooks.jsx"
@@ -15,6 +15,8 @@ import { useFetchTags } from "@/tags/TagApiHooks.js"
 import { Button } from "@/components/ui/button.jsx"
 import { useDebounce, useLogger, usePrevious } from "react-use"
 import { useToast } from "@/components/ui/use-toast.js"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+
 
 const routeApi = getRouteApi('/rules/$ruleId');
 
@@ -32,7 +34,7 @@ export default function RuleEditPage() {
   const id = Number.parseInt(ruleId) ? Number(ruleId) : null;
 
   // keep track of the form state
-  const [ruleData, setRuleData] = useState({rule: null, tag: [], party: []});
+  const [ruleData, setRuleData] = useState({ rule: null, tag: [], party: [] });
   const [tagData, setTagData] = useState([]);
   const [partyData, setPartyData] = useState([]);
 
@@ -79,7 +81,7 @@ export default function RuleEditPage() {
       updateRule(id, { rule: ruleString });
     }
     firstUpdateCompleted.current = true;
-  }, 500, [ruleString]);
+  }, 1500, [ruleString]);
 
   // tags
   const handleTagChange = selectedValues => {
@@ -89,7 +91,7 @@ export default function RuleEditPage() {
   };
 
   const handleTagBlur = e => {
-    updateRule(id, { tag: tagData});
+    updateRule(id, { tag: tagData });
   };
 
   // parties
@@ -100,16 +102,42 @@ export default function RuleEditPage() {
   };
 
   const handlePartyBlur = e => {
-    updateRule(id, { party: partyData});
+    updateRule(id, { party: partyData });
   };
-
 
   async function createRule(evt) {
     evt.preventDefault();
     if (id) return;
 
     try {
-      const result = await create(ruleData);
+      const { data, error } = await create(ruleData);
+  
+      if (error) {
+        setError(error);
+        return; // Stop processing if there's an error.
+      } 
+      else {
+        toast({ description: 'Rule created successfully', duration: 1000 });
+        setError(null);
+        const newId = data?.id;
+        await navigate({ to: '/rules/$ruleId', params: { ruleId: newId } });  
+      }
+  
+    } catch (unexpectedError) {
+      console.error("Unexpected error:", unexpectedError);
+      setError("Unexpected error occurred");
+    }
+  }
+  
+
+
+  async function createRule_OLD(evt) {
+    evt.preventDefault();
+    if (id) return;
+
+    try {
+      const { data: result, error, isLoading } = await create(ruleData);
+
       const newId = result?.id ?? null;
       if (newId) {
         toast({ description: 'Rule created successfully', duration: 1000 });
@@ -155,7 +183,19 @@ export default function RuleEditPage() {
             When specific conditions occur, automatically add Tags or Merchants
           </CardDescription>
         </CardHeader>
+
         <CardContent>
+
+          {error &&
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                {error}
+              </AlertDescription>
+            </Alert>
+          }
+
           <form onSubmit={createRule}>
             <div className="flex flex-col gap-3">
               <div>
@@ -171,7 +211,7 @@ export default function RuleEditPage() {
                       name="rule"
                       onChange={event => setRuleString(event.target.value)}
                       autoComplete="off" />
-                    {(error || transactionFetchError) &&
+                    {( transactionFetchError) &&
                       <div className="text-red-600 py-2">
                         {error ?? transactionFetchError?.response?.data?.error}
                       </div>
@@ -196,7 +236,7 @@ export default function RuleEditPage() {
                   onChange={handleTagChange}
                   onBlur={handleTagBlur}
                   optionsAsArray={useFetchTags('tags').data}
-                  valueAsArray={ tagData }
+                  valueAsArray={tagData}
                   isMulti={true}
                   isCreatable={true}
                   coloredPills={true}
@@ -216,7 +256,7 @@ export default function RuleEditPage() {
                   // options={useFetchTags('parties').data?.map(party => ({ label: party, value: party}))}
                   // value={ partyData?.map(party => ({ label: party, value: party})) }
                   optionsAsArray={useFetchTags('parties').data}
-                  valueAsArray={ partyData }
+                  valueAsArray={partyData}
                   isMulti={false}
                   isCreatable={true}
                   coloredPills={true}
@@ -225,7 +265,7 @@ export default function RuleEditPage() {
                   placeholder="Add a party..."
                 />
 
-              </div> 
+              </div>
 
               {/* only show the save button when we are creating a new rule */}
               {/* rule data is saved automatically when editing an existing rule */}

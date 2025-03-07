@@ -28,11 +28,20 @@ async function update(id, data) {
   return response;
 }
 
-async function create(data) {
-  const url = 'rule';
-  const response = await httpClient.post(url, data);
-  return response.data;
+async function create(postData) {
+  try {
+    const response = await httpClient.post('rule', postData);
+    return { data: response.data, error: null, isLoading: false };
+  } catch (err) {
+    const errorMsg = err.response?.data?.errors?.[0]?.msg || err.message;
+    return { data: null, error: errorMsg, isLoading: false };
+  }
 }
+
+
+// async function createOLD(postData) {
+//   return await httpClient.post('url', postData);
+// }
 
 async function remove(id) {
   const url = `rule/${id}`;

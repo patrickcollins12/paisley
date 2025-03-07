@@ -1,5 +1,6 @@
 const BaseCSVParser = require('../src/BaseCSVParser');
 const { DateTime } = require("luxon");
+const logger = require('../src/Logger');
 
 class BankwestCSVParser extends BaseCSVParser {
 
@@ -51,7 +52,7 @@ class BankwestCSVParser extends BaseCSVParser {
     //     "type"	INTEGER,
     //     PRIMARY KEY("id" AUTOINCREMENT)
     // );
-    
+
     extractDateFromDescription(processed) {
         // let str2 = 'blah 05:04PM 27Jul h'
         let re = RegExp(/(\d\d?):(\d\d)([AP]M) (\d\d?)(\w{3})\b/, "i")
@@ -69,9 +70,9 @@ class BankwestCSVParser extends BaseCSVParser {
 
             let revised_description = desc.replace(re, "")
             revised_description = revised_description.replace(/\s+/g, " ").trim()
-            
+
             // save these console.log's to a buffer for later printing
-            this.debug_str  = `Revised ${orig_datetime} to ${new_datetime} based on ${desc}\n`
+            this.debug_str = `Revised ${orig_datetime} to ${new_datetime} based on ${desc}\n`
             this.debug_str += `Revised description ${revised_description}`
 
             processed.revised_description = revised_description
@@ -90,8 +91,11 @@ class BankwestCSVParser extends BaseCSVParser {
         let str = ""
         str.toLower
 
-        if (narration.toLowerCase().startsWith("authorisation only")) {
-            // console.log(`Skipping ${narration}`)
+        // skip these pre-auths until they become actual transactions
+        if (narration.toLowerCase().startsWith("authorisation only") ||
+            narration.toLowerCase().startsWith("DEBIT AUTHORISATION") ||
+            l['Transaction Type'] === "DAU") {
+            logger.info(`Skipping ${narration}`)
             return null;
         }
 
@@ -121,14 +125,11 @@ class BankwestCSVParser extends BaseCSVParser {
     }
 
     transactionSaved(id) {
-        console.log(`\nSaved txn with id: ${id}`);
-        console.log(this.debug_str)
-        console.log("\n")
+        logger.info(`\nSaved txn with id: ${id}`);
+        logger.info(this.debug_str)
+        logger.info("\n")
     }
 
-    // transactionSkipped() {
-    //     console.log('Do nothing');
-    // }
 }
 
 module.exports = BankwestCSVParser;

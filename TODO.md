@@ -11,6 +11,7 @@
        - [ ] add currency.js route conversion to accounts page
        - [ ] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
 - [ ] account page
+       - [ ] manually add a balance amount
        - [ ] graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
        - [ ] roll-up sub accounts (and show assets?)
        - [ ] add/edit account details
