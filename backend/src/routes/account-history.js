@@ -72,8 +72,9 @@ router.get(
                     SELECT 
                         accountid, 
                         datetime, 
-                        balance
-                        --, 'account_history' as source
+                        balance,
+                        data,
+                        'account_history' as source
                     FROM 
                         account_history 
 
@@ -86,8 +87,9 @@ router.get(
                     SELECT 
                         t.account,
                         t.datetime,
-                        t.balance
-                        -- , 'transaction' as source
+                        t.balance,
+                        null,
+                        'transaction' as source
                     FROM 'transaction' t
                     WHERE t.rowid = (
                             SELECT 
@@ -95,7 +97,7 @@ router.get(
                                 FROM 'transaction' t2
                                 WHERE t2.account = t.account
                                     AND t2.datetime = t.datetime
-                        )
+                        ) AND balance is not null
                 ) WHERE 1=1
                 `;
         let params = [];
@@ -164,7 +166,7 @@ router.get(
         // Final GROUP BY and ORDER BY
         query += " GROUP BY t.account, DATE(t.datetime) ORDER BY date DESC";
 
-        console.log(query, params);
+        // console.log(query, params);
 
         try {
             const stmt = db.db.prepare(query);

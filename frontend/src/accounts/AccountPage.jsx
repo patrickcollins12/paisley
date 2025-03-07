@@ -95,7 +95,7 @@ const AccountPage = () => {
                         <CardContent>
                             <>
                                 <div>
-                                    {data && data.balance &&
+                                    {data && (data.balance !== null) &&
                                         <>
                                             <span className="text-4xl font-extrabold">{data && formatCurrency(data.balance)}</span>
                                             <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>

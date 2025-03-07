@@ -4,7 +4,7 @@ import { v5 as uuidv5 } from 'uuid';
 import { useLocalStorage } from "react-use"
 import { filterExpression, getOperatorById } from "@/toolbar/FilterExpression.jsx"
 
-const uuidNamespace = '246734d0-39cc-4481-bd88-76e80f1649ff';
+const uuidNamespace = '246734d0-39cc-4481-bd88-76e80f1649ff'; // namespace for search id generation
 const searchHistoryLimit = 250;
 const defaultValues = {
   getFilters: () => [],

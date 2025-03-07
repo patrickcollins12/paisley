@@ -43,6 +43,12 @@ export default function VisualisePage() {
     return () => window.removeEventListener("resize", updateSize); // Cleanup
   }, []);
 
+  // add $ to the tooltip
+  function formatUpperLabel(info) {
+    const roundedValue = info.value.toFixed(0);
+    const formattedValue = echarts.format.addCommas(roundedValue);
+    return `${info.name}  $${formattedValue}`;
+  }
 
   useEffect(() => {
     if (data && data.results) {
@@ -100,11 +106,13 @@ export default function VisualisePage() {
             },
             colorSaturation: [0.55, 0.7],
             upperLabel: {
-              show: true,
+              show: false,
               height: 40,
               color: "#fff",
             },
             levels: [
+
+              // Level 0: Income & Expense
               {
                 itemStyle: {
                   borderColor: "#777",
@@ -114,7 +122,10 @@ export default function VisualisePage() {
                 upperLabel: {
                   show: false,
                 },
+
               },
+
+              // Level 1: Income vs Expense
               {
                 colorSaturation: [0.5, 0.35],
                 itemStyle: {
@@ -123,6 +134,11 @@ export default function VisualisePage() {
                   gapWidth: 0,
                   borderColorSaturation: 0.2,
                 },
+                upperLabel: {
+                  show: true,
+                  formatter: formatUpperLabel,
+                },
+
                 color: [
                   "#314656",
                   "#61a0a8",
@@ -136,6 +152,8 @@ export default function VisualisePage() {
                   "#c23531",
                 ],
               },
+
+              // Level 2: Salary, Household
               {
                 colorSaturation: [0.6, 0.4],
                 itemStyle: {
@@ -143,7 +161,13 @@ export default function VisualisePage() {
                   gapWidth: 0,
                   borderColorSaturation: 0.3,
                 },
+                upperLabel: {
+                  show: true,
+                  formatter: formatUpperLabel,
+                },
               },
+
+              // Level 3: Household > Bank Interest
               {
                 colorSaturation: [0.7, 0.5],
                 itemStyle: {

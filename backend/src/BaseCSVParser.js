@@ -8,6 +8,7 @@ const ParseResults = require('./ParseResults.js');
 const config = require('./Config');
 const BankDatabase = require('./BankDatabase');
 const util = require('./Util.js');
+const logger = require('./Logger.js');
 
 class BaseCSVParser {
 
@@ -181,6 +182,8 @@ class BaseCSVParser {
 
             if (this.isAlreadyInserted()) {
                 this.results.skipped++;
+                logger.info(`skipping because already inserted: ${JSON.stringify(this.processedLine)}`);
+
                 this.results.setMinMaxDate("skipped", this.processedLine['datetime']);
 
                 // Call transactionSkipped if it has been defined in the subclass

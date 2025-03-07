@@ -1,9 +1,9 @@
 # TODO
 - [ ] visualize page
-       - [ ] add $ to main categories
+       - [x] add $ to main categories
        - [ ] set default filters
        - [ ] add some options: group by party, first tag, all tags (double count)
-- [ ] accounts page
+- [ ] accounts table page
        - [ ] roll-up sub accounts
        - [ ] consolidate utils and Intl.NumberFormat
        - [ ] add a sparkline (react-sparklines or chartist.js offer simpler, more minimal designs)
@@ -12,8 +12,9 @@
        - [ ] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
 - [ ] account page
        - [ ] manually add a balance amount
+       - [ ] show interest amount and chart
        - [ ] graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
-       - [ ] roll-up sub accounts (and show assets?)
+       - [ ] roll-up sub accounts (and show assets in the chart)
        - [ ] add/edit account details
        - [ ] add new account (scraper?). review what belongs on account table vs config vs code
 - [ ] fix/finish install
