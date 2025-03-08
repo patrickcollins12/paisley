@@ -23,7 +23,7 @@ import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
 const routeApi = getRouteApi('/account/$accountId');
 
 // load the logos, feel free to edit this and contribute
-import logos from '/public/logos/logos.json';
+import logos from '/src/logos/logos.json';
 
 // main component
 const AccountPage = () => {

@@ -15,10 +15,20 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import GlobalFilter from "@/toolbar/GlobalFilter.jsx";
 import useAccountData from "@/accounts/AccountApiHooks.js";
 
+import logos from '/src/logos/logos.json';
+
+
 const AccountsPage = () => {
   const navigate = useNavigate({ from: "/accounts" });
   const { data, error, isLoading } = useAccountData();
   const [accounts, setAccounts] = useState([]);
+
+  let logoObject = null;
+  if (data) {
+    logoObject = logos[data.institution]
+    console.log("here is the logo object", logoObject)
+  }
+
 
   const table = {};
 
@@ -142,8 +152,16 @@ const AccountsPage = () => {
                   className="border-t bg-opacity-90 transition duration-150 cursor-pointer"
                   onClick={() => navigate({ to: `/account/${account.accountid}` })}
                 >
-                  <TableCell className="p-4 font-medium hover:underline whitespace-normal break-words">
-                    {account.shortname}
+                  <TableCell className="p-4 font-medium hover:underline  ">
+                    <div className="flex items-center gap-3">
+                      {logos && logos[account.institution] && logos[account.institution]['location'] &&
+                        <span className={`ml-3 p-1 border ${logos[account.institution]['background']} rounded-lg`}>
+                          <img className="h-5" src={`${logos[account.institution]['location']}`} />
+                        </span>}
+                      <span>{account.shortname}</span>
+
+                    </div>
+
                   </TableCell>
                   <TableCell className="p-4">{account.type}</TableCell>
                   <TableCell className="p-4 text-right">

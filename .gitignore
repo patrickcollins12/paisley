@@ -1,5 +1,7 @@
 # Logs
-/node_modules
+node_modules/
+node_modules.old/
+
 .vscode/*
 !.vscode/extensions.json
 .idea

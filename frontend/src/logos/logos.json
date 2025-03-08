@@ -1,15 +1,14 @@
 {
     "Chase": {
         "location": "/logos/Chase.svg",
-        "background": "bg-white"
+        "background": ""
     },
     "Bankwest": {
         "location": "/logos/Bankwest.png",
         "background": ""
     },
     "Westpac": {
-        "location": "/logos/Westpac.svg",
-        "background": "bg-white"
+        "location": "/logos/Westpac.svg"
     },
     "Commonwealth Bank Australia": {
         "location": "/logos/Commonwealth Bank Australia.svg",
@@ -21,7 +20,7 @@
     },
     "Coinbase": {
         "location": "/logos/Coinbase.svg",
-        "background": "bg-white"
+        "background": ""
     },
     "Commsec": {
         "location": "/logos/Commsec.svg",
