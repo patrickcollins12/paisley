@@ -20,7 +20,7 @@
 - [ ] fix/finish install
        - [ ] create a jwt key on install
        - [ ] bring demo DB up to date
-- [ ] improved logging: change console.log-->logger.info on the server, parsers, importers and classifiers
+- [x] improved logging: change console.log-->logger.info on the server, parsers, importers and classifiers
 - [ ] paisley backend on beelink. feels pretty important!
 
 One day:

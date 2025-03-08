@@ -275,7 +275,7 @@ describe('Test TransactionQuery', () => {
     test('/transactions manual_tags in ', async () => {
         const url = `http://localhost:${port}/api/transactions/?filter[manual_tags][in][0]=tag8`
         const res = await axios.get(url);
-        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?))"))
+        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND EXISTS ( SELECT 1 FROM json_each(main.manual_tags) WHERE json_each.value LIKE ? )"))
         expect(res.data?.resultSummary?.count).toBe(1)
     });
 
@@ -284,7 +284,7 @@ describe('Test TransactionQuery', () => {
                     `filter[manual_tags][in][0]=tag8&` +
                     `filter[manual_tags][in][1]=tag7`
         const res = await axios.get(url);
-        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?,?))"))
+        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND EXISTS ( SELECT 1 FROM json_each(main.manual_tags) WHERE json_each.value LIKE ? OR json_each.value LIKE ? )"))
         expect(res.data?.resultSummary?.count).toBe(2)
     });
     
@@ -302,7 +302,7 @@ describe('Test TransactionQuery', () => {
                     `filter[tags][in][]=tag3&` +
                     `filter[tags][in][]=tag9&`
         const res = await axios.get(url);
-        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND ( ( EXISTS ( SELECT 1 FROM json_each(json_extract(auto_tags, '$.tags')) WHERE json_each.value IN (?,?) )) OR EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?,?)) )"))
+        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND ( EXISTS ( SELECT 1 FROM json_each(json_extract(auto_tags, '$.tags')) WHERE json_each.value LIKE ? OR json_each.value LIKE ? ) OR EXISTS ( SELECT 1 FROM json_each(main.manual_tags) WHERE json_each.value LIKE ? OR json_each.value LIKE ? ))"))
         expect(res.data?.resultSummary?.count).toBe(2)
     });
 
@@ -311,7 +311,7 @@ describe('Test TransactionQuery', () => {
                     `filter[tags][in][0]=tag2&`
                   + `filter[tags][in][1]=tag8&`
         const res = await axios.get(url);
-        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND ( ( EXISTS ( SELECT 1 FROM json_each(json_extract(auto_tags, '$.tags')) WHERE json_each.value IN (?,?) )) OR EXISTS (SELECT 1 FROM json_each(main.manual_tags) WHERE value IN (?,?)) )"))
+        expect(cln(res.data?.resultSummary?.where)).toBe(cln("AND ( EXISTS ( SELECT 1 FROM json_each(json_extract(auto_tags, '$.tags')) WHERE json_each.value LIKE ? OR json_each.value LIKE ? ) OR EXISTS ( SELECT 1 FROM json_each(main.manual_tags) WHERE json_each.value LIKE ? OR json_each.value LIKE ? ))"))
         expect(res.data?.resultSummary?.count).toBe(3)
     });
 
