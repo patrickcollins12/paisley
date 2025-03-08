@@ -3,9 +3,11 @@ import React, { useState, useEffect } from "react";
 import { getRouteApi, Link } from "@tanstack/react-router"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle, } from "@/components/ui/card"
+import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 
 // main page components
 import AccountBalanceChart from './AccountBalanceChart.jsx'
+import AccountInterestTable from './AccountInterestTable.jsx'
 import AccountVolumeChart from './AccountVolumeChart.jsx'
 import ChartTimeSelection from "./ChartTimeSelection";
 import AccountDetailsTable from './AccountDetailsTable.jsx'
@@ -35,7 +37,7 @@ const AccountPage = () => {
     const { data, error, isLoading } = useAccountData(accountId);
 
     // dynamic graph start dates from the badge clicker called ChartTimeSelection
-    const [startDate, setStartDate] = useState(null);  
+    const [startDate, setStartDate] = useState(null);
 
     // once the data is loaded, fetch the right insitutional logo, 
     // out of the logos object loaded earlier
@@ -99,7 +101,7 @@ const AccountPage = () => {
                                         <>
                                             <span className="text-4xl font-extrabold">{data && formatCurrency(data.balance)}</span>
                                             <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
-                                            <AccountBalanceChart accountId={data.accountid} category={data.category} startDate={startDate}/>
+                                            <AccountBalanceChart accountId={data.accountid} category={data.category} startDate={startDate} />
 
 
                                         </>
@@ -108,12 +110,12 @@ const AccountPage = () => {
 
                                 <div>
                                     {data &&
-                                        <AccountVolumeChart accountId={data.accountid} startDate={startDate}/>
+                                        <AccountVolumeChart accountId={data.accountid} startDate={startDate} />
                                     }
                                 </div>
 
                                 <div className="mt-2 mb-2">
-                                    <ChartTimeSelection onStartDateChange={setStartDate}/>
+                                    <ChartTimeSelection onStartDateChange={setStartDate} />
                                 </div>
 
                             </>
@@ -123,23 +125,6 @@ const AccountPage = () => {
                     </Card>
 
 
-
-                    <Card className="text-sm w-[450px]">
-                        <CardHeader>
-                            <CardTitle>Recent Transactions</CardTitle>
-                            <div className="text-xs mb-3">Last transaction: {data && formatDate(data.balance_datetime)}</div>
-
-                            {/* <CardDescription>
-                                transactions currently match this rule
-                            </CardDescription> */}
-                        </CardHeader>
-
-                        <CardContent className="">
-                            <ScrollableSidebar className=" flex flex-col gap-3 ">
-                                {transactionData?.results.map(transaction => <TransactionCard key={transaction.id} data={transaction} />)}
-                            </ScrollableSidebar>
-                        </CardContent>
-                    </Card>
 
 
 
@@ -153,6 +138,47 @@ const AccountPage = () => {
                             {data &&
                                 <AccountDetailsTable data={data} />
                             }
+                        </CardContent>
+                    </Card>
+
+
+                    {data && data.interest &&
+                        <Card className="text-sm">
+                            <CardHeader>
+                                <CardTitle>
+                                    Interest Rate
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <>
+                                    {data &&
+                                        <AccountInterestTable accountId={data.accountid} category={data.category} startDate={startDate} />
+                                    }
+                                </>
+                            </CardContent>
+                        </Card>
+                    }
+
+
+                    <Card className="text-sm w-[450px]">
+                        <CardHeader>
+                            <CardTitle>Recent Transactions</CardTitle>
+                            {data && data.balance_datetime &&
+                                <div>
+                                    <span className="text-xs mb-3">Last transaction: </span>
+                                    <DateTimeDisplay datetime={data.balance_datetime} />
+                                </div>
+                            }
+
+                            {/* <CardDescription>
+                                transactions currently match this rule
+                            </CardDescription> */}
+                        </CardHeader>
+
+                        <CardContent className="">
+                            <ScrollableSidebar className=" flex flex-col gap-3 ">
+                                {transactionData?.results.map(transaction => <TransactionCard key={transaction.id} data={transaction} />)}
+                            </ScrollableSidebar>
                         </CardContent>
                     </Card>
 

@@ -7,16 +7,17 @@
        - [ ] roll-up sub accounts
        - [ ] consolidate utils and Intl.NumberFormat
        - [ ] add a sparkline (react-sparklines or chartist.js offer simpler, more minimal designs)
-       - [ ] table is too wide. add institution to the table but hide it
        - [ ] add currency.js route conversion to accounts page
-       - [ ] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
+       - [x] table is too wide. add institution to the table but hide it
+       - [x] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
 - [ ] account page
        - [ ] manually add a balance amount
-       - [ ] show interest amount and chart
        - [ ] graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
        - [ ] roll-up sub accounts (and show assets in the chart)
        - [ ] add/edit account details
        - [ ] add new account (scraper?). review what belongs on account table vs config vs code
+       - [x] show interest amount and chart
+
 - [ ] fix/finish install
        - [ ] create a jwt key on install
        - [ ] bring demo DB up to date

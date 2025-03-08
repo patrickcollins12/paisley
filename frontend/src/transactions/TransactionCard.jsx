@@ -4,10 +4,10 @@ import { Badge } from "@/components/ui/badge.jsx"
 import { DateTime } from 'luxon'
 import useAccountData from "@/accounts/AccountApiHooks.js"
 import { formatAmountCell } from "@/transactions/TransactionFieldFormatters.jsx"
+import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 
 export default function TransactionCard({ data }) {
 
-  const dateTime = DateTime.fromISO(data.datetime);
   const { data: accountData } = useAccountData(data.account_number);
   
   const tagAndParty = [...data.tags, ...data.party]
@@ -17,7 +17,7 @@ export default function TransactionCard({ data }) {
       <CardContent className="flex flex-col p-3 gap-3">
         <div className="flex col-2 justify-between gap-3">
           <div className="flex whitespace-nowrap">
-            {dateTime.toFormat("dd LLL yyyy")}
+            <DateTimeDisplay datetime={data.datetime} />
           </div>
           <div className="text-right opacity-50">
             {accountData?.shortname}

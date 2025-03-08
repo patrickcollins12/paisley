@@ -7,13 +7,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { format } from "date-fns";
+// import { format } from "date-fns";
 
 import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Link, useNavigate } from "@tanstack/react-router";
 import GlobalFilter from "@/toolbar/GlobalFilter.jsx";
 import useAccountData from "@/accounts/AccountApiHooks.js";
+import { formatDate, formatInterest } from "@/lib/localisation_utils.js";
+import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 
 import logos from '/src/logos/logos.json';
 
@@ -34,7 +36,7 @@ const AccountsPage = () => {
 
   // Function to format currency properly
   const formatCurrency = (amount, currency) => {
-    if (!amount) return "";
+    if (amount == undefined) return "";
 
     // console.log(`amount: ${amount}, currency: ${currency}`);
     const formattedAmount = amount
@@ -43,7 +45,7 @@ const AccountsPage = () => {
     return currency === "USD" ? `${formattedAmount} USD` : formattedAmount;
   };
 
-  const isStale = (date) => (new Date() - new Date(date)) / (1000 * 60 * 60 * 24) > 30;
+  const isStale = (date) => (new Date() - new Date(date)) / (1000 * 60 * 60 * 24) > 10;
 
   useEffect(() => {
     if (data) {
@@ -127,116 +129,126 @@ const AccountsPage = () => {
             </div>
           </div> */}
 
-          <Table className="text-xs">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="p-4">Account Name</TableHead>
-                <TableHead className="p-4">Account Type</TableHead>
-                <TableHead className="p-4 text-right">Balance</TableHead>
-                <TableHead className="p-4 hidden sm:table-cell">Last Updated</TableHead>
-                <TableHead className="p-4 hidden md:table-cell text-right">Trend</TableHead>
-                <TableHead className="p-4 hidden md:table-cell text-right">Interest Rate</TableHead>
-                <TableHead className="p-4 hidden md:table-cell text-right">Interest YoY</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {/* Assets Section */}
-              <TableRow className="bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800">
-                <TableCell className="md:table-cell p-4 font-bold" colSpan="7">
-                  What I own (Assets)
-                </TableCell>
-              </TableRow>
-              {accounts && accounts.filter((acc) => acc.category === "asset").map((account, index) => (
-                <TableRow
-                  key={index}
-                  className="border-t bg-opacity-90 transition duration-150 cursor-pointer"
-                  onClick={() => navigate({ to: `/account/${account.accountid}` })}
-                >
-                  <TableCell className="p-4 font-medium hover:underline  ">
-                    <div className="flex items-center gap-3">
-                      {logos && logos[account.institution] && logos[account.institution]['location'] &&
-                        <span className={`ml-3 p-1 border ${logos[account.institution]['background']} rounded-lg`}>
-                          <img className="h-5" src={`${logos[account.institution]['location']}`} />
-                        </span>}
-                      <span>{account.shortname}</span>
 
-                    </div>
+          <div className="flex flex-col items-center mb-4">
+            <div className="overflow-auto inline-block">
 
-                  </TableCell>
-                  <TableCell className="p-4">{account.type}</TableCell>
-                  <TableCell className="p-4 text-right">
-                    {formatCurrency(account.balance, account.currency)}
-                  </TableCell>
-                  <TableCell className="p-4 hidden sm:table-cell">
-                    {format(new Date(account.balance_datetime), "MMM dd, yyyy")} {isStale(account.balance_datetime) && "(stale)"}
-                  </TableCell>
-                  <TableCell className="p-4 hidden md:table-cell text-right">n/a</TableCell>
-                  <TableCell className="p-4 hidden md:table-cell text-right">n/a</TableCell>
-                  <TableCell className="p-4 hidden md:table-cell text-right">n/a</TableCell>
-                </TableRow>
-              ))}
+              <Table className="text-xs">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="p-4">Account Name</TableHead>
+                    <TableHead className="p-4">Account Type</TableHead>
+                    <TableHead className="p-4 text-right">Balance</TableHead>
+                    <TableHead className="p-4 hidden sm:table-cell">Last Balance</TableHead>
+                    <TableHead className="p-4 hidden md:table-cell text-right">Trend</TableHead>
+                    <TableHead className="p-4 hidden md:table-cell text-right">Interest Rate</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {/* Assets Section */}
+                  <TableRow className="bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800">
+                    <TableCell className="md:table-cell p-4 font-bold" colSpan="7">
+                      What I own (Assets)
+                    </TableCell>
+                  </TableRow>
+                  {accounts && accounts.filter((acc) => acc.category === "asset").map((account, index) => (
+                    <TableRow
+                      key={index}
+                      className="border-t bg-opacity-90 transition duration-150 cursor-pointer"
+                      onClick={() => navigate({ to: `/account/${account.accountid}` })}
+                    >
+                      <TableCell className="p-4 font-medium hover:underline  ">
+                        <div className="flex items-center gap-3">
+                          {logos && logos[account.institution] && logos[account.institution]['location'] &&
+                            <span className={`ml-3 p-1 border ${logos[account.institution]['background']} rounded-lg`}>
+                              <img className="h-5" src={`${logos[account.institution]['location']}`} />
+                            </span>}
+                          <span>{account.shortname}</span>
+                        </div>
 
-              {/* ✅ TOTAL ASSETS ROW */}
-              <TableRow className="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 font-bold">
-                <TableCell colSpan="2" className="p-4">Total (Assets)</TableCell>
-                <TableCell className="p-4 text-right">{formatCurrency(totalAssets, "AUD")}</TableCell>
-                <TableCell colSpan="1" className="p-4 font-bold hidden sm:table-cell"></TableCell>
-                <TableCell colSpan="4" className="p-4 font-bold hidden md:table-cell"></TableCell>
-              </TableRow>
+                      </TableCell>
+                      <TableCell className="p-4">{account.type}</TableCell>
+                      <TableCell className="p-4 text-right">
+                        {formatCurrency(account.balance, account.currency)}
+                      </TableCell>
+                      <TableCell className={`p-4 hidden sm:table-cell ${isStale(account.balance_datetime) ? 'text-red-500' : ''}`}>
+                        <DateTimeDisplay datetime={account.balance_datetime} options={{ delta: true, absolute: false }} />
+                      </TableCell>
+                      <TableCell className="p-4 hidden md:table-cell text-right"></TableCell>
+                      <TableCell className="p-4 hidden md:table-cell text-right">{formatInterest(account.interest)}</TableCell>
+                    </TableRow>
+                  ))}
 
+                  {/* ✅ TOTAL ASSETS ROW */}
+                  <TableRow className="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 font-bold">
+                    <TableCell colSpan="2" className="p-4">Total (Assets)</TableCell>
+                    <TableCell className="p-4 text-right">{formatCurrency(totalAssets, "AUD")}</TableCell>
+                    <TableCell colSpan="1" className="p-4 font-bold hidden sm:table-cell"></TableCell>
+                    <TableCell colSpan="3" className="p-4 font-bold hidden md:table-cell"></TableCell>
 
-
-              {/* Liabilities Section */}
-              <TableRow className="bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800">
-                <TableCell className="md:table-cell p-4 font-bold" colSpan="7">
-                  What I owe (Liabilities)
-                </TableCell>
-              </TableRow>
-              {accounts && accounts.filter((acc) => acc.category === "liability").map((account, index) => (
-                <TableRow
-                  key={index}
-                  className="border-t bg-opacity-90 transition duration-150 cursor-pointer"
-                  onClick={() => navigate({ to: `/account/${account.accountid}` })}
-                >
-                  <TableCell className="p-4 font-medium hover:underline whitespace-normal break-words">
-                    {account.shortname}
-                  </TableCell>
-                  <TableCell className="p-4">{account.type}</TableCell>
-                  <TableCell className="p-4 text-right">
-                    {formatCurrency(account.balance, account.currency)}
-                  </TableCell>
-                  <TableCell className="p-4 hidden sm:table-cell">
-                    {format(new Date(account.balance_datetime), "MMM dd, yyyy")} {isStale(account.balance_datetime) && "(stale)"}
-                  </TableCell>
-                  <TableCell className="p-4 hidden md:table-cell text-right">n/a</TableCell>
-                  <TableCell className="p-4 hidden md:table-cell text-right">n/a</TableCell>
-                  <TableCell className="p-4 hidden md:table-cell text-right">n/a</TableCell>
-                </TableRow>
-              ))}
-
-
-              {/* ✅ TOTAL LIABILITIES ROW */}
-              <TableRow className="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 font-bold">
-                <TableCell colSpan="2" className="p-4">Total (Liabilities)</TableCell>
-                <TableCell className="p-4 text-right">{formatCurrency(totalLiabilities, "AUD")} AUD</TableCell>
-                <TableCell colSpan="1" className="p-4 font-bold hidden sm:table-cell"></TableCell>
-                <TableCell colSpan="4" className="p-4 font-bold hidden md:table-cell"></TableCell>
-              </TableRow>
+                  </TableRow>
 
 
 
-              {/* ✅ NET WORTH ROW */}
-              <TableRow className="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 font-bold">
-                <TableCell colSpan="2" className="p-4">Net Worth</TableCell>
-                <TableCell className="p-4 text-right">{formatCurrency(netWorth, "AUD")} AUD</TableCell>
-                <TableCell colSpan="1" className="p-4 font-bold hidden sm:table-cell"></TableCell>
-                <TableCell colSpan="4" className="p-4 font-bold hidden md:table-cell"></TableCell>
-              </TableRow>
+                  {/* Liabilities Section */}
+                  <TableRow className="bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800">
+                    <TableCell className="md:table-cell p-4 font-bold" colSpan="7">
+                      What I owe (Liabilities)
+                    </TableCell>
+                  </TableRow>
+                  {accounts && accounts.filter((acc) => acc.category === "liability").map((account, index) => (
+                    <TableRow
+                      key={index}
+                      className="border-t bg-opacity-90 transition duration-150 cursor-pointer"
+                      onClick={() => navigate({ to: `/account/${account.accountid}` })}
+                    >
+                      <TableCell className="p-4 font-medium hover:underline whitespace-normal break-words">
+                        <div className="flex items-center gap-3">
+                          {logos && logos[account.institution] && logos[account.institution]['location'] &&
+                            <span className={`ml-3 p-1 border ${logos[account.institution]['background']} rounded-lg`}>
+                              <img className="h-5" src={`${logos[account.institution]['location']}`} />
+                            </span>}
+                          <span>{account.shortname}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="p-4">{account.type}</TableCell>
+                      <TableCell className="p-4 text-right">
+                        {formatCurrency(account.balance, account.currency)}
+                      </TableCell>
+                      <TableCell className={`p-4 hidden sm:table-cell ${isStale(account.balance_datetime) ? 'text-red-500' : ''}`}>
+                        <DateTimeDisplay datetime={account.balance_datetime} options={{ delta: true, absolute: false }} />
+                      </TableCell>
+                      <TableCell className="p-4 hidden md:table-cell text-right"></TableCell>
+                      <TableCell className="p-4 hidden md:table-cell text-right">{formatInterest(account.interest)}</TableCell>
+                    </TableRow>
+                  ))}
 
-            </TableBody>
-          </Table>
+
+                  {/* ✅ TOTAL LIABILITIES ROW */}
+                  <TableRow className="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 font-bold">
+                    <TableCell colSpan="2" className="p-4">Total (Liabilities)</TableCell>
+                    <TableCell className="p-4 text-right">{formatCurrency(totalLiabilities, "AUD")} AUD</TableCell>
+                    <TableCell colSpan="1" className="p-4 font-bold hidden sm:table-cell"></TableCell>
+                    <TableCell colSpan="3" className="p-4 font-bold hidden md:table-cell"></TableCell>
+                  </TableRow>
+
+
+
+                  {/* ✅ NET WORTH ROW */}
+                  <TableRow className="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 font-bold">
+                    <TableCell colSpan="2" className="p-4">Net Worth</TableCell>
+                    <TableCell className="p-4 text-right">{formatCurrency(netWorth, "AUD")} AUD</TableCell>
+                    <TableCell colSpan="1" className="p-4 font-bold hidden sm:table-cell"></TableCell>
+                    <TableCell colSpan="3" className="p-4 font-bold hidden md:table-cell"></TableCell>
+                  </TableRow>
+
+                </TableBody>
+              </Table>
+            </div>
+          </div>
         </>
-      )}
+      )
+      }
     </>
   );
 };

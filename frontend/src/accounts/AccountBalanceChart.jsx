@@ -4,7 +4,7 @@ import * as echarts from "echarts";
 import { useTheme } from "@/components/theme-provider";
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
 
-import { formatCurrency } from "@/lib/localisation_utils.js";
+import { formatCurrency,formatDate } from "@/lib/localisation_utils.js";
 
 const AccountBalanceChart = ({ accountId, category, startDate }) => {
     const { theme } = useTheme();
@@ -25,9 +25,9 @@ const AccountBalanceChart = ({ accountId, category, startDate }) => {
                     trigger: 'axis',
                     // formatter: '{b0}<br>${c0}',
                     formatter: function (params) {
-                        const key = params[0]?.data[0]
+                        const date = params[0]?.data[0]
                         const val = params[0]?.data[1]
-                        return `${key}<br><b>Balance: ${formatCurrency(val)}</b>`
+                        return `${formatDate(date)}<br><b>Balance: ${formatCurrency(val)}</b>`
                     },
                     // formatter: function (params) {
                     //     const key = params[0]?.data[0]

@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { body, query, validationResult } = require("express-validator");
-const BankDatabase = require("../BankDatabase"); 
-const logger = require("../Logger"); 
+const BankDatabase = require("../BankDatabase");
+const logger = require("../Logger");
 
 // Set to false to enforce authentication. Set it to true when doing unit tests
 const disableAuth = false;
@@ -148,7 +148,7 @@ router.get(
                 COUNT(*) AS transaction_count 
             FROM 'transaction' t 
             WHERE 1=1
-            `;  
+            `;
 
         // Dynamically build conditions
         if (accountid) {
@@ -175,6 +175,95 @@ router.get(
             res.json(rows);
         } catch (err) {
             logger.error(`Error fetching account transaction volume: ${err.message}`);
+            res.status(500).json({ error: err.message });
+        }
+    }
+);
+
+router.get(
+    "/api/account_interest_changes",
+    [
+        query("accountid").optional().isString().withMessage("Account ID must be a string"),
+        query("from").optional().isISO8601().withMessage("Invalid 'from' date"),
+        query("to").optional().isISO8601().withMessage("Invalid 'to' date"),
+    ],
+    async (req, res) => {
+        let db = new BankDatabase();
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { accountid, from, to } = req.query;
+        let params = [];
+
+        let query = `
+            WITH InterestChanges AS (
+                SELECT historyid,
+                    accountid,
+                    datetime,
+                    json_extract(data, '$.interest') AS interest,
+                    LAG(json_extract(data, '$.interest')) OVER (
+                        PARTITION BY accountid
+                        ORDER BY datetime
+                    ) AS previous_interest
+                FROM account_history
+                WHERE json_extract(data, '$.interest') IS NOT NULL
+            ),
+            NewestInterest AS (
+                SELECT historyid,
+                    accountid,
+                    datetime,
+                    json_extract(data, '$.interest') AS interest,
+                    ''
+                FROM account_history AS a
+                WHERE json_extract(data, '$.interest') IS NOT NULL
+                    AND datetime = (
+                        SELECT MAX(datetime)
+                        FROM account_history AS b
+                        WHERE a.accountid = b.accountid
+                    )
+            )
+            SELECT historyid,
+                accountid,
+                datetime,
+                interest
+            FROM (
+                    SELECT *
+                    FROM InterestChanges
+                    WHERE interest != previous_interest
+                        OR previous_interest IS NULL
+                    UNION ALL
+                    SELECT *
+                    FROM NewestInterest
+                )
+            WHERE 1 = 1
+        `;
+
+        // Apply filters dynamically
+        if (accountid) {
+            query += " AND accountid = ?";
+            params.push(accountid);
+        }
+        if (from) {
+            query += " AND datetime >= ?";
+            params.push(from);
+        }
+        if (to) {
+            query += " AND datetime <= ?";
+            params.push(to);
+        }
+
+        query += " ORDER BY datetime DESC";
+
+
+        try {
+            const stmt = db.db.prepare(query);
+            const rows = stmt.all(...params);
+            res.json(rows);
+        } catch (err) {
+            logger.error(`Error executing query: ${err.message}`);
             res.status(500).json({ error: err.message });
         }
     }
@@ -344,6 +433,65 @@ module.exports = router;
  *                     description: The count of transactions for that date.
  *       400:
  *         description: Invalid query parameters.
+ *       500:
+ *         description: Internal server error.
+ */
+
+/**
+ * @swagger
+ * /api/account_interest_changes:
+ *   get:
+ *     summary: Retrieve interest rate changes for accounts
+ *     description: Fetches interest rate changes, including the first recorded rate, each distinct change, and the latest rate per account. Supports optional filtering by account ID and date range.
+ *     tags:
+ *       - Accounts
+ *     parameters:
+ *       - in: query
+ *         name: accountid
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Filter results by account ID.
+ *       - in: query
+ *         name: from
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         required: false
+ *         description: Filter results from this date (ISO 8601 format).
+ *       - in: query
+ *         name: to
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         required: false
+ *         description: Filter results up to this date (ISO 8601 format).
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved interest rate changes.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   historyid:
+ *                     type: integer
+ *                     description: Unique ID for the record.
+ *                   accountid:
+ *                     type: string
+ *                     description: The associated account ID.
+ *                   datetime:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Timestamp of the interest rate record.
+ *                   interest:
+ *                     type: number
+ *                     format: float
+ *                     description: Interest rate at the time of the record.
+ *       400:
+ *         description: Invalid request parameters.
  *       500:
  *         description: Internal server error.
  */

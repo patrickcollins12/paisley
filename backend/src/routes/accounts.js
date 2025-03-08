@@ -44,6 +44,14 @@ LEFT JOIN (
 ON a.accountid = b.account
 WHERE 1=1
 `
+const interestSql = `
+SELECT historyid,
+  accountid,
+  MAX(datetime) as datetime,
+  json_extract(data, '$.interest') AS interest
+FROM account_history AS a
+WHERE interest IS NOT NULL
+`
 
 /**
  * GET /api/accounts
@@ -51,8 +59,23 @@ WHERE 1=1
  */
 router.get('/api/accounts', async (req, res) => {
     try {
+        // get account data
         const accounts = db.db.prepare(sql).all();
+
+        // get interest data
+        const interest = db.db.prepare(interestSql + " GROUP BY accountid").all();
+
+        // merge interest rate and interest daatetime into accounts by accountid
+        interest.forEach(account => {
+            const acc = accounts.find(a => a.accountid === account.accountid);
+            if (acc) {
+                acc.interest = account.interest;
+                acc['interest_datetime'] = account.datetime;
+            }
+        }
+        );
         res.json({ success: true, account: accounts });
+
     } catch (error) {
         res.status(500).json({ success: false, message: "Database error", error: error.message });
     }
@@ -66,6 +89,15 @@ router.get('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const account = db.db.prepare(`${sql} AND accountid = ?`).get(id);
+
+        // get interest data and merge it in
+        const sqlFinal = interestSql + " AND accountid = ?"
+
+        const interest = db.db.prepare(sqlFinal).all(id);
+        interest.forEach(interestAccount => {
+            account['interest'] = interestAccount.interest;
+            account['interest_datetime'] = interestAccount.datetime;
+        });
 
         if (!account) {
             return res.status(404).json({ success: false, message: "Account not found" });
