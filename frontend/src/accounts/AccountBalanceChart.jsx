@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
-import { useTheme } from "@/components/theme-provider";
+import { useResolvedTheme } from "@/components/theme-provider";
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
 
 import { formatCurrency,formatDate } from "@/lib/localisation_utils.js";
 
 const AccountBalanceChart = ({ accountId, category, startDate }) => {
-    const { theme } = useTheme();
+    const resolvedTheme = useResolvedTheme();
     const [option, setOption] = useState({});                   // echarts options
 
     // // Fetch data using the custom hook
@@ -139,7 +139,7 @@ const AccountBalanceChart = ({ accountId, category, startDate }) => {
                     option={option}
                     style={{ width: "100%", height: "100%" }}
                     lazyUpdate={true}
-                    theme={{ theme }}
+                    theme={{ resolvedTheme }}
                 />
             )}
 

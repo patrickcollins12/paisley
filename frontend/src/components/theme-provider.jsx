@@ -58,3 +58,20 @@ export const useTheme = () => {
 
   return context;
 };
+
+export const useResolvedTheme = () => {
+  const { theme } = useTheme();
+  const [resolvedTheme, setResolvedTheme] = useState("light"); // Default to light
+
+  useEffect(() => {
+    if (theme === "system") {
+      const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const resolvedTheme = systemPrefersDark ? "dark" : "light";
+      setResolvedTheme(resolvedTheme);
+    } else {
+      setResolvedTheme(theme);
+    }
+  }, [theme]); // Re-run when theme changes
+
+  return resolvedTheme;
+};

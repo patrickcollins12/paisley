@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useTheme } from "@/components/theme-provider";
 import useAccountInterestChanges from "@/accounts/AccountInterestApiHooks.js";
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 

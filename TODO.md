@@ -4,10 +4,11 @@
        - [ ] set default filters
        - [ ] add some options: group by party, first tag, all tags (double count)
 - [ ] accounts table page
-       - [ ] roll-up sub accounts
-       - [ ] consolidate utils and Intl.NumberFormat
-       - [ ] add a sparkline (react-sparklines or chartist.js offer simpler, more minimal designs)
+       - [ ] roll-up sub accounts properly
+       - [ ] consolidate on Intl.NumberFormat
        - [ ] add currency.js route conversion to accounts page
+       - [x] consolidate utils 
+       - [x] add a sparkline (react-sparklines or chartist.js offer simpler, more minimal designs)
        - [x] table is too wide. add institution to the table but hide it
        - [x] update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
 - [ ] account page

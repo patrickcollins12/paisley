@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Toolbar from "@/toolbar/Toolbar.jsx";
 import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx";
 import { useSearch } from "@/components/search/SearchContext.jsx";
-import { useTheme } from "@/components/theme-provider";
+import { useResolvedTheme } from "@/components/theme-provider";
 import { DateTime } from "luxon";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
@@ -12,7 +12,7 @@ export default function VisualisePage() {
   const [option, setOption] = useState(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const chartRef = useRef(null);
-  const { theme } = useTheme();
+  const theme = useResolvedTheme();
 
 
   const { data, isLoading, error } = useFetchTransactions({

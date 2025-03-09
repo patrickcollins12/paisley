@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { getRouteApi } from "@tanstack/react-router"
 import ReactECharts from "echarts-for-react";
-import { useTheme } from "@/components/theme-provider";
+import { useResolvedTheme } from "@/components/theme-provider";
 import useAccountTransactionVolume from "@/accounts/AccountTransactionVolumeApiHooks.js";
 
 const AccountVolumeChart = ({ accountId, startDate }) => {
-    const { theme } = useTheme();
+    const theme = useResolvedTheme();
     const [option, setOption] = useState({});                   // echarts options
     const { data, error, isLoading } = useAccountTransactionVolume(accountId, startDate);
 
