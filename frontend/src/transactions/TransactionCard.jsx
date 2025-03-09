@@ -1,9 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card.jsx"
 import { Badge } from "@/components/ui/badge.jsx"
-
-import { DateTime } from 'luxon'
 import useAccountData from "@/accounts/AccountApiHooks.js"
-import { formatAmountCell } from "@/transactions/TransactionFieldFormatters.jsx"
+import { formatCurrency } from "@/lib/localisation_utils.js";
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 
 export default function TransactionCard({ data }) {
@@ -28,9 +26,7 @@ export default function TransactionCard({ data }) {
             {data.description}
           </div>
           <div>
-            {formatAmountCell(data.amount)}<br/>
-            {/* {formatAmountCell(data.balance)} */}
-            
+            {formatCurrency(data.amount)}<br/>            
           </div>
         </div>
         <div className="flex flex-row">

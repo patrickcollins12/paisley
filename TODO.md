@@ -1,6 +1,11 @@
 # TODO
 p1
 [ ] accounts table - * roll-up sub accounts properly *
+[ ] honor currencies. 
+       react-i18nnext auto-detects language. 
+       Intl.NumberFormat().resolvedOptions().locale => en-AU
+       Default currency en-AU => AU => AUD (https://github.com/tadeegan/locale-currency)
+       build a currency chooser, default is based on locale and accounts currencies.
 [ ] account page - roll-up sub accounts (and show assets in the chart)
 [ ] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
 [ ] install - bring demo DB up to date

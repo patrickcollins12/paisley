@@ -1,6 +1,6 @@
 import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
 
-export function formatAmountCell(amt) {
+export function formatAmountCellOLD(amt) {
   if (!amt) {
     return <></>
   }

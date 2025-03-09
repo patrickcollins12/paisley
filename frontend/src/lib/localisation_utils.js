@@ -6,22 +6,21 @@ export function formatCurrency(value, options = {}) {
         locale = 'en-US', 
         currency = "USD", 
         zeroIsBlank = false,
-        blankIsZero = false
+        blankIsZero = false,
+        caller=0
     } = options;
 
-    // Handle blank value case
-    if (value === null || value === undefined || value === '') {
-        return blankIsZero ? "$0" : '';
-    }
-
-    if (typeof value !== "number") {
-        return cents ? "$0.00" : "$0"; // Ensure proper fallback
+    // Handle blank value or non-number case
+    if (value === null || value === undefined || value === '' || typeof value !== "number") {
+        if (blankIsZero) {
+            value = 0 
+        } else {
+            return '';
+        }
     }
 
     // Handle zero value case
-    if (value === 0) {
-        return zeroIsBlank ? '' : (cents ? "$0.00" : "$0");
-    }
+    if (value === 0 && zeroIsBlank) { return '' } 
 
     // Prepare the options for the number formatting
     const IntlOptions = {
