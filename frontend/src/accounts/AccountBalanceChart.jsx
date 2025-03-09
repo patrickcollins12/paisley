@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from "react";
 import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
+
+import { graphic } from 'echarts';
+const { LinearGradient } = graphic;
+
 import { useResolvedTheme } from "@/components/theme-provider";
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
 
-import { formatCurrency,formatDate } from "@/lib/localisation_utils.js";
+import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
 
-const AccountBalanceChart = ({ accountId, category, startDate }) => {
+const AccountBalanceChart = ({ accountid, category, startDate }) => {
     const resolvedTheme = useResolvedTheme();
     const [option, setOption] = useState({});                   // echarts options
 
     // // Fetch data using the custom hook
-    const { data, error, isLoading } = useAccountHistoryData(accountId, startDate);
+    const { data, error, isLoading } = useAccountHistoryData(
+        {
+            accountid: accountid,
+            from: startDate,
+            interpolate: false
+        });
 
     useEffect(() => {
         if (data && !isLoading) {
@@ -105,7 +113,7 @@ const AccountBalanceChart = ({ accountId, category, startDate }) => {
                         showSymbol: false,
                         areaStyle: {
                             opacity: 0.9,
-                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            color: new LinearGradient(0, 0, 0, 1, [
                                 {
                                     offset: category === "liability" ? 1 : 0,
                                     color: 'rgb(128, 255, 165)'
@@ -143,7 +151,7 @@ const AccountBalanceChart = ({ accountId, category, startDate }) => {
                 />
             )}
 
-            
+
         </>
     )
 };

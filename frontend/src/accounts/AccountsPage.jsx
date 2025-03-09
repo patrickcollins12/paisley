@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button.jsx";
 import { Link, useNavigate } from "@tanstack/react-router";
 import GlobalFilter from "@/toolbar/GlobalFilter.jsx";
 import useAccountData from "@/accounts/AccountApiHooks.js";
-import { formatDate, formatInterest } from "@/lib/localisation_utils.js";
+import { formatDate, formatCurrency, formatInterest } from "@/lib/localisation_utils.js";
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 import AccountSparkLine from "@/accounts/AccountSparkLine.jsx";
 
@@ -34,16 +34,6 @@ const AccountsPage = () => {
 
   const table = {};
 
-  // Function to format currency properly
-  const formatCurrency = (amount, currency) => {
-    if (amount == undefined) return "";
-
-    // console.log(`amount: ${amount}, currency: ${currency}`);
-    const formattedAmount = amount
-      .toLocaleString("en-AU", { style: "currency", currency: "AUD" })
-      .replace("A$", "$");
-    return currency === "USD" ? `${formattedAmount} USD` : formattedAmount;
-  };
 
   const isStale = (date) => (new Date() - new Date(date)) / (1000 * 60 * 60 * 24) > 8;
 
@@ -170,7 +160,7 @@ const AccountsPage = () => {
                       </TableCell>
                       <TableCell className="p-1">{account.type}</TableCell>
                       <TableCell className="p-1 text-right">
-                        {formatCurrency(account.balance, account.currency)}
+                        {formatCurrency(account.balance, {currency: account.currency})}
                       </TableCell>
                       <TableCell className={`p-1 hidden sm:table-cell text-xxs opacity-50 ${isStale(account.balance_datetime) ? 'text-red-500' : ''}`}>
                         <DateTimeDisplay datetime={account.balance_datetime} options={{ delta: true, absolute: false }} />
@@ -187,7 +177,7 @@ const AccountsPage = () => {
                   {/* ✅ TOTAL ASSETS ROW */}
                   <TableRow className="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 font-bold">
                     <TableCell colSpan="2" className="p-2">Total (Assets)</TableCell>
-                    <TableCell className="p-1 text-right">{formatCurrency(totalAssets, "AUD")}</TableCell>
+                    <TableCell className="p-1 text-right">{formatCurrency(totalAssets, {currency:"AUD"})}</TableCell>
                     <TableCell colSpan="1" className="p-1 font-bold hidden sm:table-cell"></TableCell>
                     <TableCell colSpan="3" className="p-1 font-bold hidden md:table-cell"></TableCell>
 
@@ -218,7 +208,7 @@ const AccountsPage = () => {
                       </TableCell>
                       <TableCell className="p-1">{account.type}</TableCell>
                       <TableCell className="p-1 text-right">
-                        {formatCurrency(account.balance, account.currency)}
+                        {formatCurrency(account.balance, {currency: account.currency})}
                       </TableCell>
                       <TableCell className={`p-1 hidden sm:table-cell text-xxs opacity-50 ${isStale(account.balance_datetime) ? 'text-red-500' : ''}`}>
 
@@ -237,7 +227,7 @@ const AccountsPage = () => {
                   {/* ✅ TOTAL LIABILITIES ROW */}
                   <TableRow className="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 font-bold">
                     <TableCell colSpan="2" className="p-2">Total (Liabilities)</TableCell>
-                    <TableCell className="p-1 text-right">{formatCurrency(totalLiabilities, "AUD")} AUD</TableCell>
+                    <TableCell className="p-1 text-right">{formatCurrency(totalLiabilities, {currency:"AUD"})}</TableCell>
                     <TableCell colSpan="1" className="p-1 font-bold hidden sm:table-cell"></TableCell>
                     <TableCell colSpan="3" className="p-1 font-bold hidden md:table-cell"></TableCell>
                   </TableRow>
@@ -247,7 +237,7 @@ const AccountsPage = () => {
                   {/* ✅ NET WORTH ROW */}
                   <TableRow className="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 font-bold">
                     <TableCell colSpan="2" className="p-2">Net Worth</TableCell>
-                    <TableCell className="p-1 text-right">{formatCurrency(netWorth, "AUD")} AUD</TableCell>
+                    <TableCell className="p-1 text-right">{formatCurrency(netWorth, {currency:"AUD"})}</TableCell>
                     <TableCell colSpan="1" className="p-1 font-bold hidden sm:table-cell"></TableCell>
                     <TableCell colSpan="3" className="p-1 font-bold hidden md:table-cell"></TableCell>
                   </TableRow>

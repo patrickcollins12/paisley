@@ -54,16 +54,23 @@ router.post(
     }
 );
 
+const util = require('../Util');
 router.get(
     "/api/account_history",
     [
         query("accountid").optional().isString().withMessage("Account ID must be a string"),
         query("from").optional().isISO8601().withMessage("Invalid 'from' date"),
         query("to").optional().isISO8601().withMessage("Invalid 'to' date"),
+        query("interpolate").optional().toBoolean()
     ],
     async (req, res) => {
         let db = new BankDatabase();
-        let { accountid, from, to } = req.query;
+        let { accountid, from, to, interpolate } = req.query;
+
+        // Enforce that 'accountid' is required if 'interpolate' is true
+        if (interpolate && !accountid) {
+            return res.status(400).json({ error: "Account ID is required when interpolation is enabled." });
+        }
 
         let query = `
                 -- balance can come from account_history or transaction table
@@ -120,7 +127,15 @@ router.get(
         try {
             const stmt = db.db.prepare(query);
             const rows = stmt.all(...params);
-            res.json(rows);
+
+            // If interpolation is requested, apply it
+            if (interpolate) {
+                res.json(util.interpolateTimeSeries(rows))
+            } else {
+                res.json(rows)
+            }
+
+
         } catch (err) {
             logger.error(`Error fetching account history: ${err.message}`);
             res.status(500).json({ error: err.message });
@@ -353,7 +368,7 @@ module.exports = router;
  * /api/account_history:
  *   get:
  *     summary: Returns historical balances for accounts within a date range.
- *     description: Retrieves balance history for all accounts or a specific account, filtered by an optional date range.
+ *     description: Retrieves balance history for all accounts or a specific account, filtered by an optional date range. If interpolation is requested, an account ID must be provided.
  *     tags:
  *       - Accounts
  *     parameters:
@@ -362,7 +377,7 @@ module.exports = router;
  *         schema:
  *           type: string
  *         required: false
- *         description: The unique ID of the account. If omitted, data for all accounts is returned.
+ *         description: The unique ID of the account. Required if interpolation is enabled.
  *       - in: query
  *         name: from
  *         schema:
@@ -377,9 +392,36 @@ module.exports = router;
  *           format: date-time
  *         required: false
  *         description: The end date for filtering (ISO 8601 format).
+ *       - in: query
+ *         name: interpolate
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: If true, interpolates missing data points in the time series. Requires accountid to be specified.
  *     responses:
  *       200:
- *         description: A list of balance history entries.
+ *         description: A list of balance history entries, optionally interpolated.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   accountid:
+ *                     type: string
+ *                     description: The account ID.
+ *                   datetime:
+ *                     type: string
+ *                     format: date-time
+ *                     description: The timestamp of the balance entry.
+ *                   balance:
+ *                     type: number
+ *                     description: The balance at the given datetime.
+ *       400:
+ *         description: Bad Request - Missing required accountid when interpolation is enabled.
+ *       500:
+ *         description: Internal Server Error.
  */
 
 /**

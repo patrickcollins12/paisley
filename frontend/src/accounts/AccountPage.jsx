@@ -101,7 +101,7 @@ const AccountPage = () => {
                                         <>
                                             <span className="text-4xl font-extrabold">{data && formatCurrency(data.balance)}</span>
                                             <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
-                                            <AccountBalanceChart accountId={data.accountid} category={data.category} startDate={startDate} />
+                                            <AccountBalanceChart accountid={data.accountid} category={data.category} startDate={startDate} />
 
 
                                         </>

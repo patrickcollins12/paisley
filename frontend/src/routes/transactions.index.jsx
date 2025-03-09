@@ -1,10 +1,10 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import Joi from 'joi'
 
-import { pageSizeOptions } from "@/components/data-table/Pagination.jsx"
-import TransactionPage from "@/transactions/TransactionPage.jsx"
-import { createAuthenticatedFileRoute } from "@/auth/RouteHelpers.jsx"
-import { SearchContextProvider } from "@/components/search/SearchContext.jsx"
+import { pageSizeOptions } from '@/components/data-table/Pagination.jsx'
+import TransactionPage from '@/transactions/TransactionPage.jsx'
+import { createAuthenticatedFileRoute } from '@/auth/RouteHelpers.jsx'
+import { SearchContextProvider } from '@/components/search/SearchContext.jsx'
 
 /*
  Setup JOI based schema for validating search parameters
@@ -16,28 +16,32 @@ import { SearchContextProvider } from "@/components/search/SearchContext.jsx"
 */
 const schema = Joi.object({
   page: Joi.number().greater(0).default(1),
-  page_size: Joi.number().valid(...pageSizeOptions.map(x => x.key)).default(100),
+  page_size: Joi.number()
+    .valid(...pageSizeOptions.map((x) => x.key))
+    .default(100),
   description: Joi.string().optional(),
-  order_by: Joi.string().optional().pattern(/^[a-z]*,(asc|desc)$/),
-  search_id: Joi.string().optional()
-});
+  order_by: Joi.string()
+    .optional()
+    .pattern(/^[a-z]*,(asc|desc)$/),
+  search_id: Joi.string().optional(),
+})
 
-export const Route = createAuthenticatedFileRoute('/transactions/',{
+export const Route = createAuthenticatedFileRoute('/transactions/', {
   component: () => (
     <SearchContextProvider>
       <TransactionPage />
     </SearchContextProvider>
   ),
-  validateSearch: search => {
-    const { error, value: validatedSearch } = schema.validate(search);
+  validateSearch: (search) => {
+    const { error, value: validatedSearch } = schema.validate(search)
     if (error) {
-      console.error('Error validating search params', error);
+      console.error('Error validating search params', error)
       return {
         page: 1,
-        page_size: pageSizeOptions[0].key
+        page_size: pageSizeOptions[0].key,
       }
     }
 
-    return validatedSearch;
-  }
-});
+    return validatedSearch
+  },
+})

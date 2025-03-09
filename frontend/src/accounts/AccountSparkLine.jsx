@@ -11,7 +11,7 @@ export default function AccountSparkLine({ accountid }) {
     // Memoize startDate to avoid recalculating on each render
     const startDate = useMemo(() => DateTime.now().minus({ months: 12 }).toISO(), []);
 
-    const { data, error, isLoading } = useAccountHistoryData(accountid, startDate);
+    const { data, error, isLoading } = useAccountHistoryData({accountid, from:startDate, interpolate:true});
 
     return (
         <div>
@@ -23,7 +23,7 @@ export default function AccountSparkLine({ accountid }) {
                     // and pass it to the Sparklines component
                     // Examples: http://borisyankov.github.io/react-sparklines/
                     <Sparklines data={data.map((item) => item.balance)} svgWidth={70} svgHeight={16}>
-                        <SparklinesLine color={resolvedTheme == "dark" ? "lightblue" : "blue"} style={{ strokeWidth: 4 }} />
+                        <SparklinesLine color={resolvedTheme == "dark" ? 'rgb(63, 182, 97)' : 'rgb(63, 182, 97)'} style={{ strokeWidth: 6 }} />
                     </Sparklines>
                 )
             )}

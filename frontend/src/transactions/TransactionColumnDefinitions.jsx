@@ -3,7 +3,8 @@ import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 import { EditableDescriptionCell } from '@/transactions/EditableDescriptionCell.jsx';
 import HeaderCell from "@/components/data-table/HeaderCell.jsx"
 import { TransactionTagsDisplay } from "@/transactions/TransactionTagsDisplay.jsx"
-import { formatAmountCell, formatAmount } from "@/transactions/TransactionFieldFormatters.jsx"
+import { formatAmountCell } from "@/transactions/TransactionFieldFormatters.jsx"
+import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
 
 export function createColumnDefinitions(onTransactionUpdate) {
   return [
@@ -88,7 +89,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
           <></>
         ) : (
           <div className={amt > 0 ? "text-green-500 text-right" : "text-right"}>
-            {amt > 0 ? `(${formatAmount(amt)})` : formatAmount(Math.abs(amt))}
+            {amt > 0 ? `(${formatCurrency(amt)})` : formatCurrency(Math.abs(amt))}
           </div>
         );
 

@@ -1,19 +1,44 @@
 import { DateTime } from 'luxon'
 
+export function formatCurrency(value, options = {}) {
+    const { 
+        cents = true, 
+        locale = 'en-US', 
+        currency = "USD", 
+        zeroIsBlank = false,
+        blankIsZero = false
+    } = options;
 
-export function formatCurrency(value) {
-    if (typeof value !== "number") return "$0.00"; // Ensure proper fallback
+    // Handle blank value case
+    if (value === null || value === undefined || value === '') {
+        return blankIsZero ? "$0" : '';
+    }
 
-    const absValue = Math.abs(value).toFixed(2); // Always ensure two decimal places
-    const formattedValue = absValue.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // Add commas manually
+    if (typeof value !== "number") {
+        return cents ? "$0.00" : "$0"; // Ensure proper fallback
+    }
 
-    return value < 0 ? `-$${formattedValue}` : `$${formattedValue}`;
+    // Handle zero value case
+    if (value === 0) {
+        return zeroIsBlank ? '' : (cents ? "$0.00" : "$0");
+    }
+
+    // Prepare the options for the number formatting
+    const IntlOptions = {
+        style: "currency",
+        currency: currency,
+        minimumFractionDigits: cents ? 2 : 0,  // Conditionally set the decimal places
+        maximumFractionDigits: cents ? 2 : 0   // Conditionally set the decimal places
+    };
+
+    const formattedValue = new Intl.NumberFormat(locale, IntlOptions).format(value);
+    return formattedValue;
 }
 
 export function formatInterest(value) {
     if (typeof value !== "number") return ""; // Ensure proper fallback
 
-    return `${value*100}%`;
+    return `${value * 100}%`;
 }
 
 
@@ -36,7 +61,7 @@ export function formatAbsoluteDate(dateTimeStr) {
             dateDisplay += t.toFormat(" yyyy");
         }
     }
-    
+
     return dateDisplay;
 }
 
@@ -63,7 +88,7 @@ export function formatDeltaDate(dateTimeStr) {
     } else {
         deltaDisplay = `${suffix}${Math.round(Math.abs(diff.as("years")))}y${postfix}`;
     }
-    
+
     return deltaDisplay;
 }
 

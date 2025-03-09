@@ -5,7 +5,10 @@ import { useSearch } from "@/components/search/SearchContext.jsx";
 import { useResolvedTheme } from "@/components/theme-provider";
 import { DateTime } from "luxon";
 import ReactECharts from "echarts-for-react";
-import * as echarts from "echarts";
+import { graphic, format } from 'echarts';
+const { LinearGradient } = graphic;
+import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
+
 
 export default function VisualisePage() {
   const searchContext = useSearch();
@@ -45,9 +48,9 @@ export default function VisualisePage() {
 
   // add $ to the tooltip
   function formatUpperLabel(info) {
-    const roundedValue = info.value.toFixed(0);
-    const formattedValue = echarts.format.addCommas(roundedValue);
-    return `${info.name}  $${formattedValue}`;
+    // const roundedValue = info.value.toFixed(0);
+    // const formattedValue = format.addCommas(roundedValue);
+    return `${info.name} ${formatCurrency(info.value, { cents: false })}`;
   }
 
   useEffect(() => {
@@ -74,14 +77,14 @@ export default function VisualisePage() {
             }
 
             const treePathStr = treePath.join(" > ");
-            const roundedValue = info.value.toFixed(2);
-            const formattedValue = echarts.format.addCommas(roundedValue);
+            // const roundedValue = info.value.toFixed(2);
+            // const formattedValue = format.addCommas(roundedValue);
 
             return `
                       <div>
-                        <div class="tooltip-title">${echarts.format.encodeHTML(treePathStr)}</div>
+                        <div class="tooltip-title">${format.encodeHTML(treePathStr)}</div>
                         ${txnStr}
-                        <div>Amount: $${formattedValue}</div>
+                        <div>Amount: ${formatCurrency(info.value)}</div>
                       </div>
                     `;
           },

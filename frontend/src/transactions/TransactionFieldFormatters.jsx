@@ -1,23 +1,11 @@
-
-export function formatAmount(amt) {
-
-  if (amt === "") return ""
-
-  // Format the amount as a dollar amount
-  // TODO: Remove USD
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(parseFloat(amt))
-
-}
+import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
 
 export function formatAmountCell(amt) {
   if (!amt) {
     return <></>
   }
   else {
-    const amount = formatAmount(amt)
-    return <div className="text-right whitespace-nowrap">{amount}</div>
+    // const amount = formatAmount(amt)
+    return <div className="text-right whitespace-nowrap">{formatCurrency(amt)}</div>
   }
 }

@@ -11,7 +11,6 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root.jsx'
-import { Route as TreemapImport } from './routes/treemap.jsx'
 import { Route as IndexImport } from './routes/index.jsx'
 import { Route as VisualiseIndexImport } from './routes/visualise.index.jsx'
 import { Route as TransactionsIndexImport } from './routes/transactions.index.jsx'
@@ -23,12 +22,6 @@ import { Route as RulesRuleIdImport } from './routes/rules.$ruleId.jsx'
 import { Route as AccountAccountIdImport } from './routes/account.$accountId.jsx'
 
 // Create/Update Routes
-
-const TreemapRoute = TreemapImport.update({
-  id: '/treemap',
-  path: '/treemap',
-  getParentRoute: () => rootRoute,
-})
 
 const IndexRoute = IndexImport.update({
   id: '/',
@@ -88,7 +81,6 @@ const AccountAccountIdRoute = AccountAccountIdImport.update({
 
 const rootRouteChildren = {
   IndexRoute: IndexRoute,
-  TreemapRoute: TreemapRoute,
   AccountAccountIdRoute: AccountAccountIdRoute,
   RulesRuleIdRoute: RulesRuleIdRoute,
   AccountsIndexRoute: AccountsIndexRoute,
@@ -108,7 +100,6 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)
       "filePath": "__root.jsx",
       "children": [
         "/",
-        "/treemap",
         "/account/$accountId",
         "/rules/$ruleId",
         "/accounts/",
@@ -121,9 +112,6 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)
     },
     "/": {
       "filePath": "index.jsx"
-    },
-    "/treemap": {
-      "filePath": "treemap.jsx"
     },
     "/account/$accountId": {
       "filePath": "account.$accountId.jsx"
