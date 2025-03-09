@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import '@/index.css';
+import './i18n';
 
 import { routeTree } from './routeTree.gen.js';
 

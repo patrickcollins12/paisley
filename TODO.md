@@ -1,8 +1,8 @@
 # TODO
 p1
 [ ] accounts table - * roll-up sub accounts properly *
-[ ] honor currencies. 
-       react-i18nnext auto-detects language. 
+[ ] honor currencies and language:
+       react-i18nnext auto-detects language: https://react.i18next.com/
        Intl.NumberFormat().resolvedOptions().locale => en-AU
        Default currency en-AU => AU => AUD (https://github.com/tadeegan/locale-currency)
        build a currency chooser, default is based on locale and accounts currencies.

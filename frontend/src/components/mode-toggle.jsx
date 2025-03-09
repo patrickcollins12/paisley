@@ -1,5 +1,5 @@
-import { Moon, Sun } from "lucide-react";
-
+import { Moon, Sun, CircleCheckBig } from "lucide-react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,10 +7,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import { useTheme } from "@/components/theme-provider";
 
 export function ModeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+
+  function renderThemeIcon(label, renderTheme) {
+    return (
+      <DropdownMenuItem onClick={() => setTheme(renderTheme)}>
+        <div className="flex items-center justify-between w-full">
+          <span>{label}</span>
+          <span>{renderTheme === theme && <CircleCheckBig size={16} />}</span>
+        </div>
+      </DropdownMenuItem>
+    );
+  }
 
   return (
     <DropdownMenu>
@@ -22,16 +34,10 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        {renderThemeIcon("Light", "light")}
+        {renderThemeIcon("Dark", "dark")}
+        {renderThemeIcon("System", "system")}
+      </DropdownMenuContent >
+    </DropdownMenu >
   );
 }

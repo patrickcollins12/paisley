@@ -1,6 +1,7 @@
 import { ThemeProvider } from "@/components/theme-provider"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from 'react-i18next';
 
 import {
   DropdownMenu,
@@ -24,6 +25,7 @@ export const Route = createRootRoute({
 
 function Root() {
   const authContext = useAuth();
+  const { t, i18n } = useTranslation();
 
   async function handleLogout(event) {
     event.preventDefault();
@@ -37,10 +39,10 @@ function Root() {
           <nav
             className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
             <Link to="/transactions" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
-              Transactions
+              {t('Transactions')}
             </Link>
             <Link to="/accounts" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
-              Accounts
+              {t('Accounts')}
             </Link>
             <Link to="/rules" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
               Rules
@@ -55,10 +57,10 @@ function Root() {
             <ModeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-9 w-9">
-                    <CircleUser size={20}/>
-                    <span className="sr-only">Toggle user menu</span>
-                  </Button>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <CircleUser size={20} />
+                  <span className="sr-only">Toggle user menu</span>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Account ({authContext.username})</DropdownMenuLabel>
