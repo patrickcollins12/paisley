@@ -45,10 +45,10 @@ function Root() {
               {t('Accounts')}
             </Link>
             <Link to="/rules" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
-              Rules
+              {t('Rules')}
             </Link>
-            <Link to="/visualise" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
-              Visualise
+            <Link to="/visualize" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
+              {t('Visualize')}
             </Link>
           </nav>
           <div className="flex flex-row w-full items-center gap-3 md:ml-auto md:gap-2 lg:gap-2">
@@ -59,20 +59,20 @@ function Root() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-9 w-9">
                   <CircleUser size={20} />
-                  <span className="sr-only">Toggle user menu</span>
+                  <span className="sr-only">{t('Toggle user menu')}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Account ({authContext.username})</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('Account')} ({authContext.username})</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Link to="/settings" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
-                    Settings
+                  {t('Settings')}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Link onClick={handleLogout}>Logout</Link>
+                  <Link onClick={handleLogout}>{t('Logout')}</Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

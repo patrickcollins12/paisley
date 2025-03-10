@@ -10,7 +10,7 @@ const { LinearGradient } = graphic;
 import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
 
 
-export default function VisualisePage() {
+export default function VisualizePage() {
   const searchContext = useSearch();
   const [option, setOption] = useState(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });

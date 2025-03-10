@@ -9,9 +9,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useTheme } from "@/components/theme-provider";
+import { useTranslation } from 'react-i18next';
 
 export function ModeToggle() {
   const { theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
 
   function renderThemeIcon(label, renderTheme) {
     return (
@@ -34,9 +36,9 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {renderThemeIcon("Light", "light")}
-        {renderThemeIcon("Dark", "dark")}
-        {renderThemeIcon("System", "system")}
+        {renderThemeIcon(t("Light"), "light")}
+        {renderThemeIcon(t("Dark"), "dark")}
+        {renderThemeIcon(t("System"), "system")}
       </DropdownMenuContent >
     </DropdownMenu >
   );

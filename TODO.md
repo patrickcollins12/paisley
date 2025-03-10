@@ -124,7 +124,7 @@ Closed bugs/tickets
        [x] kill the backend script?
        [x] get the width and height correctly
        [x] turn off paging 
-       [x] see if we can use TransactionQuery from VisualisePage, and move the tree hierarchy creation to the frontend
+       [x] see if we can use TransactionQuery from VisualizePage, and move the tree hierarchy creation to the frontend
        [x] add echarts to the frontend
        [x] generate the backend script
 
