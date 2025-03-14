@@ -1,10 +1,15 @@
 import { DateTime } from 'luxon'
 
-export function formatCurrency(value, options = {}) {
+export function formatCurrencyOld(value, options = {}) {
+    const browserLocale = navigator.language;
+    console.log(browserLocale); 
+
+    // allow the user to pass in overrides to the following defaults
     const { 
         cents = true, 
-        locale = 'en-US', 
+        locale = browserLocale, 
         currency = "USD", 
+        currencySign, 
         zeroIsBlank = false,
         blankIsZero = false,
         caller=0
@@ -26,6 +31,7 @@ export function formatCurrency(value, options = {}) {
     const IntlOptions = {
         style: "currency",
         currency: currency,
+        currencySign: currencySign,
         minimumFractionDigits: cents ? 2 : 0,  // Conditionally set the decimal places
         maximumFractionDigits: cents ? 2 : 0   // Conditionally set the decimal places
     };

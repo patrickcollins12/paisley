@@ -14,7 +14,9 @@ const defaultColumnVisibility = {
   id: false,
   debit: false,
   credit: false,
+  balance: false,
   account_number: false,
+  account_currency: false
 };
 
 const initialiseSortState = (searchParams) => {

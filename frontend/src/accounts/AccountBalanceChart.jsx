@@ -7,7 +7,9 @@ const { LinearGradient } = graphic;
 import { useResolvedTheme } from "@/components/theme-provider";
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
 
-import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
+import { formatDate } from "@/lib/localisation_utils.js";
+import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
+
 
 const AccountBalanceChart = ({ accountid, category, startDate }) => {
     const resolvedTheme = useResolvedTheme();

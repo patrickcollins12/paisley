@@ -14,7 +14,9 @@ import { Button } from "@/components/ui/button.jsx";
 import { Link, useNavigate } from "@tanstack/react-router";
 import GlobalFilter from "@/toolbar/GlobalFilter.jsx";
 import useAccountData from "@/accounts/AccountApiHooks.js";
-import { formatDate, formatCurrency, formatInterest } from "@/lib/localisation_utils.js";
+import { formatDate, formatInterest } from "@/lib/localisation_utils.js";
+import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
+
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 import AccountSparkLine from "@/accounts/AccountSparkLine.jsx";
 

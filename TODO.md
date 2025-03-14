@@ -2,10 +2,10 @@
 p1
 [ ] accounts table - * roll-up sub accounts properly *
 [ ] honor currencies and language:
-       react-i18nnext auto-detects language: https://react.i18next.com/
-       Intl.NumberFormat().resolvedOptions().locale => en-AU
-       Default currency en-AU => AU => AUD (https://github.com/tadeegan/locale-currency)
-       build a currency chooser, default is based on locale and accounts currencies.
+       [x] - react-i18nnext auto-detects language: https://react.i18next.com/
+       [ ] - Intl.NumberFormat().resolvedOptions().locale => en-AU
+       [ ] - Default currency en-AU => AU => AUD (https://github.com/tadeegan/locale-currency)
+       [ ] - build a currency chooser, default is based on locale and accounts currencies.
 [ ] account page - roll-up sub accounts (and show assets in the chart)
 [ ] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
 [ ] install - bring demo DB up to date
@@ -128,3 +128,44 @@ Closed bugs/tickets
        [x] add echarts to the frontend
        [x] generate the backend script
 
+
+
+
+Currency popup
+
+Default currency|v|
+AUD A$123 (3 accounts)
+USD $123USD (1 account)
+GBP £123
+---
+AUD
+...
+ZIM
+
+Settings Menu
+
+How to display currency|v|
+[ ] Show currency symbols sparingly (recommended)
+[ ] Convert all values to my default currency
+[ ] Always display currency symbols. Best if you have a lot of transactions in multiple currencies.
+[ ] Never show currency symbols (will still be available in amount tooltips)
+
+Summing multiple currencies. 
+
+Summing on the net worth report:
+[various]
+Tool tip:
+Currency conversion service is unavailable. Consider [adding a currency converter].
+Subtotals by Currency
+    AUD: A$X
+    USD: $Y
+    GBP: £Z
+
+
+$490
+Tool tip:
+Subtotals by Currency
+    AUD: $300 (.69 12/23/2024)
+    USD: $50 (.69 12/23/2024)
+    GBP: £50 (.69 12/23/2024)
+Approximate total based on cached conversion rates as of [date/time].

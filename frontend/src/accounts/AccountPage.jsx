@@ -19,7 +19,8 @@ import useAccountData from "@/accounts/AccountApiHooks.js";
 import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 
 // utils
-import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
+// import { formatDate } from "@/lib/localisation_utils.js";
+import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 
 // what is the account id?
 const routeApi = getRouteApi('/account/$accountId');

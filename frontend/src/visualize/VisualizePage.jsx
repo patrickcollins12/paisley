@@ -7,8 +7,8 @@ import { DateTime } from "luxon";
 import ReactECharts from "echarts-for-react";
 import { graphic, format } from 'echarts';
 const { LinearGradient } = graphic;
-import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
-
+// import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
+import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 
 export default function VisualizePage() {
   const searchContext = useSearch();
@@ -48,9 +48,7 @@ export default function VisualizePage() {
 
   // add $ to the tooltip
   function formatUpperLabel(info) {
-    // const roundedValue = info.value.toFixed(0);
-    // const formattedValue = format.addCommas(roundedValue);
-    return `${info.name} ${formatCurrency(info.value, { cents: false })}`;
+    return `${info.name} ${formatCurrency(info.value, { maximumFractionDigits:0 })}`;
   }
 
   useEffect(() => {
@@ -77,14 +75,12 @@ export default function VisualizePage() {
             }
 
             const treePathStr = treePath.join(" > ");
-            // const roundedValue = info.value.toFixed(2);
-            // const formattedValue = format.addCommas(roundedValue);
 
             return `
                       <div>
                         <div class="tooltip-title">${format.encodeHTML(treePathStr)}</div>
                         ${txnStr}
-                        <div>Amount: ${formatCurrency(info.value)}</div>
+                        <div>Amount: ${formatCurrency(info.value, {currency: info.data.account_currency	})}</div>
                       </div>
                     `;
           },
@@ -256,6 +252,7 @@ export default function VisualizePage() {
       value: Math.abs(parseFloat(row.amount)) || 0.0,
       description: row.description,
       account_shortname: row.account_shortname,
+      account_currency: row.account_currency,
       account_number: row.account_number,
       datetime: DateTime.fromISO(row.datetime),
       date: DateTime.fromISO(row.datetime_without_timezone).toFormat(
