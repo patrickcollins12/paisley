@@ -1,8 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card.jsx"
 import { Badge } from "@/components/ui/badge.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
-// import { formatCurrency } from "@/lib/localisation_utils.js";
-import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
+import { Currency } from "@/components/CurrencyDisplay.jsx";
 
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 
@@ -28,7 +27,7 @@ export default function TransactionCard({ data }) {
             {data.description}
           </div>
           <div>
-            {formatCurrency(data.amount)}<br/>            
+            <Currency currency={data.account_currency}>{data.amount}</Currency>
           </div>
         </div>
         <div className="flex flex-row">

@@ -1,52 +1,12 @@
 import { DateTime } from 'luxon'
+import i18n from "i18next";
 
-export function formatCurrencyOld(value, options = {}) {
-    const browserLocale = navigator.language;
-    console.log(browserLocale); 
-
-    // allow the user to pass in overrides to the following defaults
-    const { 
-        cents = true, 
-        locale = browserLocale, 
-        currency = "USD", 
-        currencySign, 
-        zeroIsBlank = false,
-        blankIsZero = false,
-        caller=0
-    } = options;
-
-    // Handle blank value or non-number case
-    if (value === null || value === undefined || value === '' || typeof value !== "number") {
-        if (blankIsZero) {
-            value = 0 
-        } else {
-            return '';
-        }
-    }
-
-    // Handle zero value case
-    if (value === 0 && zeroIsBlank) { return '' } 
-
-    // Prepare the options for the number formatting
-    const IntlOptions = {
-        style: "currency",
-        currency: currency,
-        currencySign: currencySign,
-        minimumFractionDigits: cents ? 2 : 0,  // Conditionally set the decimal places
-        maximumFractionDigits: cents ? 2 : 0   // Conditionally set the decimal places
-    };
-
-    const formattedValue = new Intl.NumberFormat(locale, IntlOptions).format(value);
-    return formattedValue;
-}
 
 export function formatInterest(value) {
     if (typeof value !== "number") return ""; // Ensure proper fallback
 
     return `${value * 100}%`;
 }
-
-
 
 export function formatAbsoluteDate(dateTimeStr) {
     const t = DateTime.fromISO(dateTimeStr);
@@ -57,9 +17,9 @@ export function formatAbsoluteDate(dateTimeStr) {
     let dateDisplay = "";
 
     if (t.hasSame(now, "day")) {
-        dateDisplay = "Today";
+        dateDisplay = i18n.t("Today");
     } else if (t.hasSame(yesterday, "day")) {
-        dateDisplay = "Yesterday";
+        dateDisplay = i18n.t("Yesterday");
     } else {
         dateDisplay = t.toFormat("d MMM");
         if (t.year !== now.year) {

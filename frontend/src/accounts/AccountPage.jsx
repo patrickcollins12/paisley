@@ -20,7 +20,8 @@ import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 
 // utils
 // import { formatDate } from "@/lib/localisation_utils.js";
-import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
+import { Currency, formatCurrency } from "@/components/CurrencyDisplay.jsx";
+import { useTranslation } from 'react-i18next';
 
 // what is the account id?
 const routeApi = getRouteApi('/account/$accountId');
@@ -30,6 +31,7 @@ import logos from '/src/logos/logos.json';
 
 // main component
 const AccountPage = () => {
+    const { t, i18n } = useTranslation();
 
     // grab the path parameter from the URL
     const { accountId } = routeApi.useParams();
@@ -68,7 +70,7 @@ const AccountPage = () => {
                 <Link to="/accounts">
                     <div className="flex items-center">
                         <ChevronLeft size={16} />
-                        <div>Back</div>
+                        <div>{t('Back')}</div>
                     </div>
                 </Link>
             </div>
@@ -100,7 +102,10 @@ const AccountPage = () => {
                                 <div>
                                     {data && (data.balance !== null) &&
                                         <>
-                                            <span className="text-4xl font-extrabold">{data && formatCurrency(data.balance)}</span>
+                                            <span className="text-4xl font-extrabold">
+                                                {data && formatCurrency(data.balance, { style: "decimal", currency: data.currency, })}
+
+                                            </span>
                                             <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
                                             <AccountBalanceChart accountid={data.accountid} category={data.category} startDate={startDate} />
 
@@ -127,12 +132,9 @@ const AccountPage = () => {
 
 
 
-
-
-
                     <Card className="text-sm">
                         <CardHeader>
-                            <CardTitle>Details</CardTitle>
+                            <CardTitle>{t("Details")}</CardTitle>
                             {/* <CardDescription>Last updated: 25 Feb 2025</CardDescription> */}
                         </CardHeader>
                         <CardContent className="">
@@ -147,7 +149,7 @@ const AccountPage = () => {
                         <Card className="text-sm">
                             <CardHeader>
                                 <CardTitle>
-                                    Interest Rate
+                                    {t("Interest Rate")}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
@@ -163,10 +165,10 @@ const AccountPage = () => {
 
                     <Card className="text-sm w-[450px]">
                         <CardHeader>
-                            <CardTitle>Recent Transactions</CardTitle>
+                            <CardTitle>{t("Recent Transactions")}</CardTitle>
                             {data && data.balance_datetime &&
                                 <div>
-                                    <span className="text-xs mb-3">Last transaction: </span>
+                                    <span className="text-xs mb-3">{t("Last transaction")}: </span>
                                     <DateTimeDisplay datetime={data.balance_datetime} />
                                 </div>
                             }

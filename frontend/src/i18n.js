@@ -1,3 +1,6 @@
+
+
+
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
@@ -14,11 +17,30 @@ const resources = {
             "Logout": "Logout",
             "Light": "Light",
             "Dark": "Dark",
-            "System": "System"
+            "System": "System",
+            "Back": "Back",
+            "Details": "Details",
+            "Interest Rate": "Interest Rate",
+            "Recent Transactions": "Recent Transactions",
+            "Last transaction": "Last transaction",
+            "Error loading accounts data": "Error loading accounts data",
+            "What I own (Assets)": "What I own (Assets)",
+            "Total (Assets)": "Total (Assets)",
+            "What I owe (Liabilities)": "What I owe (Liabilities)",
+            "Total (Liabilities)": "Total (Liabilities)",
+            "Net Worth": "Net Worth",
+            "TZ of browser": "TZ of browser",
+            "Account Name": "Account Name",
+            "Account Type": "Account Type",
+            "Balance": "Balance",
+            "Last Balance": "Last Balance",
+            "1 year": "1 year",
+            "Today": "Today",
+            "Yesterday": "Yesterday"
         }
     },
 
-    "en-GB": {
+    "en": {
         translation: {
             "Transactions": "Transactions",
             "Accounts": "Accounts",
@@ -30,11 +52,30 @@ const resources = {
             "Logout": "Logout",
             "Light": "Light",
             "Dark": "Dark",
-            "System": "System"
+            "System": "System",
+            "Back": "Back",
+            "Details": "Details",
+            "Interest Rate": "Interest Rate",
+            "Recent Transactions": "Recent Transactions",
+            "Last transaction": "Last transaction",
+            "Error loading accounts data": "Error loading accounts data",
+            "What I own (Assets)": "What I own (Assets)",
+            "Total (Assets)": "Total (Assets)",
+            "What I owe (Liabilities)": "What I owe (Liabilities)",
+            "Total (Liabilities)": "Total (Liabilities)",
+            "Net Worth": "Net Worth",
+            "TZ of browser": "TZ of browser",
+            "Account Name": "Account Name",
+            "Account Type": "Account Type",
+            "Balance": "Balance",
+            "Last Balance": "Last Balance",
+            "1 year": "1 year",
+            "Today": "Today",
+            "Yesterday": "Yesterday"
         }
     },
 
-    de: {
+    "de": {
         translation: {
             "Transactions": "Transaktionen",
             "Accounts": "Konten",
@@ -46,10 +87,30 @@ const resources = {
             "Logout": "Abmelden",
             "Light": "Hell",
             "Dark": "Dunkel",
-            "System": "System"
+            "System": "System",
+            "Back": "Zurück",
+            "Details": "Details",
+            "Interest Rate": "Zinssatz",
+            "Recent Transactions": "Letzte Transaktionen",
+            "Last transaction": "Letzte Transaktion",
+            "Error loading accounts data": "Fehler beim Laden der Kontodaten",
+            "What I own (Assets)": "Mein Besitz (Vermögenswerte)",
+            "Total (Assets)": "Gesamt (Vermögenswerte)",
+            "What I owe (Liabilities)": "Meine Schulden (Verbindlichkeiten)",
+            "Total (Liabilities)": "Gesamt (Verbindlichkeiten)",
+            "Net Worth": "Vermögen",
+            "TZ of browser": "Zeitzone des Browsers",
+            "Account Name": "Kontoname",
+            "Account Type": "Kontotyp",
+            "Balance": "Kontostand",
+            "Last Balance": "Letzter Kontostand",
+            "1 year": "1 Jahr",
+            "Today": "Heute",
+            "Yesterday": "Gestern"
         }
     },
-    fr: {
+
+    "fr": {
         translation: {
             "Transactions": "Transactions",
             "Accounts": "Comptes",
@@ -61,10 +122,30 @@ const resources = {
             "Logout": "Se déconnecter",
             "Light": "Clair",
             "Dark": "Sombre",
-            "System": "Système"
+            "System": "Système",
+            "Back": "Retour",
+            "Details": "Détails",
+            "Interest Rate": "Taux d'intérêt",
+            "Recent Transactions": "Transactions récentes",
+            "Last transaction": "Dernière transaction",
+            "Error loading accounts data": "Erreur de chargement des données du compte",
+            "What I own (Assets)": "Ce que je possède (Actifs)",
+            "Total (Assets)": "Total (Actifs)",
+            "What I owe (Liabilities)": "Ce que je dois (Passifs)",
+            "Total (Liabilities)": "Total (Passifs)",
+            "Net Worth": "Valeur nette",
+            "TZ of browser": "Fuseau horaire du navigateur",
+            "Account Name": "Nom du compte",
+            "Account Type": "Type de compte",
+            "Balance": "Solde",
+            "Last Balance": "Dernier solde",
+            "1 year": "1 an",
+            "Today": "Aujourd'hui",
+            "Yesterday": "Hier"
         }
     },
-    ja: {
+
+    "ja": {
         translation: {
             "Transactions": "取引",
             "Accounts": "アカウント",
@@ -76,7 +157,26 @@ const resources = {
             "Logout": "ログアウト",
             "Light": "ライト",
             "Dark": "ダーク",
-            "System": "システム"
+            "System": "システム",
+            "Back": "戻る",
+            "Details": "詳細",
+            "Interest Rate": "金利",
+            "Recent Transactions": "最近の取引",
+            "Last transaction": "最後の取引",
+            "Error loading accounts data": "アカウントデータの読み込みエラー",
+            "What I own (Assets)": "所有する資産",
+            "Total (Assets)": "資産合計",
+            "What I owe (Liabilities)": "負債",
+            "Total (Liabilities)": "負債合計",
+            "Net Worth": "純資産",
+            "TZ of browser": "ブラウザのタイムゾーン",
+            "Account Name": "口座名",
+            "Account Type": "口座タイプ",
+            "Balance": "残高",
+            "Last Balance": "前回の残高",
+            "1 year": "1年",
+            "Today": "今日",
+            "Yesterday": "昨日"
         }
     }
 };
@@ -86,7 +186,8 @@ i18n
     .use(initReactI18next)  // passes i18n down to react-i18next
     .init({
         resources,
-        fallbackLng: "en",  // Fallback language if the detected language is unavailable
+        // fallbackLng: "en",  // Fallback language if the detected language is unavailable
+        fallbackLng: ["en", "en-US"], // Falls back to 'en' translations for en-AU and en-GB
         interpolation: {
             escapeValue: false // react already safes from xss
         },

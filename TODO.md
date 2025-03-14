@@ -1,11 +1,6 @@
 # TODO
 p1
 [ ] accounts table - * roll-up sub accounts properly *
-[ ] honor currencies and language:
-       [x] - react-i18nnext auto-detects language: https://react.i18next.com/
-       [ ] - Intl.NumberFormat().resolvedOptions().locale => en-AU
-       [ ] - Default currency en-AU => AU => AUD (https://github.com/tadeegan/locale-currency)
-       [ ] - build a currency chooser, default is based on locale and accounts currencies.
 [ ] account page - roll-up sub accounts (and show assets in the chart)
 [ ] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
 [ ] install - bring demo DB up to date
@@ -16,14 +11,15 @@ p2
 [ ] install - fix/finish install script
 
 p3
-[ ] accounts table - consolidate on Intl.NumberFormat
 [ ] accounts table - add currency.js route conversion to accounts page
 [ ] account page - manually add a balance amount
 [ ] paisley backend on beelink. feels pretty important!
 [ ] visualize page - set default filters
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)
+[ ] build a default currency chooser, default is currently based on locale and accounts currencies.
 
 done
+[x] accounts table - consolidate on Intl.NumberFormat
 [x] account page - show interest amount and chart
 [x] account page - add $ to main categories
 [x] accounts table - consolidate utils 
@@ -31,6 +27,9 @@ done
 [x] accounts table - add a sparkline (react-sparklines or chartist.js offer simpler, more minimal designs)
 [x] accounts table - table is too wide. add institution to the table but hide it
 [x] accounts table - update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
+[x] - react-i18nnext auto-detects language: https://react.i18next.com/
+[x] - Intl.NumberFormat().resolvedOptions().locale => en-AU
+[x] - Default currency en-AU => AU => AUD (https://github.com/tadeegan/locale-currency)
 
 One day:
 [ ] pull paisley scraper/collector out into a separate project. separate git repo?

@@ -48,7 +48,7 @@ export default function VisualizePage() {
 
   // add $ to the tooltip
   function formatUpperLabel(info) {
-    return `${info.name} ${formatCurrency(info.value, { maximumFractionDigits:0 })}`;
+    return `${info.name} ${formatCurrency(info.value, { style: "decimal",maximumFractionDigits:0 })}`;
   }
 
   useEffect(() => {
