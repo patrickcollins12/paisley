@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Link, useNavigate } from "@tanstack/react-router";
 import GlobalFilter from "@/toolbar/GlobalFilter.jsx";
@@ -25,12 +25,14 @@ const AccountsPage = () => {
   const navigate = useNavigate({ from: "/accounts" });
   const { data, error, isLoading } = useAccountData();
   const [accounts, setAccounts] = useState([]);
+  const [filteredAccounts, setFilteredAccounts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [totalAssets, setTotalAssets] = useState([]);
   const [totalLiabilities, setTotalLiabilities] = useState([]);
   const [netWorth, setNetWorth] = useState([]);
 
   const { t, i18n } = useTranslation();
-
 
   const [expandedRows, setExpandedRows] = useState({});
   const toggleExpand = (accountid) => {
@@ -39,6 +41,36 @@ const AccountsPage = () => {
       [accountid]: !prev[accountid], // Toggle expansion
     }));
   };
+
+
+  function filterAccounts(accounts, searchTerm) {
+    if (!searchTerm) return accounts; // If no search term, return full list
+
+    const lowerSearch = searchTerm.toLowerCase();
+
+    return accounts.filter(
+      (account) =>
+        account.shortname.toLowerCase().includes(lowerSearch) ||
+        account.institution.toLowerCase().includes(lowerSearch) ||
+        account.name.toLowerCase().includes(lowerSearch) ||
+        account.type.toLowerCase().includes(lowerSearch)
+    );
+  }
+
+  // Fake `dataTable` to pass into `GlobalFilter`
+  const dataTable = {
+    setGlobalFilter: (value) => setSearchTerm(value), // Updates search term
+    resetGlobalFilter: () => setSearchTerm(""), // Clears search term
+  };
+
+  function resetFilter(setFilteredAccounts, originalAccounts) {
+    setFilteredAccounts(originalAccounts);
+  }
+
+  // Update filtered accounts when the search term changes
+  useEffect(() => {
+    setFilteredAccounts(filterAccounts(accounts, searchTerm));
+  }, [accounts, searchTerm]);
 
 
   let logoObject = null;
@@ -66,6 +98,9 @@ const AccountsPage = () => {
           // Sum balances
           parent.balance = (parent.balance || 0) + (child.balance || 0);
 
+          // Mark this account as a parent
+          parent.hasChildren = true;
+
           // Track the latest balance_datetime
           if (!parent.balance_datetime || new Date(child.balance_datetime) > new Date(parent.balance_datetime)) {
             parent.balance_datetime = child.balance_datetime;
@@ -91,8 +126,13 @@ const AccountsPage = () => {
       const sortedAccounts = updatedAccounts.sort((a, b) => {
         const indexA = sortOrder.indexOf(a.type);
         const indexB = sortOrder.indexOf(b.type);
-        // Accounts with undefined types or not in sortOrder are pushed to the end
-        return (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+
+        // First, sort by type using the predefined order
+        const typeComparison = (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
+        if (typeComparison !== 0) return typeComparison;
+
+        // If types are the same, sort by balance (descending order: highest balance first)
+        return b.balance - a.balance;
       });
 
       setAccounts(sortedAccounts);
@@ -118,7 +158,7 @@ const AccountsPage = () => {
   }, [data]);
 
   function renderAccountDetails(category, totalValue, what_i_own_or_owe, total_assets_or_liabilities) {
-    
+
     return (
       <>
         {/* Assets Title */}
@@ -128,9 +168,10 @@ const AccountsPage = () => {
           </TableCell>
         </TableRow>
 
-        {accounts &&
-          accounts
-            .filter((acc) => acc.category === category)
+        {filteredAccounts &&
+          filteredAccounts
+            .filter((acc) => acc.category === category) // only liability or asset accounts
+            .filter((acc) => !acc.parentid) // only top-level accounts
             .map((account, index) => (
               <React.Fragment key={account.accountid}>{renderRow(account)}</React.Fragment>
             ))}
@@ -147,6 +188,7 @@ const AccountsPage = () => {
 
     function renderRow(account) {
       const isParent = account.parentid === null;
+      const hasChildren = account.hasChildren; // Comes from useEffect marking parents
       const isExpanded = expandedRows[account.accountid];
 
       return (
@@ -155,25 +197,40 @@ const AccountsPage = () => {
           <TableRow
             key={account.accountid}
             className="border-t bg-opacity-90 transition duration-150 cursor-pointer"
+            onClick={() => navigate({ to: `/account/${account.accountid}` })}
           >
-            {/* Expand/Collapse Icon (Only for parent accounts) */}
-            <TableCell className="p-1 font-medium hover:underline">
-              <div className="flex items-center gap-3">
-                {isParent && (
+
+            { /* indent the row if it's a child account */}
+            <TableCell className={`p-1 ${isParent ? "" : "pl-4"} font-medium`}>
+              <div className="flex items-center gap-0">
+
+                {/* Account Logo */}
+                {logos?.[account.institution]?.location && (
+                  <span className={`mr-3 p-1 border ${logos[account.institution]["background"]} rounded-lg`}>
+                    <img className="h-5" src={`${logos[account.institution]["location"]}`} />
+                  </span>
+                )}
+
+                {/* Account Name */}
+                {/* <span>{account.shortname}</span> */}
+                <span className="hover:underline">{account.shortname}</span>
+
+                {/* Expand/Collapse Icon */}
+                {isParent && hasChildren && (
                   <button
-                    className="mr-1"
-                    onClick={() => toggleExpand(account.accountid)}
+                    className="m-2 focus:outline-none"
+                    onClick={(event) => {
+                      event.stopPropagation(); // Prevents the row click from triggering
+                      toggleExpand(account.accountid);
+                    }}
                   >
-                    {isExpanded ? "▼" : "▶"}
+                    {<ChevronRight
+                      size={16}
+                      className={`transition-transform m-0 p-0 duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                    />}
                   </button>
                 )}
 
-                {logos && logos[account.institution] && logos[account.institution]['location'] && (
-                  <span className={`ml-3 p-1 border ${logos[account.institution]['background']} rounded-lg`}>
-                    <img className="h-5" src={`${logos[account.institution]['location']}`} />
-                  </span>
-                )}
-                <span>{account.shortname}</span>
               </div>
             </TableCell>
 
@@ -192,7 +249,7 @@ const AccountsPage = () => {
 
             {/* Sparkline */}
             <TableCell className="p-0 hidden md:table-cell text-right">
-              {account && account.accountid && <AccountSparkLine accountid={account.accountid} />}
+              {account.accountid && <AccountSparkLine accountid={account.accountid} />}
             </TableCell>
 
             {/* Interest */}
@@ -201,7 +258,7 @@ const AccountsPage = () => {
 
           {/* Render Child Rows if Expanded */}
           {isExpanded &&
-            accounts
+            filteredAccounts
               .filter((acc) => acc.parentid === account.accountid)
               .map((subAccount) => (
                 <React.Fragment key={subAccount.accountid}>{renderRow(subAccount)}</React.Fragment>
@@ -209,12 +266,11 @@ const AccountsPage = () => {
         </>
       );
     }
+
   }
 
   return (
     <>
-
-
       <div className="flex flex-row mb-4">
         <div className="flex flex-row basis-1/2 space-x-2">
           <Button variant="outline" size="sm" className="h-8" asChild>
@@ -223,7 +279,7 @@ const AccountsPage = () => {
               Create Account
             </Link>
           </Button>
-          <GlobalFilter dataTable={table} />
+          <GlobalFilter dataTable={dataTable} />
         </div>
       </div>
 
