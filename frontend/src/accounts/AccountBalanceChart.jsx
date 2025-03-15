@@ -26,11 +26,17 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
     useEffect(() => {
         if (data && !isLoading) {
 
+            const seriesData = generateEChartSeries(data);
+
             // const updatedData = updateBalances(data);
             // const balances = updatedData.balances
             // const dates = updatedData.dates
 
             setOption({
+                legend: {
+                    data: ['Line 1', 'Line 2', 'Line 3', 'Line 4', 'Line 5']
+                },
+
                 tooltip: {
                     trigger: 'axis',
                     // formatter: '{b0}<br>${c0}',
@@ -45,17 +51,17 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     //     return `${key}<br><b>transactions: ${val}</b>`
                     // },
                     axisPointer: {
-                        type: 'line',
+                        type: 'cross',
                         label: {
                             backgroundColor: '#6a7985',
                         },
-
                     }
+
                 },
 
                 feature: {
                     dataZoom: {
-                        yAxisIndex: 'none'
+                        // yAxisIndex: 'none'
                     },
                 },
                 dataZoom: [
@@ -74,6 +80,8 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     top: '0%',
                     containLabel: false
                 },
+
+                
                 xAxis: [
                     {
                         show: false,
@@ -101,46 +109,75 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     }
                 ],
 
-                series: [
-                    {
-                        // name: 'Bankwest Offset Balance',
-                        type: 'line',
-                        // stack: 'Total',
-                        smooth: false,
-                        lineStyle: {
-                            width: 2,
-                            color: 'rgb(63, 182, 97)'
-
-                        },
-                        showSymbol: false,
-                        areaStyle: {
-                            opacity: 0.9,
-                            color: new LinearGradient(0, 0, 0, 1, [
-                                {
-                                    offset: category === "liability" ? 1 : 0,
-                                    color: 'rgb(128, 255, 165)'
-                                },
-                                // {
-                                //     offset: .8,
-                                //     color: 'rgba(128, 255, 164, 0.5)'
-                                // },
-                                {
-                                    offset: category === "liability" ? 0 : 1,
-                                    color: 'rgb(128, 255, 165, 0)'
-                                }
-                            ])
-                        },
-                        // emphasis: {
-                        //     focus: 'series'
-                        // },
-                        // data: data.map(item => item.datetime)
-                        data: data.map(item => [item.datetime, item.balance])
-                    }
-                ]
+                series: seriesData
 
             });
         }
     }, [data]);
+
+
+    function generateEChartSeries(data) {
+        const groupedData = {};
+
+        // Group by accountid
+        data.forEach(item => {
+            if (!groupedData[item.accountid]) {
+                groupedData[item.accountid] = [];
+            }
+            groupedData[item.accountid].push([item.datetime, item.balance]);
+        });
+
+        // Sort series by last value (largest to smallest)
+        const sortedEntries = Object.entries(groupedData).sort((a, b) => {
+            const lastA = a[1][a[1].length - 1][1]; // Last balance value
+            const lastB = b[1][b[1].length - 1][1]; // Last balance value
+            return lastA - lastB; // Descending order
+        });
+
+        const colorPalette = [
+            "rgb(63, 182, 97)",   // Primary Green
+            "rgb(56, 140, 90)",   // Darker Green (shade)
+            "rgb(113, 204, 46)",  // Yellow-Green (Analogous)
+            "rgb(26, 188, 156)",  // Teal (Split Complementary)
+            "rgb(39, 174, 228)",  // Blue (Triadic)
+            "rgb(142, 68, 173)",  // Purple (Triadic)
+            "rgb(211, 84, 0)",    // Warm Orange (Split Complementary)
+            "rgb(230, 126, 34)",  // Soft Orange (Analogous)
+            "rgb(241, 196, 15)",  // Golden Yellow (Analogous)
+            "rgb(189, 195, 199)"  // Neutral Silver (for balance)
+        ];
+
+        const series = sortedEntries.map(([accountid, seriesData], index) => {
+            const color = colorPalette[index % colorPalette.length]; // Cycle through colors
+
+            return {
+                name: `Account ${accountid}`,
+                type: 'line',
+                stack: 'Total',
+                smooth: false,
+                lineStyle: {
+                    width: 2,
+                    color: color
+                },
+                showSymbol: false,
+                emphasis: {
+                    focus: 'series'
+                },
+
+                areaStyle: {
+                    opacity: 0.9,
+                    color: new LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: color }, // Solid color at the top
+                        { offset: 1, color: color.replace("rgb", "rgba").replace(")", ", 0)") } // Faded color at the bottom
+                    ])
+                },
+                data: seriesData
+            };
+        });
+
+        return series;
+    }
+
 
     return (
         <>
@@ -152,7 +189,6 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     theme={{ resolvedTheme }}
                 />
             )}
-
 
         </>
     )

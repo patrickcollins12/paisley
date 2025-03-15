@@ -78,13 +78,15 @@ router.get(
                 SELECT DISTINCT * FROM (
 
                     SELECT 
-                        accountid, 
+                        h.accountid, 
                         datetime, 
                         balance,
                         data,
+                        a.parentid as parentid,
                         'account_history' as source
                     FROM 
-                        account_history 
+                        account_history h
+					LEFT JOIN account a on h.accountid = a.accountid
 
                 UNION
 
@@ -97,8 +99,10 @@ router.get(
                         t.datetime,
                         t.balance,
                         null,
+						a.parentid as parentid,
                         'transaction' as source
                     FROM 'transaction' t
+					LEFT JOIN account a on t.account = a.accountid
                     WHERE t.rowid = (
                             SELECT 
                                 MAX(t2.rowid)
@@ -106,12 +110,13 @@ router.get(
                                 WHERE t2.account = t.account
                                     AND t2.datetime = t.datetime
                         ) AND balance is not null
-                ) WHERE 1=1
+                    ) WHERE 1=1
                 `;
         let params = [];
 
         if (accountid) {
-            query += ` AND accountid = ?`;
+            query += ` AND (accountid = ? OR parentid = ?)`;
+            params.push(accountid);
             params.push(accountid);
         }
         if (from) {
@@ -128,13 +133,17 @@ router.get(
             const stmt = db.db.prepare(query);
             const rows = stmt.all(...params);
 
+            // if there is more than one accountid, we need to interpolate
+            let accountids = [...new Set(rows.map(row => row.accountid))];
+            if (accountids.length > 1) 
+                interpolate = true;
+            
             // If interpolation is requested, apply it
             if (interpolate) {
                 res.json(util.interpolateTimeSeries(rows))
             } else {
                 res.json(rows)
             }
-
 
         } catch (err) {
             logger.error(`Error fetching account history: ${err.message}`);

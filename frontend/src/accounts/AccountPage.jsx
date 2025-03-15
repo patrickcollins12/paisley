@@ -75,7 +75,7 @@ const AccountPage = () => {
                 </Link>
             </div>
 
-            <div className="container mx-auto p-4">
+            <div className="container mx-auto p-0">
                 <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
 
                     <Card className="text-sm">
@@ -100,15 +100,16 @@ const AccountPage = () => {
                         <CardContent>
                             <>
                                 <div>
-                                    {data && (data.balance !== null) &&
+                                    {data &&
                                         <>
                                             <span className="text-4xl font-extrabold">
                                                 {data && formatCurrency(data.balance, { style: "decimal", currency: data.currency, })}
-
                                             </span>
                                             <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
-                                            <AccountBalanceChart accountid={data.accountid} category={data.category} startDate={startDate} />
 
+                                            <div className="w-full min-w-[100px] min-h-[100px] h-[25vh] max-h-[600px]" >
+                                                <AccountBalanceChart accountid={data.accountid} category={data.category} startDate={startDate} />
+                                            </div>
 
                                         </>
                                     }
@@ -163,7 +164,7 @@ const AccountPage = () => {
                     }
 
 
-                    <Card className="text-sm w-[450px]">
+                    <Card className="text-sm">
                         <CardHeader>
                             <CardTitle>{t("Recent Transactions")}</CardTitle>
                             {data && data.balance_datetime &&
@@ -179,7 +180,7 @@ const AccountPage = () => {
                         </CardHeader>
 
                         <CardContent className="">
-                            <ScrollableSidebar className=" flex flex-col gap-3 ">
+                            <ScrollableSidebar className="flex flex-col gap-2">
                                 {transactionData?.results.map(transaction => <TransactionCard key={transaction.id} data={transaction} />)}
                             </ScrollableSidebar>
                         </CardContent>

@@ -1,9 +1,11 @@
 # TODO
 p1
 [x] accounts table - Sub accounts details on the accounts page… > v
-[ ] accounts page - SparkLine can handle account totals - min is max min date of all rows and vice versa
+[x] accounts page - SparkLine can handle account totals - min is max min date of all rows and vice versa
 [ ] account page - can graph sub accounts and has a section to link to sub accounts
-[ ] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
+       almost done. the interpolate function is returning series which the balancechart needs to pickup.
+       the backend needs to emulate the interpolate function's structure
+[x] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
 [ ] install - bring demo DB up to date
 [ ] account page - add/edit account details (scraper def?). review what belongs on account table vs config vs code
 

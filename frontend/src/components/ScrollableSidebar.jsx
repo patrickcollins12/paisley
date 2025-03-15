@@ -25,7 +25,7 @@ export function ScrollableSidebar({ children, className = "" }) {
     <div
       ref={divRef}
       style={{ height: `${divHeight}px` }}
-      className="overflow-auto inner-scroll-area overscroll-contain pr-3"
+      className="overflow-auto inner-scroll-area overscroll-contain pr-1"
     >
       <div className={`flex justify-end mb-5 ${className}`}>
 
