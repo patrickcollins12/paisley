@@ -25,15 +25,16 @@ const AccountsPage = () => {
   const navigate = useNavigate({ from: "/accounts" });
   const { data, error, isLoading } = useAccountData();
   const [accounts, setAccounts] = useState([]);
-  const [filteredAccounts, setFilteredAccounts] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
 
   const [totalAssets, setTotalAssets] = useState([]);
   const [totalLiabilities, setTotalLiabilities] = useState([]);
   const [netWorth, setNetWorth] = useState([]);
 
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
+
+  ////////
+  // row expanding functionality
   const [expandedRows, setExpandedRows] = useState({});
   const toggleExpand = (accountid) => {
     setExpandedRows((prev) => ({
@@ -42,12 +43,14 @@ const AccountsPage = () => {
     }));
   };
 
+  ////////
+  // filtering functionality
+  const [filteredAccounts, setFilteredAccounts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
 
   function filterAccounts(accounts, searchTerm) {
     if (!searchTerm) return accounts; // If no search term, return full list
-
     const lowerSearch = searchTerm.toLowerCase();
-
     return accounts.filter(
       (account) =>
         account.shortname.toLowerCase().includes(lowerSearch) ||
@@ -57,15 +60,11 @@ const AccountsPage = () => {
     );
   }
 
-  // Fake `dataTable` to pass into `GlobalFilter`
+  // `dataTable` to pass into `GlobalFilter`
   const dataTable = {
     setGlobalFilter: (value) => setSearchTerm(value), // Updates search term
     resetGlobalFilter: () => setSearchTerm(""), // Clears search term
   };
-
-  function resetFilter(setFilteredAccounts, originalAccounts) {
-    setFilteredAccounts(originalAccounts);
-  }
 
   // Update filtered accounts when the search term changes
   useEffect(() => {
@@ -73,12 +72,6 @@ const AccountsPage = () => {
   }, [accounts, searchTerm]);
 
 
-  let logoObject = null;
-  if (data) {
-    logoObject = logos[data.institution]
-  }
-
-  const table = {};
 
   const isStale = (date) => (new Date() - new Date(date)) / (1000 * 60 * 60 * 24) > 8;
 
