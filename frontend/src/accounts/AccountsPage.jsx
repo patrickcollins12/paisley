@@ -32,7 +32,6 @@ const AccountsPage = () => {
 
   const { t } = useTranslation();
 
-
   ////////
   // row expanding functionality
   const [expandedRows, setExpandedRows] = useState({});
@@ -70,11 +69,14 @@ const AccountsPage = () => {
   useEffect(() => {
     setFilteredAccounts(filterAccounts(accounts, searchTerm));
   }, [accounts, searchTerm]);
-
+  //////////////////
 
 
   const isStale = (date) => (new Date() - new Date(date)) / (1000 * 60 * 60 * 24) > 8;
 
+
+  //////////////////
+  // setup the data
   useEffect(() => {
     if (data) {
 
@@ -150,6 +152,8 @@ const AccountsPage = () => {
     }
   }, [data]);
 
+  //////////////////
+  // render each row
   function renderAccountDetails(category, totalValue, what_i_own_or_owe, total_assets_or_liabilities) {
 
     return (
@@ -262,6 +266,8 @@ const AccountsPage = () => {
 
   }
 
+  //////////////////
+  // main render component
   return (
     <>
       <div className="flex flex-row mb-4">

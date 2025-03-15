@@ -1,7 +1,8 @@
 # TODO
 p1
-[ ] accounts table - * roll-up sub accounts properly *
-[ ] account page - roll-up sub accounts (and show assets in the chart)
+[x] accounts table - Sub accounts details on the accounts page… > v
+[ ] accounts page - SparkLine can handle account totals - min is max min date of all rows and vice versa
+[ ] account page - can graph sub accounts and has a section to link to sub accounts
 [ ] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
 [ ] install - bring demo DB up to date
 [ ] account page - add/edit account details (scraper def?). review what belongs on account table vs config vs code

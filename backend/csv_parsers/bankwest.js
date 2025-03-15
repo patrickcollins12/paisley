@@ -94,7 +94,9 @@ class BankwestCSVParser extends BaseCSVParser {
         // skip these pre-auths until they become actual transactions
         if (narration.toLowerCase().startsWith("authorisation only") ||
             narration.toLowerCase().startsWith("DEBIT AUTHORISATION") ||
-            l['Transaction Type'] === "DAU") {
+            l['Transaction Type'] === "DAU" ||
+            l['Transaction Type'] === "DAR"     // for PENDING REFUND
+        ) {
             logger.info(`Skipping ${narration}`)
             return null;
         }

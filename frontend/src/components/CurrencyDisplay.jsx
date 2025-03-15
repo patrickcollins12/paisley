@@ -19,7 +19,7 @@ export function formatCurrency(value, options = {}) {
     // set the defaults if not passed in
     options.locale ||= navigator.language;
     (options.currency = options.currency ?? LocaleCurrency.getCurrency(options.locale)) ?? delete options.currency;
-    
+
     // If currency is missing or invalid, use "decimal" format instead of "currency"
     options.style ||= options.currency ? "currency" : "decimal";
 
@@ -32,8 +32,6 @@ export function formatCurrency(value, options = {}) {
     if (value === 0 && options.zeroIsBlank) return '';
 
     try {
-        console.log(`options: ${JSON.stringify(options)}`);
-
         return new Intl.NumberFormat(options.locale, options).format(value);    
     } catch (error) {
         console.error("formatCurrency Error:", error);
