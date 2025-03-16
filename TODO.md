@@ -2,6 +2,7 @@
 p1
 [ ] account page - add account details
 [ ] install - bring demo DB up to date
+[ ] account page - layout better with recent always on the right.
 
 p2
 [ ] install - create a jwt key on install
@@ -11,7 +12,9 @@ p3
 [ ] accounts table - add currency.js route conversion to accounts page
 [ ] accounts table - show inactive accounts
 [ ] account page - manually add a balance amount
-[ ] paisley backend on beelink. feels pretty important!
+[ ] account page - edit / control the edit options (asset/liability, currency:AUD/USD/etc, iconned banks)
+[ ] account page - edit / add ?'s to the fields to describe them
+[ ] paisley backend on beelink. feels pretty important!?
 [ ] visualize page - set default filters
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)
 [ ] build a default currency chooser, default is currently based on locale and accounts currencies.
