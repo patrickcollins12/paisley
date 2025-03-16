@@ -66,7 +66,7 @@ router.get(
     ],
     async (req, res) => {
         let db = new BankDatabase();
-        let { accountid, from, to, interpolate } = req.query;
+        let { accountid, from, to, interpolate=false } = req.query;
 
         // Enforce that 'accountid' is required if 'interpolate' is true
         if (interpolate && !accountid) {
@@ -136,7 +136,8 @@ router.get(
 
             // if there is more than one accountid, we need to forcefully interpolate
             let accountids = [...new Set(rows.map(row => row.accountid))];
-            if (accountids.length > 1) 
+
+            if (accountids.length > 1)
                 interpolate = true;
             
             // If interpolation is requested, apply it

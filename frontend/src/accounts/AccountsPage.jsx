@@ -74,7 +74,6 @@ const AccountsPage = () => {
 
   const isStale = (date) => (new Date() - new Date(date)) / (1000 * 60 * 60 * 24) > 8;
 
-
   //////////////////
   // setup the data
   useEffect(() => {
@@ -84,7 +83,6 @@ const AccountsPage = () => {
 
       // Create a lookup map for quick parent reference
       const accountMap = Object.fromEntries(activeAccounts.map(acc => [acc.accountid, { ...acc }]));
-      console.log(accountMap);
 
       // Step 1: Aggregate child account data into their respective parents
       activeAccounts.forEach(child => {

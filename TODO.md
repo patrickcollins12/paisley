@@ -1,6 +1,7 @@
 # TODO
 p1
 [ ] account page - add active/inactive status
+[x] account page - make back button work from accounts page
 [ ] accounts page - default logo
 [ ] install - bring demo DB up to date
 [ ] account page - add/edit account details (scraper def?). review what belongs on account table vs config vs code
@@ -11,6 +12,7 @@ p2
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
+[ ] accounts table - show inactive accounts
 [ ] account page - manually add a balance amount
 [ ] paisley backend on beelink. feels pretty important!
 [ ] visualize page - set default filters

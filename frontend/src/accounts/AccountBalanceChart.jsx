@@ -137,7 +137,7 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     }
                 ],
 
-                series: series
+                series: series // see generateEChartSeries below
 
             });
         }

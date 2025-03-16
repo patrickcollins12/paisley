@@ -1,6 +1,6 @@
 // react, routing, icons, shadn
 import React, { useState, useEffect } from "react";
-import { getRouteApi, Link } from "@tanstack/react-router"
+import { getRouteApi, Link, useRouter } from "@tanstack/react-router"
 import { ChevronLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle, } from "@/components/ui/card"
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
@@ -23,8 +23,6 @@ import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 import { Currency, formatCurrency } from "@/components/CurrencyDisplay.jsx";
 import { useTranslation } from 'react-i18next';
 
-// what is the account id?
-const routeApi = getRouteApi('/account/$accountId');
 
 // load the logos, feel free to edit this and contribute
 import logos from '/src/logos/logos.json';
@@ -33,7 +31,11 @@ import logos from '/src/logos/logos.json';
 const AccountPage = () => {
     const { t, i18n } = useTranslation();
 
+    // what is the account id?
+    const routeApi = getRouteApi('/account/$accountId');
+
     // grab the path parameter from the URL
+    const router = useRouter();
     const { accountId } = routeApi.useParams();
 
     // Fetch all accounts data using the custom hook
@@ -74,10 +76,18 @@ const AccountPage = () => {
             : null // Pass null initially to avoid making a request
     );
 
+    const onBack = () => router.history.back();
+
     return (
         <>
             <div className="pb-4 text-sm text-muted-foreground">
-                <Link to="/accounts">
+
+
+                <Link onClick={() => {
+                    onBack();
+                    return false;
+                }}
+                >
                     <div className="flex items-center">
                         <ChevronLeft size={16} />
                         <div>{t('Back')}</div>
@@ -94,7 +104,16 @@ const AccountPage = () => {
                                 <div className="flex col-2 items-center justify-between items-end gap-3">
                                     <span>
                                         <div>{account && account.shortname}</div>
+
                                         <div className="text-xs opacity-50 font-normal mt-2">{accountId}</div>
+
+                                        {account &&
+                                            account.status === "inactive" &&
+                                            <div className="text-xs opacity-50 font-normal mt-2 text-red-500">
+                                                (this account is marked as inactive)
+                                            </div>
+                                        }
+
                                     </span>
                                     {logoObject && logoObject.location &&
                                         <span className={`p-3 border ${logoObject.background || ''} rounded-lg`}>
@@ -119,7 +138,13 @@ const AccountPage = () => {
                                             <span className="text-xl font-extrabold opacity-20">{account && account.currency}</span>
 
                                             <div className="w-full min-w-[100px] min-h-[200px] h-[25vh] max-h-[600px]" >
-                                                <AccountBalanceChart accountid={account.accountid} category={account.category} startDate={startDate} />
+                                                <AccountBalanceChart
+                                                    key={account.accountid}  // Force re-render by changing the key whenever accountId changes
+                                                    accountid={account.accountid}
+                                                    category={account.category}
+                                                    startDate={startDate} />
+
+
                                             </div>
 
                                         </>
