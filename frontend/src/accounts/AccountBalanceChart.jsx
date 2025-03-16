@@ -33,9 +33,9 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
             const { series, legend } = generateEChartSeries(data);
 
             setOption({
-                // legend: {
-                //     data: legend
-                // },
+                legend: {
+                    data: legend
+                },
 
                 tooltip: {
                     trigger: 'axis',
@@ -43,7 +43,7 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     formatter: function (params) {
                         let retStr = ""
                         let multiple = (params.length > 1) ? true : false
-                        params.forEach((seriesItem, index) => {
+                        params.reverse().forEach((seriesItem, index) => {
                             const date = seriesItem.data[0]
                             const accountid = seriesItem.seriesName
                             const marker = seriesItem.marker
@@ -59,10 +59,15 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
 
 
                     axisPointer: {
-                        type: 'cross',
-                        // label: {
-                        //     backgroundColor: '#6a7985',
-                        // },
+                        show: false,
+                        type: 'shadow',
+                        shadowStyle: {
+                            // color: '#222',
+                            // type: "solid"
+                        },
+                        label: {
+                            backgroundColor: '#6a7985',
+                        },
                     }
 
                 },
@@ -74,7 +79,8 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                 },
                 dataZoom: [
                     {
-                        show: false,
+                        // if all is selected, the startDate will be null, so turn on the dataZoomer
+                        show: startDate ? false : true,
                         realtime: false,
                         start: 0,
                         end: 100,
@@ -84,18 +90,27 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                 grid: {
                     left: '0%',
                     right: '0%',
-                    bottom: '0%',
+
+                    // if all is selected, the startDate will be null, so leave space for the dataZoomer
+                    bottom: startDate ? '14%' : '34%',
+
                     top: '0%',
                     containLabel: false
                 },
 
-
                 xAxis: [
                     {
-                        show: false,
+                        show: true,
                         type: 'time',
+                        onZero: true,
                         boundaryGap: false,
-                        // data: data.map(item => item.datetime)
+                        axisLine: {
+                            show: false
+                        },
+                        axisLabel: {
+                            show: true,
+                            // margin: 3
+                        }
                     }
                 ],
                 yAxis: [
@@ -121,22 +136,22 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
 
             });
         }
-    }, [data,accountData]);
+    }, [data, accountData]);
 
 
     function generateEChartSeries(data) {
 
         const colorPalette = [
             "rgb(63, 182, 97)",   // Primary Green
-            "rgb(56, 140, 90)",   // Darker Green (shade)
-            "rgb(113, 204, 46)",  // Yellow-Green (Analogous)
-            "rgb(26, 188, 156)",  // Teal (Split Complementary)
-            "rgb(39, 174, 228)",  // Blue (Triadic)
-            "rgb(142, 68, 173)",  // Purple (Triadic)
-            "rgb(211, 84, 0)",    // Warm Orange (Split Complementary)
-            "rgb(230, 126, 34)",  // Soft Orange (Analogous)
-            "rgb(241, 196, 15)",  // Golden Yellow (Analogous)
-            "rgb(189, 195, 199)"  // Neutral Silver (for balance)
+            "rgb(50, 160, 90)",   // Slightly darker green
+            "rgb(41, 138, 78)",   // Darker forest green
+            "rgb(30, 115, 68)",   // Deep green
+            "rgb(26, 188, 156)",  // Teal (bluer green)
+            "rgb(39, 174, 228)",  // Soft blue
+            "rgb(33, 140, 199)",  // Medium blue
+            "rgb(24, 100, 160)",  // Deep blue
+            "rgb(20, 80, 120)",   // Dark navy blue
+            "rgb(80, 120, 100)"   // Muted desaturated green/blue (neutral-ish end)
         ];
 
         const legend = data.map(account => {
@@ -148,8 +163,8 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
             const color = colorPalette[index % colorPalette.length]; // Cycle through colors
 
             const account_shortname = (accountData && !accountIsLoading)
-            ? accountData.find(acc => acc.accountid === account.accountid)?.shortname || account.accountid
-            : account.accountid;
+                ? accountData.find(acc => acc.accountid === account.accountid)?.shortname || account.accountid
+                : account.accountid;
 
             return {
                 name: `${account_shortname}`,
@@ -161,10 +176,15 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     color: color
                 },
                 showSymbol: false,
+                symbol: 'emptyCircle',
+                symbolSize: 6,
                 emphasis: {
                     focus: 'series'
                 },
 
+                itemStyle: {
+                    color: color
+                },
                 areaStyle: {
                     opacity: 0.9,
                     color: new LinearGradient(0, 0, 0, 1, [
