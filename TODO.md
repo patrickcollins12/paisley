@@ -1,10 +1,7 @@
 # TODO
 p1
-[x] account page - add active/inactive status
-[x] account page - make back button work from accounts page
-[ ] accounts page - default logo
+[ ] account page - add account details
 [ ] install - bring demo DB up to date
-[ ] account page - add/edit account details (scraper def?). review what belongs on account table vs config vs code
 
 p2
 [ ] install - create a jwt key on install
@@ -20,6 +17,10 @@ p3
 [ ] build a default currency chooser, default is currently based on locale and accounts currencies.
 
 done
+[x] accounts page - default logo
+[x] account page - add active/inactive status
+[x] account page - make back button work from accounts page
+[x] account page - edit account details (scraper def?). review what belongs on account table vs config vs code
 [x] account page - has a section to link to sub accounts
 [x] account page - account total works
 [x] accounts table - Sub accounts details on the accounts page… > v

@@ -43,4 +43,38 @@ function useAccountData(accountid) {
   };
 }
 
+async function update(id, data) {
+  const url = `accounts/${id}`;
+  const response = await httpClient.post(url, data);
+  // await mutate(['/accounts']);
+  return response;
+}
+
+async function create(postData) {
+  try {
+    const response = await httpClient.post('accounts', postData);
+    return { data: response.data, error: null, isLoading: false };
+  } catch (err) {
+    const errorMsg = err.response?.data?.errors?.[0]?.msg || err.message;
+    return { data: null, error: errorMsg, isLoading: false };
+  }
+}
+
+async function remove(id) {
+  const url = `accounts/${id}`;
+  const response = await httpClient.delete(url);
+
+  // this is a bit shit because the query key has to be updated in multiple places
+  await mutate(['/accounts']);
+  return response;
+}
+
+export function useUpdateAccounts() {
+  return {
+    create,
+    update,
+    remove
+  }
+}
+
 export default useAccountData;

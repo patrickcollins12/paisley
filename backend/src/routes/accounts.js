@@ -1,5 +1,6 @@
 const express = require('express');
 const BankDatabase = require('../BankDatabase');
+const { body, validationResult } = require('express-validator'); // Ensure body is imported correctly
 
 const router = express.Router();
 const db = new BankDatabase();
@@ -117,6 +118,8 @@ router.post('/api/accounts', async (req, res) => {
     try {
         const { accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata } = req.body;
 
+        console.log("here 1")
+
         // Ensure accountid is provided
         if (!accountid) {
             return res.status(400).json({ success: false, message: "Missing required field: accountid" });
@@ -151,18 +154,79 @@ router.post('/api/accounts', async (req, res) => {
  * UPSERT /api/accounts/:id
  * Create or update an account
  */
+
+const accountKeys = [
+    "institution", "name", "holders", "currency", "type", "timezone", "shortname", "parentid", "status", "metadata"
+]
+
+const validationRules = accountKeys.map(key =>
+    body(key).optional().trim()  // Validate each key dynamically
+);
+
+router.post('/api/accounts/:id', validationRules, async (req, res) => {
+    // Check if there are validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    try {
+        const { id } = req.params;
+
+        let fieldsToUpdate = []
+        let valuesToUpdate = [id]
+
+        // Add fields that exist in the request body
+        accountKeys.forEach((key, index) => {
+            const value = req.body[key];
+            if (req.body[key] !== undefined) {
+                fieldsToUpdate.push(key);
+                valuesToUpdate.push(value);
+            }
+        })
+
+        // If no fields are provided, return an error
+        if (fieldsToUpdate.length === 0) {
+            return res.status(400).json({ success: false, message: "No fields provided to update." });
+        }
+
+        // Build the SQL query dynamically
+        const placeholders = new Array(fieldsToUpdate.length).fill('?').join(', ');
+        const updateFields = fieldsToUpdate.map(field => `${field} = excluded.${field}`).join(', ');
+
+        const query = `
+            INSERT INTO account (accountid, ${fieldsToUpdate.join(", ")})
+            VALUES (?, ${placeholders})
+            ON CONFLICT(accountid) DO UPDATE SET ${updateFields}
+        `;
+
+        // Run the statement with dynamically constructed values
+        const stmt = db.db.prepare(query);
+        stmt.run(valuesToUpdate);
+
+        res.json({ success: true, message: "Account upserted successfully", accountid: id });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Database error", error: error.message });
+    }
+});
+
+
+/**
+ * UPSERT /api/accounts/:id
+ * Create or update an account
+ */
 router.post('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { institution, name, holders, currency, type, timezone, shortname, parentid, metadata } = req.body;
+        const { institution, name, holders, currency, type, timezone, shortname, parentid, status, metadata } = req.body;
 
         // if (!name) {
         //     return res.status(400).json({ success: false, message: "Missing required field: name" });
         // }
 
         const query = `
-            INSERT INTO account (accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO account (accountid, institution, name, holders, currency, type, timezone, shortname, parentid, status, metadata)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(accountid) DO UPDATE SET 
                 institution = excluded.institution,
                 name = excluded.name,
@@ -171,11 +235,14 @@ router.post('/api/accounts/:id', async (req, res) => {
                 type = excluded.type,
                 timezone = excluded.timezone,
                 shortname = excluded.shortname,
+                status = excluded.status,
                 parentid = excluded.parentid,
                 metadata = excluded.metadata`;
 
+        console.log("here 2", query, status)
+
         const stmt = db.db.prepare(query);
-        stmt.run(id, institution, name, holders, currency, type, timezone, shortname, parentid, metadata);
+        stmt.run(id, institution, name, holders, currency, type, timezone, shortname, parentid, status, metadata);
 
         res.json({ success: true, message: "Account upserted successfully", accountid: id });
     } catch (error) {

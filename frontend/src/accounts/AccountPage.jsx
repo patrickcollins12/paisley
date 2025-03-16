@@ -213,6 +213,7 @@ const AccountPage = () => {
                             {/* <CardDescription>Last updated: 25 Feb 2025</CardDescription> */}
                         </CardHeader>
                         <CardContent className="">
+                            
                             {account &&
                                 <AccountDetailsTable data={account} />
                             }

@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon, ChevronRight } from "lucide-react";
+import { PlusIcon, ChevronRight, Landmark } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Link, useNavigate } from "@tanstack/react-router";
 import GlobalFilter from "@/toolbar/GlobalFilter.jsx";
@@ -201,11 +201,20 @@ const AccountsPage = () => {
               <div className="flex items-center gap-0">
 
                 {/* Account Logo */}
-                {logos?.[account.institution]?.location && (
-                  <span className={`mr-3 p-1 border ${logos[account.institution]["background"]} rounded-lg`}>
-                    <img className="h-5" src={`${logos[account.institution]["location"]}`} />
-                  </span>
-                )}
+                {
+                  logos?.[account.institution]?.location ?
+                    (
+                      <span className={`mr-3 p-1 border ${logos[account.institution]["background"]} rounded-lg`}>
+                        <img className="h-5" src={`${logos[account.institution]["location"]}`} />
+                      </span>
+                    )
+                    :
+                    (
+                      <span className={`mr-3 p-1 border rounded-lg`}>
+                        <Landmark size={20} className="opacity-40"/>
+                      </span>
+                    )
+                }
 
                 {/* Account Name */}
                 {/* <span>{account.shortname}</span> */}
