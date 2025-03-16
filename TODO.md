@@ -1,6 +1,6 @@
 # TODO
 p1
-[ ] account page - add active/inactive status
+[x] account page - add active/inactive status
 [x] account page - make back button work from accounts page
 [ ] accounts page - default logo
 [ ] install - bring demo DB up to date
