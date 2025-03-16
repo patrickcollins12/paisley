@@ -4,6 +4,7 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
+
 const resources = {
     "en-US": {
         translation: {
@@ -36,7 +37,18 @@ const resources = {
             "Last Balance": "Last Balance",
             "1 year": "1 year",
             "Today": "Today",
-            "Yesterday": "Yesterday"
+            "Yesterday": "Yesterday",
+            "Columns": "Columns",
+            "ID": "ID",
+            "Date": "Date",
+            "Account Number": "Account Number",
+            "Description": "Description",
+            "Debit": "Debit",
+            "Credit": "Credit",
+            "Amount": "Amount",
+            "Tags": "Tags",
+            "Party": "Party",
+            "Account Currency": "Account Currency"
         }
     },
 
@@ -71,7 +83,18 @@ const resources = {
             "Last Balance": "Last Balance",
             "1 year": "1 year",
             "Today": "Today",
-            "Yesterday": "Yesterday"
+            "Yesterday": "Yesterday",
+            "Columns": "Columns",
+            "ID": "ID",
+            "Date": "Date",
+            "Account Number": "Account Number",
+            "Description": "Description",
+            "Debit": "Debit",
+            "Credit": "Credit",
+            "Amount": "Amount",
+            "Tags": "Tags",
+            "Party": "Party",
+            "Account Currency": "Account Currency"
         }
     },
 
@@ -106,7 +129,18 @@ const resources = {
             "Last Balance": "Letzter Kontostand",
             "1 year": "1 Jahr",
             "Today": "Heute",
-            "Yesterday": "Gestern"
+            "Yesterday": "Gestern",
+            "Columns": "Spalten",
+            "ID": "ID",
+            "Date": "Datum",
+            "Account Number": "Kontonummer",
+            "Description": "Beschreibung",
+            "Debit": "Soll",
+            "Credit": "Haben",
+            "Amount": "Betrag",
+            "Tags": "Tags",
+            "Party": "Partei",
+            "Account Currency": "Konto-Währung"
         }
     },
 
@@ -141,7 +175,18 @@ const resources = {
             "Last Balance": "Dernier solde",
             "1 year": "1 an",
             "Today": "Aujourd'hui",
-            "Yesterday": "Hier"
+            "Yesterday": "Hier",
+            "Columns": "Colonnes",
+            "ID": "ID",
+            "Date": "Date",
+            "Account Number": "Numéro de compte",
+            "Description": "Description",
+            "Debit": "Débit",
+            "Credit": "Crédit",
+            "Amount": "Montant",
+            "Tags": "Étiquettes",
+            "Party": "Partie",
+            "Account Currency": "Devise du compte"
         }
     },
 
@@ -176,10 +221,22 @@ const resources = {
             "Last Balance": "前回の残高",
             "1 year": "1年",
             "Today": "今日",
-            "Yesterday": "昨日"
+            "Yesterday": "昨日",
+            "Columns": "列",
+            "ID": "ID",
+            "Date": "日付",
+            "Account Number": "口座番号",
+            "Description": "説明",
+            "Debit": "借方",
+            "Credit": "貸方",
+            "Amount": "金額",
+            "Tags": "タグ",
+            "Party": "当事者",
+            "Account Currency": "口座通貨"
         }
     }
 };
+
 
 i18n
     .use(LanguageDetector)  // Use the language detector for auto-detection
@@ -191,7 +248,7 @@ i18n
         interpolation: {
             escapeValue: false // react already safes from xss
         },
-        debug: true,  // Enable debug mode
+        debug: false,  // Enable debug mode
 
         // only in development should we enable these detection settings:
         detection: {

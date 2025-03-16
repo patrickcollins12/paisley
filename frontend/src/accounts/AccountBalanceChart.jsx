@@ -33,9 +33,9 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
             const { series, legend } = generateEChartSeries(data);
 
             setOption({
-                legend: {
-                    data: legend
-                },
+                // legend: {
+                //     data: legend
+                // },
 
                 tooltip: {
                     trigger: 'axis',
@@ -48,11 +48,16 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                             const accountid = seriesItem.seriesName
                             const marker = seriesItem.marker
                             const val = seriesItem.data[1]
+                            const accountObj = accountData.find(acc => acc.accountid === accountid)
+                            const shortname = accountObj?.shortname || accountid
+                            const currency = accountObj?.currency || ""
+                            const amount = formatCurrency(val, {currency: currency})
+                            
                             retStr += (index === 0) ? `${formatDate(date)}<br/>` : ""
                             retStr += (multiple) ?
-                                `${marker}<b>${accountid}</b>: ${formatCurrency(val)}<br/>`
+                                `${marker}<b>${shortname}</b>: ${amount}<br/>`
                                 :
-                                `${marker} ${formatCurrency(val)}<br/>`
+                                `${marker} ${amount}<br/>`
                         })
                         return retStr
                     },
@@ -81,8 +86,8 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     {
                         // if all is selected, the startDate will be null, so turn on the dataZoomer
                         show: startDate ? false : true,
-                        realtime: false,
-                        start: 0,
+                        realtime: true,
+                        start: 25,
                         end: 100,
                         xAxisIndex: [0, 1]
                     },
@@ -162,12 +167,8 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
 
             const color = colorPalette[index % colorPalette.length]; // Cycle through colors
 
-            const account_shortname = (accountData && !accountIsLoading)
-                ? accountData.find(acc => acc.accountid === account.accountid)?.shortname || account.accountid
-                : account.accountid;
-
             return {
-                name: `${account_shortname}`,
+                name: `${account.accountid}`,
                 type: 'line',
                 stack: 'Total',
                 smooth: false,

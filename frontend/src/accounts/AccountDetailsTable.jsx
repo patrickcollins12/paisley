@@ -1,4 +1,5 @@
 import React from "react";
+import { formatCamelCase } from "@/lib/utils";
 
 const AccountDetailsTable = ({ data }) => {
     const suppressedKeys = new Set([
@@ -9,19 +10,6 @@ const AccountDetailsTable = ({ data }) => {
         "balance_datetime",
         "metadata"
     ]);
-
-    // balance_datetime --> Balance Datetime
-    // TimeZone --> Time Zone
-    function formatCamelCase(str) {
-        return str
-            .replace(/_/g, " ")
-            .replace(/([a-z])([A-Z])/g, "$1 $2")
-            .replace(/([A-Z])([A-Z][a-z])/g, "$1 $2")
-            .toLowerCase()
-            .replace(/(?:^|\s)\S/g, function (a) {
-                return a.toUpperCase();
-            });
-    }
 
     // Parse `meta` if it exists and is a valid JSON string
     let metaData = null;

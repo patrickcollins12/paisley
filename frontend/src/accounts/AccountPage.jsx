@@ -36,19 +36,29 @@ const AccountPage = () => {
     // grab the path parameter from the URL
     const { accountId } = routeApi.useParams();
 
-    // Fetch data using the custom hook
-    const { data, error, isLoading } = useAccountData(accountId);
+    // Fetch all accounts data using the custom hook
+    const { data, error, isLoading } = useAccountData();
 
     // dynamic graph start dates from the badge clicker called ChartTimeSelection
     const [startDate, setStartDate] = useState(null);
 
-    // once the data is loaded, fetch the right insitutional logo, 
-    // out of the logos object loaded earlier
-    let logoObject = data ? logos[data.institution] : null
+    // Filter the array to find the actual account with the matching accountId
+    const account = data?.find(acc => acc.accountid === accountId) || null;
+
+    // Find child accounts where the accountId is the parent account
+    const childAccounts = data?.filter(acc => acc.parentid === accountId) || [];
+
+    // If account.balance is null or zero, then sum up the child accounts balances
+    if (account && (!account.balance || account.balance === 0)) {
+        account.balance = childAccounts.reduce((acc, child) => acc + child.balance, 0);
+    }
+
+    // Once the data is loaded, fetch the right institutional logo
+    let logoObject = account ? logos[account.institution] : null;
 
     // Fetch transactions `accountData?.shortname` is valid
     const { data: transactionData, error: transactionError, isLoading: transactionLoading } = useFetchTransactions(
-        data?.shortname
+        account?.shortname
             ? {
                 pageIndex: 0,
                 pageSize: 40,
@@ -57,7 +67,7 @@ const AccountPage = () => {
                     {
                         "field": "account_shortname",
                         "operatorDefinition": { "operator": "in" },
-                        "value": [data?.shortname]
+                        "value": [account?.shortname]
                     }
                 ],
             }
@@ -83,7 +93,7 @@ const AccountPage = () => {
                             <CardTitle>
                                 <div className="flex col-2 items-center justify-between items-end gap-3">
                                     <span>
-                                        <div>{data && data.shortname}</div>
+                                        <div>{account && account.shortname}</div>
                                         <div className="text-xs opacity-50 font-normal mt-2">{accountId}</div>
                                     </span>
                                     {logoObject && logoObject.location &&
@@ -97,18 +107,19 @@ const AccountPage = () => {
                                 {accountId}
                             </CardDescription> */}
                         </CardHeader>
+
                         <CardContent>
                             <>
                                 <div>
-                                    {data &&
+                                    {account &&
                                         <>
                                             <span className="text-4xl font-extrabold">
-                                                {data && formatCurrency(data.balance, { style: "decimal", currency: data.currency, })}
+                                                {account && formatCurrency(account.balance, { style: "decimal", currency: account.currency, })}
                                             </span>
-                                            <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
+                                            <span className="text-xl font-extrabold opacity-20">{account && account.currency}</span>
 
                                             <div className="w-full min-w-[100px] min-h-[200px] h-[25vh] max-h-[600px]" >
-                                                <AccountBalanceChart accountid={data.accountid} category={data.category} startDate={startDate} />
+                                                <AccountBalanceChart accountid={account.accountid} category={account.category} startDate={startDate} />
                                             </div>
 
                                         </>
@@ -116,8 +127,8 @@ const AccountPage = () => {
                                 </div>
 
                                 <div>
-                                    {data &&
-                                        <AccountVolumeChart accountId={data.accountid} startDate={startDate} />
+                                    {account &&
+                                        <AccountVolumeChart accountId={account.accountid} startDate={startDate} />
                                     }
                                 </div>
 
@@ -132,6 +143,44 @@ const AccountPage = () => {
                     </Card>
 
 
+                    {/* Sub accounts! */}
+                    {childAccounts.length > 0 && (
+                        <Card className="text-sm">
+                            <CardHeader>
+                                <CardTitle>{t("Sub Accounts")}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="">
+                                <table className="table-fixed border-collapse">
+                                    <thead>
+                                        <tr>
+                                            <th className="text-left px-4 py-2">{t("Account Name")}</th>
+                                            <th className="text-left px-4 py-2 text-right">{t("Balance")}</th>
+                                            <th className="text-left px-4 py-2">{t("Last updated")}</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {childAccounts.map((child) => (
+                                            <tr key={child.accountid}>
+                                                <td className="px-4 py-2">
+                                                    <Link to={`/account/${child.accountid}`} className="text-blue-600 hover:underline">
+                                                        {child.shortname}
+                                                    </Link>
+                                                </td>
+                                                <td className="px-4 py-2 text-right">
+                                                    {formatCurrency(child.balance, { currency: child.currency })}
+                                                </td>
+                                                <td className="px-4 py-2">
+                                                    <DateTimeDisplay datetime={child.balance_datetime} options={{ delta: true, absolute: false }} />
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </CardContent>
+                        </Card>
+                    )}
+
 
                     <Card className="text-sm">
                         <CardHeader>
@@ -139,14 +188,15 @@ const AccountPage = () => {
                             {/* <CardDescription>Last updated: 25 Feb 2025</CardDescription> */}
                         </CardHeader>
                         <CardContent className="">
-                            {data &&
-                                <AccountDetailsTable data={data} />
+                            {account &&
+                                <AccountDetailsTable data={account} />
                             }
                         </CardContent>
                     </Card>
 
 
-                    {data && data.interest &&
+
+                    {account && account.interest &&
                         <Card className="text-sm">
                             <CardHeader>
                                 <CardTitle>
@@ -155,8 +205,8 @@ const AccountPage = () => {
                             </CardHeader>
                             <CardContent>
                                 <>
-                                    {data &&
-                                        <AccountInterestTable accountId={data.accountid} category={data.category} startDate={startDate} />
+                                    {account &&
+                                        <AccountInterestTable accountId={account.accountid} category={account.category} startDate={startDate} />
                                     }
                                 </>
                             </CardContent>
@@ -167,19 +217,21 @@ const AccountPage = () => {
                     <Card className="text-sm">
                         <CardHeader>
                             <CardTitle>{t("Recent Transactions")}</CardTitle>
-                            {data && data.balance_datetime &&
-                                <div>
-                                    <span className="text-xs mb-3">{t("Last transaction")}: </span>
-                                    <DateTimeDisplay datetime={data.balance_datetime} />
-                                </div>
-                            }
-
-                            {/* <CardDescription>
-                                transactions currently match this rule
-                            </CardDescription> */}
                         </CardHeader>
 
                         <CardContent className="">
+
+                            <div className="text-xs mb-3">
+                                {(account && account.balance_datetime) ?
+                                    <>
+                                        <span className="text-xs mb-3">{t("Last transaction")}: </span>
+                                        <DateTimeDisplay datetime={account.balance_datetime} />
+                                    </>
+                                    :
+                                    <span>{t("No transactions found")}</span>
+                                }
+                            </div>
+
                             <ScrollableSidebar className="flex flex-col gap-2">
                                 {transactionData?.results.map(transaction => <TransactionCard key={transaction.id} data={transaction} />)}
                             </ScrollableSidebar>

@@ -5,7 +5,8 @@ import HeaderCell from "@/components/data-table/HeaderCell.jsx"
 import { TransactionTagsDisplay } from "@/transactions/TransactionTagsDisplay.jsx"
 import { Currency } from "@/components/CurrencyDisplay.jsx"
 
-export function createColumnDefinitions(onTransactionUpdate) {
+export function createColumnDefinitions(onTransactionUpdate, t) {
+
   return [
     {
       accessorKey: 'id',
@@ -15,7 +16,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         return id.substr(0, 4) + ".." + id.substr(id.length - 4, 4)
       },
       meta: {
-        displayName: 'ID'
+        displayName: t("ID")
       }
     },
 
@@ -24,7 +25,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <DateTimeDisplay account={row.getValue("account_number")} datetime={row.getValue("datetime")} />,
       meta: {
-        displayName: 'Date'
+        displayName: t("Date")
       }
     },
 
@@ -33,7 +34,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_number")} />,
       meta: {
-        displayName: 'Account Number'
+        displayName: t("Account Number")
       }
     },
 
@@ -42,12 +43,16 @@ export function createColumnDefinitions(onTransactionUpdate) {
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_shortname")} />,
       meta: {
-        displayName: 'Account'
+        displayName: t("Account")
       }
     },
 
     {
       accessorKey: 'account_currency',
+      meta: {
+        displayName: t("Account Currency")
+      }
+
     },
 
     // {
@@ -55,7 +60,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
     //   header: props => <HeaderCell {...props} />,
     //   cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_shortname")} />,
     //   meta: {
-    //     displayName: 'Account'
+    //     displayName: t("Account")
     //   }
     // },
 
@@ -67,7 +72,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         <EditableDescriptionCell key={row.original.id} row={row} columnId={id} table={table} />
       ),
       meta: {
-        displayName: 'Description'
+        displayName: t("Description")
       }
     },
 
@@ -78,7 +83,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
       footer: ({ table }) => <Currency>{table.options.resultsSummary?.debit_total}</Currency>,
       cell: ({ row }) => <Currency currency={row.getValue("account_currency")} className="text-right whitespace-nowrap">{row.getValue("debit")}</Currency>,
       meta: {
-        displayName: 'Debit'
+        displayName: t("Debit")
       }
     },
 
@@ -88,7 +93,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
       footer: ({ table }) => <Currency className="text-right whitespace-nowrap">{table.options.resultsSummary?.credit_total}</Currency>,
       cell: ({ row }) => <Currency currency={row.getValue("account_currency")} className="text-right whitespace-nowrap">{row.getValue("credit")}</Currency>,
       meta: {
-        displayName: 'Credit'
+        displayName: t("Credit")
       }
     },
 
@@ -105,7 +110,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         )
       },
       meta: {
-        displayName: 'Amount'
+        displayName: t("Amount")
       }
     },
 
@@ -114,10 +119,10 @@ export function createColumnDefinitions(onTransactionUpdate) {
       // header: () => <div className="text-right">Balance</div>,
       header: props => <HeaderCell align='right' {...props} />,
       cell: ({ row }) => <Currency currency={row.getValue("account_currency")} className="text-right whitespace-nowrap">
-            {row.getValue("balance")}
-          </Currency>,
+        {row.getValue("balance")}
+      </Currency>,
       meta: {
-        displayName: 'Balance'
+        displayName: t("Balance")
       }
     },
 
@@ -142,7 +147,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         openMenuOnFocus={true}
       />,
       meta: {
-        displayName: 'Tags'
+        displayName: t("Tags")
       }
     },
 
@@ -178,7 +183,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         openMenuOnFocus={true}
       />,
       meta: {
-        displayName: 'Party'
+        displayName: t("Party")
       }
     }
 

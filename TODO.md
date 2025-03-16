@@ -1,12 +1,7 @@
 # TODO
 p1
-[x] accounts table - Sub accounts details on the accounts page… > v
-[x] accounts page - SparkLine can handle account totals - min is max min date of all rows and vice versa
-[x] account page - can graph sub accounts
-       almost done. the interpolate function is returning series which the balancechart needs to pickup.
-       the backend needs to emulate the interpolate function's structure
-[x] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
-[ ] account page - has a section to link to sub accounts
+[ ] account page - add active/inactive status
+[ ] accounts page - default logo
 [ ] install - bring demo DB up to date
 [ ] account page - add/edit account details (scraper def?). review what belongs on account table vs config vs code
 
@@ -23,6 +18,14 @@ p3
 [ ] build a default currency chooser, default is currently based on locale and accounts currencies.
 
 done
+[x] account page - has a section to link to sub accounts
+[x] account page - account total works
+[x] accounts table - Sub accounts details on the accounts page… > v
+[x] accounts page - SparkLine can handle account totals - min is max min date of all rows and vice versa
+[x] account page - can graph sub accounts
+       almost done. the interpolate function is returning series which the balancechart needs to pickup.
+       the backend needs to emulate the interpolate function's structure
+[x] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
 [x] accounts table - consolidate on Intl.NumberFormat
 [x] account page - show interest amount and chart
 [x] account page - add $ to main categories

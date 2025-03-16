@@ -84,6 +84,7 @@ const AccountsPage = () => {
 
       // Create a lookup map for quick parent reference
       const accountMap = Object.fromEntries(activeAccounts.map(acc => [acc.accountid, { ...acc }]));
+      console.log(accountMap);
 
       // Step 1: Aggregate child account data into their respective parents
       activeAccounts.forEach(child => {
