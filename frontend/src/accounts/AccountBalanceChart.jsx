@@ -6,6 +6,7 @@ const { LinearGradient } = graphic;
 
 import { useResolvedTheme } from "@/components/theme-provider";
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
+import useAccountData from "@/accounts/AccountApiHooks.js";
 
 import { formatDate } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
@@ -14,6 +15,8 @@ import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 const AccountBalanceChart = ({ accountid, category, startDate }) => {
     const resolvedTheme = useResolvedTheme();
     const [option, setOption] = useState({});                   // echarts options
+
+    const { data: accountData, error: accountError, isLoading: accountIsLoading } = useAccountData();
 
     // // Fetch data using the custom hook
     const { data, error, isLoading } = useAccountHistoryData(
@@ -24,37 +27,42 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
         });
 
     useEffect(() => {
+
         if (data && !isLoading) {
 
-            const seriesData = generateEChartSeries(data);
-
-            // const updatedData = updateBalances(data);
-            // const balances = updatedData.balances
-            // const dates = updatedData.dates
+            const { series, legend } = generateEChartSeries(data);
 
             setOption({
-                legend: {
-                    data: ['Line 1', 'Line 2', 'Line 3', 'Line 4', 'Line 5']
-                },
+                // legend: {
+                //     data: legend
+                // },
 
                 tooltip: {
                     trigger: 'axis',
-                    // formatter: '{b0}<br>${c0}',
+
                     formatter: function (params) {
-                        const date = params[0]?.data[0]
-                        const val = params[0]?.data[1]
-                        return `${formatDate(date)}<br><b>Balance: ${formatCurrency(val)}</b>`
+                        let retStr = ""
+                        let multiple = (params.length > 1) ? true : false
+                        params.forEach((seriesItem, index) => {
+                            const date = seriesItem.data[0]
+                            const accountid = seriesItem.seriesName
+                            const marker = seriesItem.marker
+                            const val = seriesItem.data[1]
+                            retStr += (index === 0) ? `${formatDate(date)}<br/>` : ""
+                            retStr += (multiple) ?
+                                `${marker}<b>${accountid}</b>: ${formatCurrency(val)}<br/>`
+                                :
+                                `${marker} ${formatCurrency(val)}<br/>`
+                        })
+                        return retStr
                     },
-                    // formatter: function (params) {
-                    //     const key = params[0]?.data[0]
-                    //     const val = Math.abs(params[0]?.data[1])
-                    //     return `${key}<br><b>transactions: ${val}</b>`
-                    // },
+
+
                     axisPointer: {
                         type: 'cross',
-                        label: {
-                            backgroundColor: '#6a7985',
-                        },
+                        // label: {
+                        //     backgroundColor: '#6a7985',
+                        // },
                     }
 
                 },
@@ -81,12 +89,12 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     containLabel: false
                 },
 
-                
+
                 xAxis: [
                     {
                         show: false,
                         type: 'time',
-                        boundaryGap: true,
+                        boundaryGap: false,
                         // data: data.map(item => item.datetime)
                     }
                 ],
@@ -109,30 +117,14 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     }
                 ],
 
-                series: seriesData
+                series: series
 
             });
         }
-    }, [data]);
+    }, [data,accountData]);
 
 
     function generateEChartSeries(data) {
-        const groupedData = {};
-
-        // Group by accountid
-        data.forEach(item => {
-            if (!groupedData[item.accountid]) {
-                groupedData[item.accountid] = [];
-            }
-            groupedData[item.accountid].push([item.datetime, item.balance]);
-        });
-
-        // Sort series by last value (largest to smallest)
-        const sortedEntries = Object.entries(groupedData).sort((a, b) => {
-            const lastA = a[1][a[1].length - 1][1]; // Last balance value
-            const lastB = b[1][b[1].length - 1][1]; // Last balance value
-            return lastA - lastB; // Descending order
-        });
 
         const colorPalette = [
             "rgb(63, 182, 97)",   // Primary Green
@@ -147,11 +139,20 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
             "rgb(189, 195, 199)"  // Neutral Silver (for balance)
         ];
 
-        const series = sortedEntries.map(([accountid, seriesData], index) => {
+        const legend = data.map(account => {
+            return account.accountid;
+        });
+
+        const series = data.map((account, index) => {
+
             const color = colorPalette[index % colorPalette.length]; // Cycle through colors
 
+            const account_shortname = (accountData && !accountIsLoading)
+            ? accountData.find(acc => acc.accountid === account.accountid)?.shortname || account.accountid
+            : account.accountid;
+
             return {
-                name: `Account ${accountid}`,
+                name: `${account_shortname}`,
                 type: 'line',
                 stack: 'Total',
                 smooth: false,
@@ -171,11 +172,11 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                         { offset: 1, color: color.replace("rgb", "rgba").replace(")", ", 0)") } // Faded color at the bottom
                     ])
                 },
-                data: seriesData
+                data: account.series
             };
         });
 
-        return series;
+        return { series, legend };
     }
 
 

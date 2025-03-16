@@ -54,7 +54,8 @@ router.post(
     }
 );
 
-const util = require('../Util');
+const util = require('../AccountHistoryDataTransform');
+
 router.get(
     "/api/account_history",
     [
@@ -133,17 +134,13 @@ router.get(
             const stmt = db.db.prepare(query);
             const rows = stmt.all(...params);
 
-            // if there is more than one accountid, we need to interpolate
+            // if there is more than one accountid, we need to forcefully interpolate
             let accountids = [...new Set(rows.map(row => row.accountid))];
             if (accountids.length > 1) 
                 interpolate = true;
             
             // If interpolation is requested, apply it
-            if (interpolate) {
-                res.json(util.interpolateTimeSeries(rows))
-            } else {
-                res.json(rows)
-            }
+            res.json(util.normalizeTimeSeries(rows, interpolate))
 
         } catch (err) {
             logger.error(`Error fetching account history: ${err.message}`);

@@ -107,7 +107,7 @@ const AccountPage = () => {
                                             </span>
                                             <span className="text-xl font-extrabold opacity-20">{data && data.currency}</span>
 
-                                            <div className="w-full min-w-[100px] min-h-[100px] h-[25vh] max-h-[600px]" >
+                                            <div className="w-full min-w-[100px] min-h-[200px] h-[25vh] max-h-[600px]" >
                                                 <AccountBalanceChart accountid={data.accountid} category={data.category} startDate={startDate} />
                                             </div>
 
