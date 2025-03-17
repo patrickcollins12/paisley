@@ -15,6 +15,13 @@ export default function GlobalFilter({ dataTable }) {
     dataTable.resetGlobalFilter();
   }
 
+  function handleKeyDown(evt) {
+    if (evt.key === "Escape") {
+      clearInput();
+      evt.preventDefault(); // Prevents default Escape behavior (e.g., closing modal if inside one)
+    }
+  }
+
   return (
     <div className="relative block">
       {value.length > 1 && ( // Show X only if inputValue has more than one character
@@ -30,6 +37,7 @@ export default function GlobalFilter({ dataTable }) {
       <Input
         placeholder="Filter..."
         onChange={handleChange}
+        onKeyDown={handleKeyDown} // Listen for Escape key
         value={value}
         className="h-8 w-[150px] lg:w-[250px] pr-6"
       />

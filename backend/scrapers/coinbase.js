@@ -114,6 +114,34 @@ async function createOrUpdateMainAccount() {
 async function getCoinbaseBalances(account_from_user_payload) {
     try {
 
+        // currenciesResponse
+        {
+            data: [
+                {
+                    asset_id: '5b71fc48-3dd3-540c-809b-f8c94d0e68b5',
+                    code: 'BTC',
+                    name: 'Bitcoin',
+                    color: '#F7931A',
+                    sort_index: 100,
+                    exponent: 8,
+                    type: 'crypto',
+                    address_regex: '^([13][a-km-zA-HJ-NP-Z1-9]{25,34})|^(bc1[pqzry9x8gf2tvdw0s3jn54khce6mua7l]([qpzry9x8gf2tvdw0s3jn54khce6mua7l]{38}|[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58}))$'
+                },
+                {
+                    asset_id: 'd85dce9b-5b73-5c3c-8978-522ce1d1c1b4',
+                    code: 'ETH',
+                    name: 'Ethereum',
+                    color: '#627EEA',
+                    sort_index: 101,
+                    exponent: 8,
+                    type: 'crypto',
+                    address_regex: '^(?:0x)?[0-9a-fA-F]{40}$'
+                },
+            ]
+        }
+        const currenciesResponse = await callCoinbase('/v2/currencies/crypto');
+        const currencies = currenciesResponse.data;
+
         const data = await callCoinbase('/api/v3/brokerage/accounts');
         const filteredAccounts = data.accounts.filter(account => {
             const balance = parseFloat(account.available_balance.value);
@@ -140,6 +168,10 @@ async function getCoinbaseBalances(account_from_user_payload) {
 
         for (const account of filteredAccounts) {
             try {
+                // lookup the currency name in currencies
+                const currencyName = currencies?.find(c => c.code === account.currency)?.name || account.currency;
+                logger.info(`Found currency name for ${account.currency}: ${currencyName}`);
+
                 const payload = {
                     "accountid": account.uuid,
                     "institution": "Coinbase",
@@ -149,7 +181,7 @@ async function getCoinbaseBalances(account_from_user_payload) {
                     "type": "Crypto",
                     "status": (account.active === true) ? "active" : "inactive",
                     "timezone": account_from_user_payload.timezone,
-                    "shortname": "Coinbase " + account.currency, // Coinbase BTC
+                    "shortname": currencyName, // Bitcoin, Ethereum, etc.
                     "parentid": account_from_user_payload.accountid,
                     "metadata": JSON.stringify(account)
                 };

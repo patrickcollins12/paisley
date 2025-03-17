@@ -6,12 +6,17 @@ const { LinearGradient } = graphic;
 
 import { useResolvedTheme } from "@/components/theme-provider";
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
+import useAccountData from "@/accounts/AccountApiHooks.js";
 
-import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
+import { formatDate } from "@/lib/localisation_utils.js";
+import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
+
 
 const AccountBalanceChart = ({ accountid, category, startDate }) => {
     const resolvedTheme = useResolvedTheme();
     const [option, setOption] = useState({});                   // echarts options
+
+    const { data: accountData, error: accountError, isLoading: accountIsLoading } = useAccountData();
 
     // // Fetch data using the custom hook
     const { data, error, isLoading } = useAccountHistoryData(
@@ -22,45 +27,67 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
         });
 
     useEffect(() => {
+
         if (data && !isLoading) {
 
-            // const updatedData = updateBalances(data);
-            // const balances = updatedData.balances
-            // const dates = updatedData.dates
+            const { series, legend } = generateEChartSeries(data);
 
             setOption({
+                // legend: {
+                //     data: legend
+                // },
+
                 tooltip: {
                     trigger: 'axis',
-                    // formatter: '{b0}<br>${c0}',
+
                     formatter: function (params) {
-                        const date = params[0]?.data[0]
-                        const val = params[0]?.data[1]
-                        return `${formatDate(date)}<br><b>Balance: ${formatCurrency(val)}</b>`
+                        let retStr = ""
+                        let multiple = (params.length > 1) ? true : false
+                        params.reverse().forEach((seriesItem, index) => {
+                            const date = seriesItem.data[0]
+                            const accountid = seriesItem.seriesName
+                            const marker = seriesItem.marker
+                            const val = seriesItem.data[1]
+                            const accountObj = accountData.find(acc => acc.accountid === accountid)
+                            const shortname = accountObj?.shortname || accountid
+                            const currency = accountObj?.currency || ""
+                            const amount = formatCurrency(val, {currency: currency})
+                            
+                            retStr += (index === 0) ? `${formatDate(date)}<br/>` : ""
+                            retStr += (multiple) ?
+                                `${marker}<b>${shortname}</b>: ${amount}<br/>`
+                                :
+                                `${marker} ${amount}<br/>`
+                        })
+                        return retStr
                     },
-                    // formatter: function (params) {
-                    //     const key = params[0]?.data[0]
-                    //     const val = Math.abs(params[0]?.data[1])
-                    //     return `${key}<br><b>transactions: ${val}</b>`
-                    // },
+
+
                     axisPointer: {
-                        type: 'line',
+                        show: false,
+                        type: 'shadow',
+                        shadowStyle: {
+                            // color: '#222',
+                            // type: "solid"
+                        },
                         label: {
                             backgroundColor: '#6a7985',
                         },
-
                     }
+
                 },
 
                 feature: {
                     dataZoom: {
-                        yAxisIndex: 'none'
+                        // yAxisIndex: 'none'
                     },
                 },
                 dataZoom: [
                     {
-                        show: false,
-                        realtime: false,
-                        start: 0,
+                        // if all is selected, the startDate will be null, so turn on the dataZoomer
+                        show: startDate ? false : true,
+                        realtime: true,
+                        start: 25,
                         end: 100,
                         xAxisIndex: [0, 1]
                     },
@@ -68,16 +95,27 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                 grid: {
                     left: '0%',
                     right: '0%',
-                    bottom: '0%',
+
+                    // if all is selected, the startDate will be null, so leave space for the dataZoomer
+                    bottom: startDate ? '14%' : '34%',
+
                     top: '0%',
                     containLabel: false
                 },
+
                 xAxis: [
                     {
-                        show: false,
+                        show: true,
                         type: 'time',
-                        boundaryGap: true,
-                        // data: data.map(item => item.datetime)
+                        onZero: true,
+                        boundaryGap: false,
+                        axisLine: {
+                            show: false
+                        },
+                        axisLabel: {
+                            show: true,
+                            // margin: 3
+                        }
                     }
                 ],
                 yAxis: [
@@ -99,46 +137,69 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     }
                 ],
 
-                series: [
-                    {
-                        // name: 'Bankwest Offset Balance',
-                        type: 'line',
-                        // stack: 'Total',
-                        smooth: false,
-                        lineStyle: {
-                            width: 2,
-                            color: 'rgb(63, 182, 97)'
-
-                        },
-                        showSymbol: false,
-                        areaStyle: {
-                            opacity: 0.9,
-                            color: new LinearGradient(0, 0, 0, 1, [
-                                {
-                                    offset: category === "liability" ? 1 : 0,
-                                    color: 'rgb(128, 255, 165)'
-                                },
-                                // {
-                                //     offset: .8,
-                                //     color: 'rgba(128, 255, 164, 0.5)'
-                                // },
-                                {
-                                    offset: category === "liability" ? 0 : 1,
-                                    color: 'rgb(128, 255, 165, 0)'
-                                }
-                            ])
-                        },
-                        // emphasis: {
-                        //     focus: 'series'
-                        // },
-                        // data: data.map(item => item.datetime)
-                        data: data.map(item => [item.datetime, item.balance])
-                    }
-                ]
+                series: series // see generateEChartSeries below
 
             });
         }
-    }, [data]);
+    }, [data, accountData]);
+
+
+    function generateEChartSeries(data) {
+
+        const colorPalette = [
+            "rgb(63, 182, 97)",   // Primary Green
+            "rgb(50, 160, 90)",   // Slightly darker green
+            "rgb(41, 138, 78)",   // Darker forest green
+            "rgb(30, 115, 68)",   // Deep green
+            "rgb(26, 188, 156)",  // Teal (bluer green)
+            "rgb(39, 174, 228)",  // Soft blue
+            "rgb(33, 140, 199)",  // Medium blue
+            "rgb(24, 100, 160)",  // Deep blue
+            "rgb(20, 80, 120)",   // Dark navy blue
+            "rgb(80, 120, 100)"   // Muted desaturated green/blue (neutral-ish end)
+        ];
+
+        const legend = data.map(account => {
+            return account.accountid;
+        });
+
+        const series = data.map((account, index) => {
+
+            const color = colorPalette[index % colorPalette.length]; // Cycle through colors
+
+            return {
+                name: `${account.accountid}`,
+                type: 'line',
+                stack: 'Total',
+                smooth: false,
+                lineStyle: {
+                    width: 2,
+                    color: color
+                },
+                showSymbol: false,
+                symbol: 'emptyCircle',
+                symbolSize: 6,
+                emphasis: {
+                    focus: 'series'
+                },
+
+                itemStyle: {
+                    color: color
+                },
+                areaStyle: {
+                    opacity: 0.9,
+                    color: new LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: color }, // Solid color at the top
+                        { offset: 1, color: color.replace("rgb", "rgba").replace(")", ", 0)") } // Faded color at the bottom
+                    ])
+                },
+                data: account.series
+            };
+        });
+
+        return { series, legend };
+    }
+
 
     return (
         <>
@@ -150,7 +211,6 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                     theme={{ resolvedTheme }}
                 />
             )}
-
 
         </>
     )

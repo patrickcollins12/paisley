@@ -1,29 +1,38 @@
 # TODO
 p1
-[ ] accounts table - * roll-up sub accounts properly *
-[ ] honor currencies and language:
-       react-i18nnext auto-detects language: https://react.i18next.com/
-       Intl.NumberFormat().resolvedOptions().locale => en-AU
-       Default currency en-AU => AU => AUD (https://github.com/tadeegan/locale-currency)
-       build a currency chooser, default is based on locale and accounts currencies.
-[ ] account page - roll-up sub accounts (and show assets in the chart)
-[ ] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
+[ ] account page - add account details
 [ ] install - bring demo DB up to date
-[ ] account page - add/edit account details (scraper def?). review what belongs on account table vs config vs code
+[ ] account page - layout better with recent always on the right.
 
 p2
 [ ] install - create a jwt key on install
 [ ] install - fix/finish install script
 
 p3
-[ ] accounts table - consolidate on Intl.NumberFormat
 [ ] accounts table - add currency.js route conversion to accounts page
+[ ] accounts table - show inactive accounts
 [ ] account page - manually add a balance amount
-[ ] paisley backend on beelink. feels pretty important!
+[ ] account page - edit / control the edit options (asset/liability, currency:AUD/USD/etc, iconned banks)
+[ ] account page - edit / add ?'s to the fields to describe them
+[ ] paisley backend on beelink. feels pretty important!?
 [ ] visualize page - set default filters
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)
+[ ] build a default currency chooser, default is currently based on locale and accounts currencies.
 
 done
+[x] accounts page - default logo
+[x] account page - add active/inactive status
+[x] account page - make back button work from accounts page
+[x] account page - edit account details (scraper def?). review what belongs on account table vs config vs code
+[x] account page - has a section to link to sub accounts
+[x] account page - account total works
+[x] accounts table - Sub accounts details on the accounts page… > v
+[x] accounts page - SparkLine can handle account totals - min is max min date of all rows and vice versa
+[x] account page - can graph sub accounts
+       almost done. the interpolate function is returning series which the balancechart needs to pickup.
+       the backend needs to emulate the interpolate function's structure
+[x] account page - graph needs to reduce width in mobile mode (needs a useRef and detect mobile mode)
+[x] accounts table - consolidate on Intl.NumberFormat
 [x] account page - show interest amount and chart
 [x] account page - add $ to main categories
 [x] accounts table - consolidate utils 
@@ -31,6 +40,9 @@ done
 [x] accounts table - add a sparkline (react-sparklines or chartist.js offer simpler, more minimal designs)
 [x] accounts table - table is too wide. add institution to the table but hide it
 [x] accounts table - update all relevant scrapers to get the balance from the homescreen (chase, commsec, bankwest)
+[x] - react-i18nnext auto-detects language: https://react.i18next.com/
+[x] - Intl.NumberFormat().resolvedOptions().locale => en-AU
+[x] - Default currency en-AU => AU => AUD (https://github.com/tadeegan/locale-currency)
 
 One day:
 [ ] pull paisley scraper/collector out into a separate project. separate git repo?
@@ -128,3 +140,44 @@ Closed bugs/tickets
        [x] add echarts to the frontend
        [x] generate the backend script
 
+
+
+
+Currency popup
+
+Default currency|v|
+AUD A$123 (3 accounts)
+USD $123USD (1 account)
+GBP £123
+---
+AUD
+...
+ZIM
+
+Settings Menu
+
+How to display currency|v|
+[ ] Show currency symbols sparingly (recommended)
+[ ] Convert all values to my default currency
+[ ] Always display currency symbols. Best if you have a lot of transactions in multiple currencies.
+[ ] Never show currency symbols (will still be available in amount tooltips)
+
+Summing multiple currencies. 
+
+Summing on the net worth report:
+[various]
+Tool tip:
+Currency conversion service is unavailable. Consider [adding a currency converter].
+Subtotals by Currency
+    AUD: A$X
+    USD: $Y
+    GBP: £Z
+
+
+$490
+Tool tip:
+Subtotals by Currency
+    AUD: $300 (.69 12/23/2024)
+    USD: $50 (.69 12/23/2024)
+    GBP: £50 (.69 12/23/2024)
+Approximate total based on cached conversion rates as of [date/time].

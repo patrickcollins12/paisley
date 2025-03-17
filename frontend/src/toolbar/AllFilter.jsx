@@ -37,7 +37,7 @@ function AllFilter({ operators }) {
     if (event.key === 'Escape') {
     // if (event.key === 'Enter' || event.key === 'Escape' || event.key === 'Tab') {
       event.preventDefault();
-      event.currentTarget.blur();
+      // event.currentTarget.blur();
       handleClear()
     }
     if (event.key === 'Enter' || event.key === 'Tab') {

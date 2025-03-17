@@ -227,6 +227,7 @@ class TransactionQuery {
 
         t.account AS account_number,
         a.shortname AS account_shortname,
+        a.currency AS account_currency,
 
         t.description as orig_description,
         te.description as revised_description,

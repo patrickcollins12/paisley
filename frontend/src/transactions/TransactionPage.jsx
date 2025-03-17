@@ -7,6 +7,7 @@ import { useFetchTransactions, useUpdateTransaction } from "@/transactions/Trans
 import { useSearch } from "@/components/search/SearchContext.jsx";
 import { getRouteApi } from "@tanstack/react-router";
 import { useUpdateEffect } from "react-use"
+import { useTranslation } from 'react-i18next';
 
 const routeApi = getRouteApi('/transactions/');
 
@@ -14,7 +15,9 @@ const defaultColumnVisibility = {
   id: false,
   debit: false,
   credit: false,
+  balance: false,
   account_number: false,
+  account_currency: false
 };
 
 const initialiseSortState = (searchParams) => {
@@ -30,6 +33,8 @@ const initialiseSortState = (searchParams) => {
 };
 
 export default function TransactionPage() {
+
+  const { t } = useTranslation();
 
   // navigate is used to update URL search params
   const navigate = routeApi.useNavigate();
@@ -94,7 +99,9 @@ export default function TransactionPage() {
     });
   }
 
-  const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate), []);
+  // const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate), []);
+  const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate, t), [t, handleTransactionUpdate]);
+
   const table = useReactTable({
     data: data?.results ?? [],
     resultsSummary: data?.resultSummary ?? {},

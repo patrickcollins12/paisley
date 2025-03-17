@@ -3,10 +3,10 @@ import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 import { EditableDescriptionCell } from '@/transactions/EditableDescriptionCell.jsx';
 import HeaderCell from "@/components/data-table/HeaderCell.jsx"
 import { TransactionTagsDisplay } from "@/transactions/TransactionTagsDisplay.jsx"
+import { Currency } from "@/components/CurrencyDisplay.jsx"
 
-import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
+export function createColumnDefinitions(onTransactionUpdate, t) {
 
-export function createColumnDefinitions(onTransactionUpdate) {
   return [
     {
       accessorKey: 'id',
@@ -16,7 +16,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         return id.substr(0, 4) + ".." + id.substr(id.length - 4, 4)
       },
       meta: {
-        displayName: 'ID'
+        displayName: t("ID")
       }
     },
 
@@ -25,7 +25,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <DateTimeDisplay account={row.getValue("account_number")} datetime={row.getValue("datetime")} />,
       meta: {
-        displayName: 'Date'
+        displayName: t("Date")
       }
     },
 
@@ -34,17 +34,35 @@ export function createColumnDefinitions(onTransactionUpdate) {
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_number")} />,
       meta: {
-        displayName: 'Account Number'
+        displayName: t("Account Number")
       }
     },
+
     {
       accessorKey: 'account_shortname',
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_shortname")} />,
       meta: {
-        displayName: 'Account'
+        displayName: t("Account")
       }
     },
+
+    {
+      accessorKey: 'account_currency',
+      meta: {
+        displayName: t("Account Currency")
+      }
+
+    },
+
+    // {
+    //   accessorKey: 'account_currency',
+    //   header: props => <HeaderCell {...props} />,
+    //   cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_shortname")} />,
+    //   meta: {
+    //     displayName: t("Account")
+    //   }
+    // },
 
     {
       accessorKey: 'description',
@@ -54,47 +72,45 @@ export function createColumnDefinitions(onTransactionUpdate) {
         <EditableDescriptionCell key={row.original.id} row={row} columnId={id} table={table} />
       ),
       meta: {
-        displayName: 'Description'
+        displayName: t("Description")
       }
     },
 
+    //{ currency: "EUR", locale:"de-DE", zeroIsBlank: true, blankIsZero: false }
     {
       accessorKey: 'debit',
       header: props => <HeaderCell align='right' {...props} />,
-      footer: ({ table }) => formatCurrency(table.options.resultsSummary?.debit_total),
-      cell: ({ row }) => formatCurrency(row.getValue("debit")),
+      footer: ({ table }) => <Currency>{table.options.resultsSummary?.debit_total}</Currency>,
+      cell: ({ row }) => <Currency currency={row.getValue("account_currency")} className="text-right whitespace-nowrap">{row.getValue("debit")}</Currency>,
       meta: {
-        displayName: 'Debit'
+        displayName: t("Debit")
       }
     },
 
     {
       accessorKey: 'credit',
       header: props => <HeaderCell align='right' {...props} />,
-      footer: ({ table }) => formatCurrency(table.options.resultsSummary?.credit_total),
-      cell: ({ row }) => formatCurrency(row.getValue("credit")),
+      footer: ({ table }) => <Currency className="text-right whitespace-nowrap">{table.options.resultsSummary?.credit_total}</Currency>,
+      cell: ({ row }) => <Currency currency={row.getValue("account_currency")} className="text-right whitespace-nowrap">{row.getValue("credit")}</Currency>,
       meta: {
-        displayName: 'Credit'
+        displayName: t("Credit")
       }
     },
 
     {
       accessorKey: 'amount',
       header: props => <HeaderCell align='right' {...props} />,
-      footer: ({ table }) => formatCurrency(table.options.resultsSummary?.amount_total, { caller: 1 }),
+      footer: ({ table }) => <Currency className="text-right whitespace-nowrap">{table.options.resultsSummary?.amount_total}</Currency>,
       cell: ({ row }) => {
-        const amt = row.getValue("amount")
+        const amt = -row.getValue("amount")
         return (
-          <div className={amt > 0 ? "text-green-500 text-right" : "text-right"}>
-            {amt > 0 ?
-              `(${formatCurrency(amt, { zeroIsBlank: true, blankIsZero: false, caller: 2 })})`
-                :
-              formatCurrency(Math.abs(amt), { zeroIsBlank: true, blankIsZero: false, caller: 3 })}
-          </div>
+          <Currency style="currency" currency={row.getValue("account_currency")} zeroIsBlank={true} className={amt <= 0 ? "text-green-500 text-right" : "text-right"} currencySign="accounting">
+            {amt}
+          </Currency>
         )
       },
       meta: {
-        displayName: 'Amount'
+        displayName: t("Amount")
       }
     },
 
@@ -102,9 +118,11 @@ export function createColumnDefinitions(onTransactionUpdate) {
       accessorKey: 'balance',
       // header: () => <div className="text-right">Balance</div>,
       header: props => <HeaderCell align='right' {...props} />,
-      cell: ({ row }) => formatCurrency(row.getValue("balance")),
+      cell: ({ row }) => <Currency currency={row.getValue("account_currency")} className="text-right whitespace-nowrap">
+        {row.getValue("balance")}
+      </Currency>,
       meta: {
-        displayName: 'Balance'
+        displayName: t("Balance")
       }
     },
 
@@ -129,7 +147,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         openMenuOnFocus={true}
       />,
       meta: {
-        displayName: 'Tags'
+        displayName: t("Tags")
       }
     },
 
@@ -165,7 +183,7 @@ export function createColumnDefinitions(onTransactionUpdate) {
         openMenuOnFocus={true}
       />,
       meta: {
-        displayName: 'Party'
+        displayName: t("Party")
       }
     }
 
