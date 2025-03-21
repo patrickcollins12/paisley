@@ -35,6 +35,11 @@ const AccountsPage = () => {
 
   const { t } = useTranslation();
 
+  // Create dialog state
+  // const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // const openDialog = () => setIsDialogOpen(true);
+  // const closeDialog = () => setIsDialogOpen(false);
+
   ////////
   // row expanding functionality
   const [expandedRows, setExpandedRows] = useState({});
@@ -292,7 +297,8 @@ const AccountsPage = () => {
               </Button>
             </DialogTrigger>
 
-            <AccountCreateDialog />
+            <AccountCreateDialog/>
+
           </Dialog>
 
           <GlobalFilter dataTable={dataTable} />
