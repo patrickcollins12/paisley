@@ -16,6 +16,9 @@ import useAccountData from "@/accounts/AccountApiHooks.js";
 import { formatInterest } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import { AccountCreateDialog } from "./AccountCreateDialog"
+
 import AccountSparkLine from "@/accounts/AccountSparkLine.jsx";
 import { useTranslation } from 'react-i18next';
 
@@ -211,7 +214,7 @@ const AccountsPage = () => {
                     :
                     (
                       <span className={`mr-3 p-1 border rounded-lg`}>
-                        <Landmark size={20} className="opacity-40"/>
+                        <Landmark size={20} className="opacity-40" />
                       </span>
                     )
                 }
@@ -280,12 +283,18 @@ const AccountsPage = () => {
     <>
       <div className="flex flex-row mb-4">
         <div className="flex flex-row basis-1/2 space-x-2">
-          <Button variant="outline" size="sm" className="h-8" asChild>
-            <Link to="/rules/new">
-              <PlusIcon size={16} className="mr-1" />
-              Create Account
-            </Link>
-          </Button>
+
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="h-8">
+                <PlusIcon size={16} className="mr-1" />
+                {t("Create Account")}
+              </Button>
+            </DialogTrigger>
+
+            <AccountCreateDialog />
+          </Dialog>
+
           <GlobalFilter dataTable={dataTable} />
         </div>
       </div>

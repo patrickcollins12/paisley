@@ -1,9 +1,11 @@
 import { X } from "lucide-react"
 import { Input } from "@/components/ui/input.jsx"
 import { useState } from "react"
+import { useTranslation } from 'react-i18next';
 
 export default function GlobalFilter({ dataTable }) {
   const [value, setValue] = useState('');
+  const { t } = useTranslation();
 
   function handleChange(evt) {
     setValue(evt.target.value);
@@ -35,7 +37,7 @@ export default function GlobalFilter({ dataTable }) {
       )}
 
       <Input
-        placeholder="Filter..."
+        placeholder={t("Filter") + "..."}
         onChange={handleChange}
         onKeyDown={handleKeyDown} // Listen for Escape key
         value={value}
