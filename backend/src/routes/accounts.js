@@ -118,8 +118,6 @@ router.post('/api/accounts', async (req, res) => {
     try {
         const { accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata } = req.body;
 
-        console.log("here 1")
-
         // Ensure accountid is provided
         if (!accountid) {
             return res.status(400).json({ success: false, message: "Missing required field: accountid" });
@@ -238,8 +236,6 @@ router.post('/api/accounts/:id', async (req, res) => {
                 status = excluded.status,
                 parentid = excluded.parentid,
                 metadata = excluded.metadata`;
-
-        console.log("here 2", query, status)
 
         const stmt = db.db.prepare(query);
         stmt.run(id, institution, name, holders, currency, type, timezone, shortname, parentid, status, metadata);
