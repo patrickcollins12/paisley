@@ -16,8 +16,8 @@ import useAccountData from "@/accounts/AccountApiHooks.js";
 import { formatInterest } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
-import { Dialog, DialogTrigger } from "@/components/ui/dialog"
-import { AccountCreateDialog } from "./AccountCreateDialog"
+// import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+// import { AccountCreatePage } from "./AccountCreatePage"
 
 import AccountSparkLine from "@/accounts/AccountSparkLine.jsx";
 import { useTranslation } from 'react-i18next';
@@ -289,19 +289,16 @@ const AccountsPage = () => {
       <div className="flex flex-row mb-4">
         <div className="flex flex-row basis-1/2 space-x-2">
 
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
-                <PlusIcon size={16} className="mr-1" />
-                {t("Create Account")}
-              </Button>
-            </DialogTrigger>
-            <AccountCreateDialog/>
-          </Dialog>
+          <Button variant="outline" size="sm" className="h-8" asChild>
+            <Link to="/account/new">
+              <PlusIcon size={16} className="mr-1" />
+              {t("Create Account")}
+            </Link>
+          </Button>
 
           <GlobalFilter dataTable={dataTable} />
         </div>
-      </div>
+      </div >
 
 
       <div className="flex flex-col items-center mb-4">

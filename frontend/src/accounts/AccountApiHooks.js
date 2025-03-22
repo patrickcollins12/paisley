@@ -45,7 +45,7 @@ function useAccountData(accountid) {
 
 async function update(id, data) {
   const url = `accounts/${id}`;
-  const response = await httpClient.post(url, data);
+  const response = await httpClient.patch(url, data);
   // await mutate(['/accounts']);
   return response;
 }
@@ -55,7 +55,7 @@ async function create(postData) {
     const response = await httpClient.post('accounts', postData);
     return { data: response.data, error: null, isLoading: false };
   } catch (err) {
-    const errorMsg = err.response?.data?.errors?.[0]?.msg || err.message;
+    const errorMsg = err.response?.data?.message || err.message;
     return { data: null, error: errorMsg, isLoading: false };
   }
 }

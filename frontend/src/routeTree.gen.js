@@ -19,6 +19,7 @@ import { Route as RulesIndexImport } from './routes/rules.index.jsx'
 import { Route as LoginIndexImport } from './routes/login.index.jsx'
 import { Route as AccountsIndexImport } from './routes/accounts.index.jsx'
 import { Route as RulesRuleIdImport } from './routes/rules.$ruleId.jsx'
+import { Route as AccountNewImport } from './routes/account.new.jsx'
 import { Route as AccountAccountIdImport } from './routes/account.$accountId.jsx'
 
 // Create/Update Routes
@@ -71,6 +72,12 @@ const RulesRuleIdRoute = RulesRuleIdImport.update({
   getParentRoute: () => rootRoute,
 })
 
+const AccountNewRoute = AccountNewImport.update({
+  id: '/account/new',
+  path: '/account/new',
+  getParentRoute: () => rootRoute,
+})
+
 const AccountAccountIdRoute = AccountAccountIdImport.update({
   id: '/account/$accountId',
   path: '/account/$accountId',
@@ -82,6 +89,7 @@ const AccountAccountIdRoute = AccountAccountIdImport.update({
 const rootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountAccountIdRoute: AccountAccountIdRoute,
+  AccountNewRoute: AccountNewRoute,
   RulesRuleIdRoute: RulesRuleIdRoute,
   AccountsIndexRoute: AccountsIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
@@ -101,6 +109,7 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)
       "children": [
         "/",
         "/account/$accountId",
+        "/account/new",
         "/rules/$ruleId",
         "/accounts/",
         "/login/",
@@ -115,6 +124,9 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)
     },
     "/account/$accountId": {
       "filePath": "account.$accountId.jsx"
+    },
+    "/account/new": {
+      "filePath": "account.new.jsx"
     },
     "/rules/$ruleId": {
       "filePath": "rules.$ruleId.jsx"

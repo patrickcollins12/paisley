@@ -80,7 +80,7 @@ function Root() {
         </header>
       }
 
-      <div className="flex-auto p-4 bg-muted/40">
+      <div className="flex-auto sm:p-4 bg-muted/40">
         <Outlet />
       </div>
 
