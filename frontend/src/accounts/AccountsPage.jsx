@@ -296,9 +296,7 @@ const AccountsPage = () => {
                 {t("Create Account")}
               </Button>
             </DialogTrigger>
-
             <AccountCreateDialog/>
-
           </Dialog>
 
           <GlobalFilter dataTable={dataTable} />
