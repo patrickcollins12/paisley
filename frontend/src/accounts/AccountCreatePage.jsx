@@ -22,6 +22,8 @@ import { useUpdateAccounts } from "@/accounts/AccountApiHooks"
 import { getRouteApi } from "@tanstack/react-router"
 import { useToast } from "@/components/ui/use-toast.js"
 import AccountCurrencySelector from "./AccountCurrencySelector";
+import AccountTimezoneSelector from "./AccountTimezoneSelector";
+
 
 export function AccountCreatePage() {
   const { t } = useTranslation()
@@ -30,6 +32,8 @@ export function AccountCreatePage() {
   const { toast } = useToast();
   const routeApi = getRouteApi();
   const navigate = routeApi.useNavigate();
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const formSchema = z.object({
     accountid: z.string().nonempty({ message: "Account ID must be provided" }),
@@ -40,23 +44,9 @@ export function AccountCreatePage() {
     type: z.string().optional(),
     category: z.string().nonempty({ message: "Category must be provided" }),
     status: z.string().optional(),
-    currency: z.string().optional(),
+    currency: z.any().transform((e) => e.value).optional(),
+    timezone: z.any().transform((e) => e.value),
   })
-
-  // const [currencies, setCurrencies] = useState({}); // State to store the transformed currencies
-
-  // useEffect(() => {
-  //   // Transform currency data into the desired format
-  //   const transformedCurrencies = currencyData.reduce((acc, currency) => {
-  //     // Access the 'code' and 'currency' properties of each object
-  //     const { code, currency: currencyName } = currency;
-  //     acc[code] = `${currencyName} (${code})`;
-  //     return acc;
-  //   }, {});
-
-  //   setCurrencies(transformedCurrencies);
-  //   console.log("Currencies:", transformedCurrencies);
-  // }, []);
 
   const form = useForm({
     defaultValues: {
@@ -66,19 +56,19 @@ export function AccountCreatePage() {
       shortname: "",
       type: "",
       holders: "",
-      category: "asset",
+      category: "asset", // or liability
       status: "active",
-      currency: "USD",
+      currency: "",
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
     resolver: zodResolver(formSchema)
   })
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
   // Handle form submission
   async function onSubmit(formData) {
 
-    // console.log(`Form data:`, formData)
+    // console.log(`Form data:`, JSON.stringify(formData, null, 2))
+
     setIsSubmitting(true)
     const { data, error } = await create(formData)
     setIsSubmitting(false)
@@ -109,7 +99,6 @@ export function AccountCreatePage() {
                 {t("Add a new bank, investment, crypto, mortgage account, etc")}
               </CardDescription>
             </CardHeader>
-
 
             <CardContent>
               <div className="gap-5 grid">
@@ -336,36 +325,11 @@ export function AccountCreatePage() {
                   )}
                 />
 
-                {/* Currency Input */}
-                {/* <FormField
-                  name="currency"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
-                      <FormLabel htmlFor="currency" className="text-right mr-3">
-                        {t("Currency")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          id="currency"
-                          {...field}
-                          className="col-span-2"
-                          data-1p-ignore autoComplete="off"
-                        />
-                      </FormControl>
-                      <FormMessage className="col-start-2 col-span-2" />
-
-
-                      <FormDescription className="col-start-2 col-span-2 text-sm text-gray-500">
-                        {t("Refer to ISO 4217 currency codes. e.g. AUD, USD, EUR")}
-                      </FormDescription>
-
-                    </FormItem>
-                  )}
-                /> */}
-
                 {/* Currency Select */}
-                <AccountCurrencySelector form={form} name="currency"/>
+                <AccountCurrencySelector form={form} name="currency" />
+
+                {/* Timezone Select */}
+                <AccountTimezoneSelector form={form} name="timezone" />
 
               </div >
             </CardContent>
