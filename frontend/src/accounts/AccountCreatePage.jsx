@@ -23,7 +23,11 @@ import { getRouteApi } from "@tanstack/react-router"
 import { useToast } from "@/components/ui/use-toast.js"
 import AccountCurrencySelector from "./AccountCurrencySelector";
 import AccountTimezoneSelector from "./AccountTimezoneSelector";
+import AccountTypeSelector from "./AccountTypeSelector";
+import AccountParentAccountSelector from "./AccountParentAccountSelector";
+import AccountInstitutionSelector from "./AccountInstitutionSelector";
 
+import AccountReusableInput from "./AccountReusableInput";
 
 export function AccountCreatePage() {
   const { t } = useTranslation()
@@ -38,14 +42,15 @@ export function AccountCreatePage() {
   const formSchema = z.object({
     accountid: z.string().nonempty({ message: "Account ID must be provided" }),
     name: z.string().optional(),
-    institution: z.string().optional(),
-    holders: z.string().optional(),
+    institution: z.any().transform((e) => e.value).optional(),
     shortname: z.string().optional(),
-    type: z.string().optional(),
+    type: z.any().transform((e) => e.value).optional(),
+    holders: z.string().optional(),
     category: z.string().nonempty({ message: "Category must be provided" }),
     status: z.string().optional(),
     currency: z.any().transform((e) => e.value).optional(),
-    timezone: z.any().transform((e) => e.value),
+    parentid: z.any().transform((e) => e.value).optional(),
+    timezone: z.any().transform((e) => e.value).optional(),
   })
 
   const form = useForm({
@@ -59,6 +64,7 @@ export function AccountCreatePage() {
       category: "asset", // or liability
       status: "active",
       currency: "",
+      parentid: "",
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     },
     resolver: zodResolver(formSchema)
@@ -66,8 +72,6 @@ export function AccountCreatePage() {
 
   // Handle form submission
   async function onSubmit(formData) {
-
-    // console.log(`Form data:`, JSON.stringify(formData, null, 2))
 
     setIsSubmitting(true)
     const { data, error } = await create(formData)
@@ -103,175 +107,60 @@ export function AccountCreatePage() {
             <CardContent>
               <div className="gap-5 grid">
 
-                {/* Account ID field */}
-                <FormField
+                <AccountReusableInput
                   name="accountid"
                   control={form.control}
-                  // rules={{ required: "Account ID is required" }}
-                  render={({ field }) => (
-                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
-                      <FormLabel htmlFor="accountid" className="text-right mr-3">
-                        {t("Account ID")}
-                        <span className="text-red-500 ml-2">*</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          id="accountid"
-                          {...field}
-                          className="col-span-2"
-                          data-1p-ignore
-                          autoComplete="off"
-                        />
-                      </FormControl>
-                      <FormMessage className="col-start-2 col-span-2" />
-
-                      <FormDescription className="col-start-2 col-span-2 text-sm text-gray-500">
-                        {t("The official account ID used by your institution. Note this is used by scrapers and importers to track this account. It must be unique.")}
-                      </FormDescription>
-                    </FormItem>
-                  )}
+                  label={t("Account ID")}
+                  description={t("The official account ID used by your institution. Note this is used by scrapers and importers to track this account. It must be unique.")}
+                  required
                 />
 
-                {/* Official Account Name field */}
-                <FormField
+                <AccountReusableInput
                   name="name"
                   control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
-                      <FormLabel htmlFor="name" className="text-right mr-3">
-                        {t("Official Account Name")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          id="name"
-                          {...field}
-                          className="col-span-2"
-                          data-1p-ignore
-                          autoComplete="off"
-                        />
-                      </FormControl>
-                      <FormMessage className="col-start-2 col-span-2" />
-
-                      <FormDescription className="col-start-2 col-span-2 text-sm text-gray-500">
-                        {t("This is the official account name, typically provided by the institution. Example: 'Savings Account'.")}
-                      </FormDescription>
-                    </FormItem>
-                  )}
+                  label={t("Official Account Name")}
+                  description={t("This is the official account name, typically provided by the institution. Example: 'Savings Account'.")}
                 />
-
-                {/* Institution field */}
-                <FormField
+{/* 
+                <AccountReusableInput
                   name="institution"
                   control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
-                      <FormLabel htmlFor="institution" className="text-right mr-3">
-                        {t("Institution")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          id="institution"
-                          {...field}
-                          className="col-span-2"
-                          data-1p-ignore
-                          autoComplete="off"
-                        />
-                      </FormControl>
-                      <FormMessage className="col-start-2 col-span-2" />
-
-                      <FormDescription className="col-start-2 col-span-2 text-sm text-gray-500">
-                        {t("Enter the full and proper name of the institution, such as 'Chase Bank' or 'Wells Fargo'.")}
-                      </FormDescription>
-                    </FormItem>
-                  )}
-                />
-
-
-                {/* Account Holders field */}
-                <FormField
-                  name="holders"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
-                      <FormLabel htmlFor="holders" className="text-right mr-3">
-                        {t("Account Holders")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          id="holders"
-                          {...field}
-                          className="col-span-2"
-                          data-1p-ignore
-                          autoComplete="off"
-                        />
-                      </FormControl>
-                      <FormMessage className="col-start-2 col-span-2" />
-
-                      <FormDescription className="col-start-2 col-span-2 text-sm text-gray-500">
-                        {t("Enter the full names of the account holders. e.g. John Doe and Jane Doe")}
-                      </FormDescription>
-                    </FormItem>
-                  )}
-                />
-
-                {/* Shortname field */}
-                <FormField
-                  name="shortname"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
-                      <FormLabel htmlFor="shortname" className="text-right mr-3">
-                        {t("Shortname")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          id="shortname"
-                          {...field}
-                          className="col-span-2"
-                          data-1p-ignore
-                          autoComplete="off"
-                        />
-                      </FormControl>
-                      <FormMessage className="col-start-2 col-span-2" />
-
-                      <FormDescription className="col-start-2 col-span-2 text-sm text-gray-500">
-                        {t("A nickname for the account. Keep it brief and easy to remember. Example: 'Chase Savings'.")}
-                      </FormDescription>
-                    </FormItem>
-                  )}
-                />
+                  label={t("Institution")}
+                  description={t("Enter the full and proper name of the institution, such as 'Chase Bank' or 'Wells Fargo'.")}
+                /> */}
 
                 {/* Type Dropdown */}
-                <FormField
-                  name="type"
+                <AccountInstitutionSelector
+                  name="institution"
+                  form={form}
+                  label={t("Institution")}
+                  description={t("Enter the full and proper name of the institution, such as 'Chase Bank' or 'Wells Fargo'.")}
+                  // placeholder={t("Choose Institution")}
+                />
+
+                <AccountReusableInput
+                  name="holders"
                   control={form.control}
-                  render={({ field }) => (
+                  label={t("Account Holders")}
+                  description={t("Enter the full names of the account holders. e.g. John Doe and Jane Doe")}
+                />
 
-                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
-                      <FormLabel htmlFor="type" className="text-right mr-3">
-                        {t("Type")}
-                      </FormLabel>
-                      <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <SelectTrigger className="col-span-2">
-                            <SelectValue placeholder={t("Select Type")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Savings">{t("Savings")}</SelectItem>
-                            <SelectItem value="Credit">{t("Credit")}</SelectItem>
-                            <SelectItem value="Checking">{t("Checking")}</SelectItem>
-                            <SelectItem value="Investment">{t("Investment")}</SelectItem>
-                            <SelectItem value="Crypto">{t("Crypto")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage className="col-start-2 col-span-2" />
-
-                    </FormItem>
-                  )}
+                <AccountReusableInput
+                  name="shortname"
+                  control={form.control}
+                  label={t("Shortname")}
+                  description={t("A nickname for the account. Keep it brief and easy to remember. Example: 'Chase Savings'.")}
                 />
 
 
+                {/* Type Dropdown */}
+                <AccountTypeSelector
+                  name="type"
+                  form={form}
+                  label={t("Type")}
+                  description={t("Account type. Note: Start typing to create a new account type.")}
+                  placeholder={t("Choose account type")}
+                />
 
                 {/* Category Dropdown */}
                 <FormField
@@ -299,7 +188,6 @@ export function AccountCreatePage() {
                   )}
                 />
 
-
                 {/* Status Dropdown */}
                 <FormField
                   name="status"
@@ -325,11 +213,32 @@ export function AccountCreatePage() {
                   )}
                 />
 
-                {/* Currency Select */}
-                <AccountCurrencySelector form={form} name="currency" />
+                {/* Parent Account */}
+                <AccountParentAccountSelector
+                  name="parentid"
+                  form={form}
+                  label={t("Parent Account")}
+                  description={t("Parent account is optional and somewhat rare. It is often used to put assets under a main account.")}
+                  placeholder={t("Choose parent account")}
+                />
 
-                {/* Timezone Select */}
-                <AccountTimezoneSelector form={form} name="timezone" />
+                {/* Currency  */}
+                <AccountCurrencySelector
+                  name="currency"
+                  form={form}
+                  label={t("Currency")}
+                  description={""}
+                  placeholder={t("Select currency")}
+                />
+
+                {/* Timezone  */}
+                <AccountTimezoneSelector
+                  name="timezone"
+                  form={form}
+                  label={t("Timezone")}
+                  description={""}
+                  placeholder={t("Select timezone")}
+                />
 
               </div >
             </CardContent>

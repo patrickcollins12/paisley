@@ -3,9 +3,9 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescripti
 import { useTranslation } from 'react-i18next'
 import Select from 'react-select'
 import { Input } from "@/components/ui/input"
-import { selectClassNames, manualValueContainerFix, DropdownIndicator } from "@/components/ReactSelectStyles"
+import { getSelectClassNames, manualValueContainerFix, DropdownIndicator } from "@/components/ReactSelectStyles"
 
-const AccountTimezoneSelector = ({ form, name, ...props }) => {
+const AccountTimezoneSelector = ({ form, name, label, description, ...props }) => {
     const [timezones, setTimezones] = useState([]);
     const { t } = useTranslation();
 
@@ -16,43 +16,54 @@ const AccountTimezoneSelector = ({ form, name, ...props }) => {
 
     return timezones && timezones.length > 0 ? (
         <FormField
-            name="timezone"
+            name={name}
             control={form.control}
-            render={({ field }) => (
-                <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center">
-                    <FormLabel htmlFor="timezone" className="text-right mr-3">{t("Timezone")}</FormLabel>
-                    <FormControl>
-                        <Select
-                            id="timezone"
-                            options={timezones.map(tz => ({ label: tz, value: tz }))}
-                            defaultValue={{ label: field.value, value: field.value }}
-                            onChange={field.onChange}
-                            placeholder={t("Select Timezone")}
-                            className="col-span-2"
-                            unstyled
-                            styles={manualValueContainerFix(props.isMulti)}
-                            classNames={selectClassNames}
-                            components={{ DropdownIndicator, IndicatorSeparator: null }}
-                        />
-                    </FormControl>
-                    <FormMessage className="col-start-2 col-span-2" />
-                </FormItem>
-            )}
+            render={({ field }) => {
+                return (
+                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center">
+                        <FormLabel htmlFor={name} className="text-right mr-3">
+                            {label}
+                        </FormLabel>
+                        <FormControl>
+                            <Select
+                                id={name}
+                                options={timezones.map(tz => ({ label: tz, value: tz }))}
+                                // TODO, value doesn't sync to this.
+                                defaultValue={{ label: field.value, value: field.value }}
+                                onChange={field.onChange}
+                                className="col-span-2"
+                                unstyled
+                                isClearable
+                                styles={manualValueContainerFix(props.isMulti)}
+                                classNames={getSelectClassNames()}
+                                components={{ DropdownIndicator, IndicatorSeparator: null }}
+                                {...props}
+                            />
+                        </FormControl>
+                        <FormMessage className="col-start-2 col-span-2" />
+                        <FormDescription className="col-start-2 col-span-2 text-sm text-gray-500">
+                            {description}
+                        </FormDescription>
+                    </FormItem>
+                )
+            }}
         />
     ) : (
         <FormField
-            name="timezone"
+            name={name}
             control={form.control}
             render={({ field }) => (
                 <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center">
-                    <FormLabel htmlFor="timezone" className="text-right mr-3">{t("Timezone")}</FormLabel>
+                    <FormLabel htmlFor={name} className="text-right mr-3">
+                        {label}
+                    </FormLabel>
                     <FormControl>
                         <Input
-                            id="timezone"
-                            {...field}
+                            id={name}
                             className="col-span-2"
                             data-1p-ignore
                             autoComplete="off"
+                            {...field}
                         />
                     </FormControl>
                     <FormMessage className="col-start-2 col-span-2" />

@@ -3,9 +3,9 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescripti
 import { useTranslation } from 'react-i18next'
 import Select from 'react-select'
 import currencyData from 'currency-codes/data'
-import { selectClassNames, manualValueContainerFix, DropdownIndicator } from "@/components/ReactSelectStyles"
+import { getSelectClassNames, manualValueContainerFix, DropdownIndicator } from "@/components/ReactSelectStyles"
 
-const AccountCurrencySelector = ({ form, name, ...props }) => {
+const AccountCurrencySelector = ({ form, name, label, description, ...props }) => {
   const [currencies, setCurrencies] = useState([]);
   const { t } = useTranslation();
 
@@ -23,23 +23,28 @@ const AccountCurrencySelector = ({ form, name, ...props }) => {
       control={form.control}
       render={({ field }) => (
         <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center">
-          <FormLabel htmlFor={name} className="text-right mr-3">{t("Currency")}</FormLabel>
+          <FormLabel htmlFor={name} className="text-right mr-3">
+            {label}
+          </FormLabel>
           <FormControl>
             <Select
               id={name}
               options={currencies}
               value={field.value}
               onChange={field.onChange}
-              placeholder={t("Select currency")}
               className="col-span-2"
               unstyled
+              isClearable
               styles={manualValueContainerFix(props.isMulti)}
-              classNames={selectClassNames}
+              classNames={getSelectClassNames()}
               components={{ DropdownIndicator, IndicatorSeparator: null }}
+              {...props}
             />
           </FormControl>
           <FormMessage className="col-start-2 col-span-2" />
-          <FormDescription className="col-start-2 col-span-2 text-sm text-gray-500" />
+          <FormDescription className="col-start-2 col-span-2 text-sm text-gray-500">
+            {description}
+          </FormDescription>
         </FormItem>
       )}
     />
