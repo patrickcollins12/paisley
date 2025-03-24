@@ -1,7 +1,6 @@
 // react, routing, icons, shadn
-import React, { useState, useEffect } from "react";
-import { getRouteApi, Link, useRouter } from "@tanstack/react-router"
-import { ChevronLeft } from "lucide-react"
+import React, { useState  } from "react";
+import { getRouteApi, Link } from "@tanstack/react-router"
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle, } from "@/components/ui/card"
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 
@@ -13,6 +12,7 @@ import ChartTimeSelection from "./ChartTimeSelection";
 import AccountDetailsTable from './AccountDetailsTable.jsx'
 import TransactionCard from "@/transactions/TransactionCard.jsx"
 import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
+import { BackNav } from "@/components/BackNav.jsx"
 
 //data loaders
 import useAccountData from "@/accounts/AccountApiHooks.js";
@@ -20,7 +20,7 @@ import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 
 // utils
 // import { formatDate } from "@/lib/localisation_utils.js";
-import { Currency, formatCurrency } from "@/components/CurrencyDisplay.jsx";
+import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 import { useTranslation } from 'react-i18next';
 
 
@@ -35,7 +35,6 @@ const AccountPage = () => {
     const routeApi = getRouteApi('/account/$accountId');
 
     // grab the path parameter from the URL
-    const router = useRouter();
     const { accountId } = routeApi.useParams();
 
     // Fetch all accounts data using the custom hook
@@ -76,24 +75,10 @@ const AccountPage = () => {
             : null // Pass null initially to avoid making a request
     );
 
-    const onBack = () => router.history.back();
-
     return (
         <>
-            <div className="pb-4 text-sm text-muted-foreground">
 
-
-                <Link onClick={() => {
-                    onBack();
-                    return false;
-                }}
-                >
-                    <div className="flex items-center">
-                        <ChevronLeft size={16} />
-                        <div>{t('Back')}</div>
-                    </div>
-                </Link>
-            </div>
+            <BackNav />
 
             <div className="container mx-auto p-0">
                 <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -213,7 +198,7 @@ const AccountPage = () => {
                             {/* <CardDescription>Last updated: 25 Feb 2025</CardDescription> */}
                         </CardHeader>
                         <CardContent className="">
-                            
+
                             {account &&
                                 <AccountDetailsTable data={account} />
                             }

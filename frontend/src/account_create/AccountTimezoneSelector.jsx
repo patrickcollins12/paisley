@@ -43,7 +43,7 @@ const AccountTimezoneSelector = ({
                     onChange={onChange}
                     className="col-span-2"
                     unstyled
-                    isClearable
+                    // isClearable
                     styles={manualValueContainerFix(props.isMulti)}
                     classNames={getSelectClassNames()}
                     components={{ DropdownIndicator, IndicatorSeparator: null }}

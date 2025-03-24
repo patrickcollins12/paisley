@@ -6,21 +6,21 @@ import {
   FormLabel,
   FormMessage,
   FormItem,
-  FormDescription
 } from "@/components/ui/form"
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle, } from "@/components/ui/card"
 
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectItem, SelectTrigger, SelectValue, SelectContent } from "@/components/ui/select"
 import { useTranslation } from 'react-i18next'
 import { useForm } from "react-hook-form"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useUpdateAccounts } from "@/accounts/AccountApiHooks"
 import { getRouteApi } from "@tanstack/react-router"
 import { useToast } from "@/components/ui/use-toast.js"
+import { BackNav } from "@/components/BackNav.jsx"
+
 import AccountCurrencySelector from "./AccountCurrencySelector";
 import AccountTimezoneSelector from "./AccountTimezoneSelector";
 import AccountTypeSelector from "./AccountTypeSelector";
@@ -79,6 +79,7 @@ export function AccountCreatePage() {
   // Handle form submission
   async function onSubmit(formData) {
 
+    // merge the manually managed data with the RHF form data
     const finalData = {
       ...formData,
       timezone: timezone.value, // manually inject controlled timezone
@@ -99,40 +100,45 @@ export function AccountCreatePage() {
   }
 
   return (
-    <Form {...form} className="">
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+    <>
 
-        {/* Center the form */}
-        <div className="flex flex-col items-center">
+      <BackNav/>
 
-          {/* Card container, disable rounded borders and collapse space on mobile */}
-          <Card className="max-w-[650px] justify-center items-center  sm:p-0 sm:m-0   rounded-none sm:rounded-lg   border-none sm:border-solid">
 
-            <CardHeader>
-              <CardTitle>{t("Create Account")}</CardTitle>
-              <CardDescription>
-                {t("Add a new bank, investment, crypto, mortgage account, etc")}
-              </CardDescription>
-            </CardHeader>
+      <Form {...form} className="">
+        <form onSubmit={form.handleSubmit(onSubmit)}>
 
-            <CardContent>
-              <div className="gap-5 grid">
+          {/* Center the form */}
+          <div className="flex flex-col items-center">
 
-                <AccountReusableInput
-                  name="accountid"
-                  control={form.control}
-                  label={t("Account ID")}
-                  description={t("The official account ID used by your institution. Note this is used by scrapers and importers to track this account. It must be unique.")}
-                  required
-                />
+            {/* Card container, disable rounded borders and collapse space on mobile */}
+            <Card className="max-w-[650px] justify-center items-center  sm:p-0 sm:m-0   rounded-none sm:rounded-lg   border-none sm:border-solid">
 
-                <AccountReusableInput
-                  name="name"
-                  control={form.control}
-                  label={t("Official Account Name")}
-                  description={t("This is the official account name, typically provided by the institution. Example: 'Savings Account'.")}
-                />
-                {/* 
+              <CardHeader>
+                <CardTitle>{t("Create Account")}</CardTitle>
+                <CardDescription>
+                  {t("Add a new bank, investment, crypto, mortgage account, etc")}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent>
+                <div className="gap-5 grid">
+
+                  <AccountReusableInput
+                    name="accountid"
+                    control={form.control}
+                    label={t("Account ID")}
+                    description={t("The official account ID used by your institution. Note this is used by scrapers and importers to track this account. It must be unique.")}
+                    required
+                  />
+
+                  <AccountReusableInput
+                    name="name"
+                    control={form.control}
+                    label={t("Official Account Name")}
+                    description={t("This is the official account name, typically provided by the institution. Example: 'Savings Account'.")}
+                  />
+                  {/* 
                 <AccountReusableInput
                   name="institution"
                   control={form.control}
@@ -140,128 +146,130 @@ export function AccountCreatePage() {
                   description={t("Enter the full and proper name of the institution, such as 'Chase Bank' or 'Wells Fargo'.")}
                 /> */}
 
-                {/* Type Dropdown */}
-                <AccountInstitutionSelector
-                  name="institution"
-                  form={form}
-                  label={t("Institution")}
-                  description={t("Enter the full and proper name of the institution, such as 'Chase Bank' or 'Wells Fargo'.")}
-                // placeholder={t("Choose Institution")}
-                />
+                  {/* Type Dropdown */}
+                  <AccountInstitutionSelector
+                    name="institution"
+                    form={form}
+                    label={t("Institution")}
+                    description={t("Enter the full and proper name of the institution, such as 'Chase Bank' or 'Wells Fargo'.")}
+                  // placeholder={t("Choose Institution")}
+                  />
 
-                <AccountReusableInput
-                  name="holders"
-                  control={form.control}
-                  label={t("Account Holders")}
-                  description={t("Enter the full names of the account holders. e.g. John Doe and Jane Doe")}
-                />
+                  <AccountReusableInput
+                    name="holders"
+                    control={form.control}
+                    label={t("Account Holders")}
+                    description={t("Enter the full names of the account holders. e.g. John Doe and Jane Doe")}
+                  />
 
-                <AccountReusableInput
-                  name="shortname"
-                  control={form.control}
-                  label={t("Shortname")}
-                  description={t("A nickname for the account. Keep it brief and easy to remember. Example: 'Chase Savings'.")}
-                />
+                  <AccountReusableInput
+                    name="shortname"
+                    control={form.control}
+                    label={t("Shortname")}
+                    description={t("A nickname for the account. Keep it brief and easy to remember. Example: 'Chase Savings'.")}
+                  />
 
 
-                {/* Type Dropdown */}
-                <AccountTypeSelector
-                  name="type"
-                  form={form}
-                  label={t("Type")}
-                  description={t("Account type. Note: Start typing to create a new account type.")}
-                  placeholder={t("Choose account type")}
-                />
+                  {/* Type Dropdown */}
+                  <AccountTypeSelector
+                    name="type"
+                    form={form}
+                    label={t("Type")}
+                    description={t("Account type. Note: Start typing to create a new account type.")}
+                    placeholder={t("Choose account type")}
+                  />
 
-                {/* Category Dropdown */}
-                <FormField
-                  name="category"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
-                      <FormLabel htmlFor="category" className="text-right mr-3">
-                        {t("Category")}
-                      </FormLabel>
-                      <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <SelectTrigger className="col-span-2">
-                            <SelectValue placeholder={t("Select Category")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="asset">{t("Asset")}</SelectItem>
-                            <SelectItem value="liability">{t("Liability")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage className="col-start-2 col-span-2" />
+                  {/* Category Dropdown */}
+                  <FormField
+                    name="category"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
+                        <FormLabel htmlFor="category" className="text-right mr-3">
+                          {t("Category")}
+                        </FormLabel>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger className="col-span-2">
+                              <SelectValue placeholder={t("Select Category")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="asset">{t("Asset")}</SelectItem>
+                              <SelectItem value="liability">{t("Liability")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage className="col-start-2 col-span-2" />
 
-                    </FormItem>
-                  )}
-                />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Status Dropdown */}
-                <FormField
-                  name="status"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
-                      <FormLabel htmlFor="status" className="text-right mr-3">
-                        {t("Status")}
-                      </FormLabel>
-                      <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <SelectTrigger className="col-span-2">
-                            <SelectValue placeholder={t("Select Status")} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="active">{t("Active")}</SelectItem>
-                            <SelectItem value="inactive">{t("Inactive")}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage className="col-start-2 col-span-2" />
-                    </FormItem>
-                  )}
-                />
+                  {/* Status Dropdown */}
+                  <FormField
+                    name="status"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="sm:grid space-y-0 gap-1 grid-cols-3 items-center  ">
+                        <FormLabel htmlFor="status" className="text-right mr-3">
+                          {t("Status")}
+                        </FormLabel>
+                        <FormControl>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <SelectTrigger className="col-span-2">
+                              <SelectValue placeholder={t("Select Status")} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">{t("Active")}</SelectItem>
+                              <SelectItem value="inactive">{t("Inactive")}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage className="col-start-2 col-span-2" />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Parent Account */}
-                <AccountParentAccountSelector
-                  name="parentid"
-                  form={form}
-                  label={t("Parent Account")}
-                  description={t("Parent account is optional and somewhat rare. It is often used to put assets under a main account.")}
-                  placeholder={t("Choose parent account")}
-                />
+                  {/* Parent Account */}
+                  <AccountParentAccountSelector
+                    name="parentid"
+                    form={form}
+                    label={t("Parent Account")}
+                    description={t("Parent account is optional and somewhat rare. It is often used to put assets under a main account.")}
+                    placeholder={t("Choose parent account")}
+                  />
 
-                {/* Currency  */}
-                <AccountCurrencySelector
-                  name="currency"
-                  form={form}
-                  label={t("Currency")}
-                  description={""}
-                  placeholder={t("Select currency")}
-                />
+                  {/* Currency  */}
+                  <AccountCurrencySelector
+                    name="currency"
+                    form={form}
+                    label={t("Currency")}
+                    description={""}
+                    placeholder={t("Select currency")}
+                  />
 
-                {/* Timezone  */}
-                <AccountTimezoneSelector
-                  name="timezone"
-                  label={t("Timezone")}
-                  description={t("Select timezone")}
-                  value={timezone}
-                  onChange={setTimezone}
-                />
+                  {/* Timezone  */}
+                  <AccountTimezoneSelector
+                    name="timezone"
+                    label={t("Timezone")}
+                    description={""}
+                    value={timezone}
+                    onChange={setTimezone}
+                  />
 
-              </div >
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? t("Saving...") : t("Save")}
-              </Button>
-            </CardFooter>
+                </div >
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? t("Saving...") : t("Save")}
+                </Button>
+              </CardFooter>
 
-          </Card>
-        </div>
-      </form>
-    </Form >
+            </Card>
+          </div>
+        </form>
+      </Form >
+
+    </>
   )
 }

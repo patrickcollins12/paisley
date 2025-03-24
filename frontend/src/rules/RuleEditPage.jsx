@@ -1,27 +1,26 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/components/ui/card"
 
-import { ChevronLeft, AlertCircle } from "lucide-react"
+import { AlertCircle } from "lucide-react"
 
 import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
 import { useFetchRule, useUpdateRules } from "@/rules/RuleApiHooks.jsx"
-import { getRouteApi, Link } from "@tanstack/react-router"
+import { getRouteApi } from "@tanstack/react-router"
 import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 import TransactionCard from "@/transactions/TransactionCard.jsx"
 import { useEffect, useRef, useState } from "react"
 import { Input } from "@/components/ui/input.jsx"
 import { ReactSelect } from "@/components/ReactSelect.jsx"
 
+import { BackNav } from "@/components/BackNav.jsx"
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import { Button } from "@/components/ui/button.jsx"
-import { useDebounce, useLogger, usePrevious } from "react-use"
+import { useDebounce } from "react-use"
 import { useToast } from "@/components/ui/use-toast.js"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-
 
 const routeApi = getRouteApi('/rules/$ruleId');
 
 export default function RuleEditPage() {
-  // useLogger('RuleEditPage');
 
   const { toast } = useToast();
   const navigate = routeApi.useNavigate();
@@ -111,42 +110,21 @@ export default function RuleEditPage() {
 
     try {
       const { data, error } = await create(ruleData);
-  
+
       if (error) {
         setError(error);
         return; // Stop processing if there's an error.
-      } 
+      }
       else {
         toast({ description: 'Rule created successfully', duration: 1000 });
         setError(null);
         const newId = data?.id;
-        await navigate({ to: '/rules/$ruleId', params: { ruleId: newId } });  
+        await navigate({ to: '/rules/$ruleId', params: { ruleId: newId } });
       }
-  
+
     } catch (unexpectedError) {
       console.error("Unexpected error:", unexpectedError);
       setError("Unexpected error occurred");
-    }
-  }
-  
-
-
-  async function createRule_OLD(evt) {
-    evt.preventDefault();
-    if (id) return;
-
-    try {
-      const { data: result, error, isLoading } = await create(ruleData);
-
-      const newId = result?.id ?? null;
-      if (newId) {
-        toast({ description: 'Rule created successfully', duration: 1000 });
-        setError(null);
-        await navigate({ to: '/rules/$ruleId', params: { ruleId: newId } });
-      }
-    } catch (error) {
-      setError(error?.response?.data?.error ?? null);
-      console.error('Error creating rule:', error);
     }
   }
 
@@ -166,14 +144,7 @@ export default function RuleEditPage() {
 
   return (<>
 
-    <div className="pb-4 text-sm text-muted-foreground">
-      <Link to="/rules">
-        <div className="flex items-center">
-          <ChevronLeft size={16} />
-          <div>Back</div>
-        </div>
-      </Link>
-    </div>
+    <BackNav />
 
     <div className="flex justify-center gap-3">
       <Card className="text-sm w-[550px]">
@@ -211,7 +182,7 @@ export default function RuleEditPage() {
                       name="rule"
                       onChange={event => setRuleString(event.target.value)}
                       autoComplete="off" />
-                    {( transactionFetchError) &&
+                    {(transactionFetchError) &&
                       <div className="text-red-600 py-2">
                         {error ?? transactionFetchError?.response?.data?.error}
                       </div>
