@@ -51,28 +51,38 @@ async function saveDataToCSV(filename, data) {
 
 ////////////////////////
 //Save to paisley account_history the balance
-async function saveToPaisley(path, payload) {
+async function saveToPaisley(path, payload, id = "") {
     try {
         config.load()
 
-        const url = `${config['paisleyUrl']}${path}`
-        // logger.info(`Calling URL: ${url} with payload:\n ${JSON.stringify(payload, null, 2)}`)
+        // we will update paisley account via REST Api
+        let url = `${config['paisleyUrl']}${path}`
 
-        const response = await axios.post(url, payload, {
+        // if id then do update, else do create
+        if (id) {
+            url += `/${id}`
+        }
+
+        logger.info(`Calling URL: ${url} with payload:\n ${JSON.stringify(payload, null, 2)}`)
+
+        const response = await axios({
+            method: id ? 'patch' : 'post',
+            url,
+            data: payload,
             headers: {
                 'x-api-key': config['paisleyApiKey'],
                 'Content-Type': 'application/json'
             }
         });
 
-        logger.info('Successfully updated account metadata:', response.data);
+        logger.info(`Successfully ${id ? "updated" : "created"} account metadata:`, response.data);
         return response.data;
 
     } catch (error) {
-        logger.error('Error saving data to Paisley:', error.response?.data || error.message);
+        // logger.error('Couldn\'t save data to Paisley:', error.response ? error.response.data : error.message);
         throw error;
     }
 }
 
 
-module.exports = { cleanPrice, saveCSVFromPromise, saveDataToCSV, saveToPaisley};
+module.exports = { cleanPrice, saveCSVFromPromise, saveDataToCSV, saveToPaisley };

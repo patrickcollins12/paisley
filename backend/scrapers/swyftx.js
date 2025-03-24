@@ -1,19 +1,14 @@
 import { test } from '@playwright/test';
 
-// const util = require('../src/ScraperUtil');
-// const path = require('path');
 const { DateTime } = require("luxon");
 const axios = require('axios').default;
-test.describe.configure({ retries: 0 });
+// test.describe.configure({ retries: 0 });
 
 const util = require('../src/ScraperUtil');
 const config = (require('../src/Config'));
 config.load()
 
 const logger = require('../src/Logger');
-
-let paisleyUrl = config['paisleyUrl']
-let paisleyApiKey = config['paisleyApiKey']
 
 const bank_config = config['SwyftxScraper'];
 let API_Key = bank_config['API_Key']
@@ -32,10 +27,7 @@ async function getAccessToken() {
 }
 
 /**
- * Generic API request function
- * @param {string} endpoint - The API endpoint (e.g., "/user/balance/")
- * @param {string} accessToken - The authentication token
- * @returns {Promise<object|null>} - The API response data or null on failure
+ * Generic Swyftx API request function with auth
  */
 async function apiRequest(endpoint, accessToken) {
     if (!accessToken) {
@@ -100,8 +92,6 @@ async function apiCallsToSwyftx() {
 
 /**
  * Fetch Swyftx balances, user details, and market rates.
- * @param {string} accessToken - Authentication token
- * @returns {Promise<object>} - { balances, user, rates }
  */
 async function fetchSwyftxData(accessToken) {
     try {
@@ -120,9 +110,6 @@ async function fetchSwyftxData(accessToken) {
 
 /**
  * Process an owned crypto asset and update Paisley.
- * @param {object} ownedAsset - The asset object from Swyftx.
- * @param {object} user - The user object from Swyftx.
- * @param {object} rates - Market rates data.
  */
 async function processOwnedAsset(ownedAsset, user, rates) {
     let id = ownedAsset["assetId"];
@@ -149,7 +136,7 @@ async function processOwnedAsset(ownedAsset, user, rates) {
         "parentid": bank_config['account']
     };
 
-    await util.saveToPaisley(`/api/accounts`, account_update);
+    await util.saveToPaisley(`/api/accounts`, account_update, asset_account_id);
 
     let account_history = {
         'datetime': DateTime.now().setZone("Australia/Sydney").toISO(),
@@ -169,25 +156,5 @@ async function processOwnedAsset(ownedAsset, user, rates) {
 }
 
 test('test', async () => {
-
-    let data = await apiCallsToSwyftx()
-
-    // logger.info(data)
-    // // setup the csv filename
-    // // this is the old code that used to save to CSV
-    // const dated = DateTime.now().setZone("Australia/Sydney").toISODate();
-    // let fn = `${bank_config['identifier']}_balance_${dated}.csv`
-    // let outCSVFile = path.join(config['csv_watch'], fn);
-    // await util.saveDataToCSV(outCSVFile, data);
-    // const oldCSVFormat = {
-    //     datetime: '2025-02-15T13:31:45.679+11:00',
-    //     account: 'swyftx_pcollins1',
-    //     description: 'Bitcoin: 0.019821 BTC @ $153049.68 AUD',
-    //     balance: '3033.54',
-    //     type: 'BAL'
-    // }
-
-
+    await apiCallsToSwyftx()
 });
-
-

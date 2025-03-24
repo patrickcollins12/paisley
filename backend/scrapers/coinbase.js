@@ -7,15 +7,12 @@ const util = require('../src/ScraperUtil');
 const logger = require('../src/Logger');
 
 /**
- * Converts a human-readable timezone from Coinbase to a valid IANA timezone.
+ * HEY! You need to do something here if you're a Coinbase customer not in the US.
  *
- * Coinbase's API returns timezone names in a human-readable format (e.g., "Pacific Time (US & Canada)"),
+ * Coinbase's API returns silly timezone names in a human-readable format (e.g., "Pacific Time (US & Canada)"),
  * but most libraries (like Luxon and Moment.js) require IANA timezones (e.g., "America/Los_Angeles").
  *
- * ## Updating the Timezone Map:
- * - This `timezoneMap` contains known mappings from Coinbase's format to IANA format.
- * - If Coinbase introduces new timezones, update this map accordingly.
- * - Log unknown timezones for monitoring.
+ * ## You need to update this Timezone Map. Find what timezone Coinbase puts in their request response and update this map accordingly.
  *
  * ## Fallback Behavior:
  * - If an unknown timezone is encountered, a warning is logged.
@@ -97,11 +94,16 @@ async function createOrUpdateMainAccount() {
 
         // Note this is an upsert operation, so will overwrite the existing account 
         // if has been modified manually.
-        util.saveToPaisley("/api/accounts", account_from_user_payload)
-
+        await util.saveToPaisley("/api/accounts", account_from_user_payload)
 
     } catch (error) {
-        logger.error(`Failed to fetch data: ${error.message}`);
+
+        if (error.response && error.response.status === 400 && error.response.data?.message?.includes("Account ID already exists")) {
+            logger.info("Account already exists, continuing happily...");
+        } else {
+            logger.info(`${error.message}`);
+            throw error;
+        }
     }
 
     return account_from_user_payload
@@ -188,7 +190,7 @@ async function getCoinbaseBalances(account_from_user_payload) {
 
                 // logger.info(`parentid: ${JSON.stringify(account_from_user_payload, null, 2)}`)
                 // logger.info(`Payload: ${JSON.stringify(payload, null, 2)}`)
-                util.saveToPaisley("/api/accounts", payload)
+                await util.saveToPaisley("/api/accounts", payload, account.uuid)
 
                 const cryptocode = account.currency
                 const currency = account_from_user_payload.currency
@@ -268,6 +270,7 @@ async function callCoinbase(requestPath) {
         // Return JSON response
         return response.data;
     } catch (error) {
+        
         logger.error(`Error calling Coinbase API: ${error.response?.data || error.message}`);
         throw error;
     }
