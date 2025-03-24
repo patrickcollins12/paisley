@@ -418,7 +418,7 @@ i18n
         interpolation: {
             escapeValue: false // react already safes from xss
         },
-        debug: true,  // Enable debug mode
+        debug: false,  // Enable debug mode
 
         // only in development should we enable these detection settings:
         detection: {

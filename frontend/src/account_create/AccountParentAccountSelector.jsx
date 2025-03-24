@@ -21,7 +21,7 @@ const AccountCurrencySelector = ({ form, name, label, description, ...props }) =
           return { label: `${acc.name} (${acc.institution})`, value: acc.accountid }
         });
 
-        console.log(accounts);
+        // console.log(accounts);
       setAccounts(accounts);
     }
   }, [data]);

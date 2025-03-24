@@ -26,7 +26,6 @@ import AccountTimezoneSelector from "./AccountTimezoneSelector";
 import AccountTypeSelector from "./AccountTypeSelector";
 import AccountParentAccountSelector from "./AccountParentAccountSelector";
 import AccountInstitutionSelector from "./AccountInstitutionSelector";
-
 import AccountReusableInput from "./AccountReusableInput";
 
 export function AccountCreatePage() {
@@ -50,7 +49,7 @@ export function AccountCreatePage() {
     status: z.string().optional(),
     currency: z.any().transform((e) => e.value).optional(),
     parentid: z.any().transform((e) => e.value).optional(),
-    timezone: z.any().transform((e) => e.value).optional(),
+    // timezone: z.any().transform((e) => e.value).optional(),
   })
 
   const form = useForm({
@@ -65,16 +64,28 @@ export function AccountCreatePage() {
       status: "active",
       currency: "",
       parentid: "",
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      // timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, // urgh 
     },
     resolver: zodResolver(formSchema)
   })
 
+  // gotta manage timezone manually. react-select and react-hook-form don't play nice.
+  // if any of the other react-select's need a default value, we can use the same pattern.
+  const [timezone, setTimezone] = useState({
+    label: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    value: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
+
   // Handle form submission
   async function onSubmit(formData) {
 
+    const finalData = {
+      ...formData,
+      timezone: timezone.value, // manually inject controlled timezone
+    };
+
     setIsSubmitting(true)
-    const { data, error } = await create(formData)
+    const { data, error } = await create(finalData)
     setIsSubmitting(false)
 
     if (error) {
@@ -121,7 +132,7 @@ export function AccountCreatePage() {
                   label={t("Official Account Name")}
                   description={t("This is the official account name, typically provided by the institution. Example: 'Savings Account'.")}
                 />
-{/* 
+                {/* 
                 <AccountReusableInput
                   name="institution"
                   control={form.control}
@@ -135,7 +146,7 @@ export function AccountCreatePage() {
                   form={form}
                   label={t("Institution")}
                   description={t("Enter the full and proper name of the institution, such as 'Chase Bank' or 'Wells Fargo'.")}
-                  // placeholder={t("Choose Institution")}
+                // placeholder={t("Choose Institution")}
                 />
 
                 <AccountReusableInput
@@ -234,10 +245,10 @@ export function AccountCreatePage() {
                 {/* Timezone  */}
                 <AccountTimezoneSelector
                   name="timezone"
-                  form={form}
                   label={t("Timezone")}
-                  description={""}
-                  placeholder={t("Select timezone")}
+                  description={t("Select timezone")}
+                  value={timezone}
+                  onChange={setTimezone}
                 />
 
               </div >

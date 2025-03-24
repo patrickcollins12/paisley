@@ -1,5 +1,6 @@
 # TODO
 p1
+[ ] accounts page - create account work, but minor bug on RHF not playing nice with ReactSelect when a defaultValue is set... 
 [ ] account page - add account details
 [ ] install - bring demo DB up to date
 [ ] account page - layout better with recent always on the right.

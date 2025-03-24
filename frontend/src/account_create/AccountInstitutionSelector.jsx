@@ -25,7 +25,7 @@ const AccountInstitutionSelector = ({ form, name, label, description, ...props }
       const institutions = Array.from(institutionsMap.values());
 
       setInstitutions(institutions);
-      console.log(institutions);
+      // console.log(institutions);
     }
   }, [data]);
 
