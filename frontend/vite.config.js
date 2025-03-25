@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { TanStackRouterVite } from '@tanstack/router-vite-plugin'
+import { configDefaults } from 'vitest/config'
 // import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import { resolve } from "path"
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -16,7 +17,16 @@ export default defineConfig({
       gzipSize: true,
       brotliSize: true
     }),
+    
   ],
+
+
+  // vitest config
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    exclude: [...configDefaults.exclude, 'e2e/**'],
+  },
 
   resolve: {
     alias: {
