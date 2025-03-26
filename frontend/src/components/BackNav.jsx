@@ -8,17 +8,14 @@ export function BackNav() {
     const { t } = useTranslation()
 
     return (
-        <div className="pb-4 text-sm text-muted-foreground">
-            <Link onClick={() => {
-                onBack();
-                return false;
-            }}
-            >
-                <div className="flex items-center">
-                    <ChevronLeft size={16} />
-                    <div>{t('Back')}</div>
-                </div>
-            </Link>
-        </div>
+      <div className="pb-4 text-sm text-muted-foreground">
+        <button
+          onClick={onBack}
+          className="flex items-center text-muted-foreground hover:underline"
+        >
+          <ChevronLeft size={16} className="mr-1" />
+          {t('Back')}
+        </button>
+      </div>
     )
 }

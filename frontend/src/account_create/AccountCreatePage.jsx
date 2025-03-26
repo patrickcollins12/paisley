@@ -33,7 +33,10 @@ export function AccountCreatePage() {
   const { create } = useUpdateAccounts()
 
   const { toast } = useToast();
-  const routeApi = getRouteApi();
+
+  const routeApi = getRouteApi('/account/$accountId');
+
+  // const routeApi = getRouteApi();
   const navigate = routeApi.useNavigate();
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -102,7 +105,7 @@ export function AccountCreatePage() {
   return (
     <>
 
-      <BackNav/>
+      <BackNav />
 
 
       <Form {...form} className="">
