@@ -283,7 +283,7 @@ const AccountsPage = () => {
         <div className="flex flex-row basis-1/2 space-x-2">
 
           <Button variant="outline" size="sm" className="h-8" asChild>
-            <Link to="/account/new">
+            <Link to="/account_edit/new">
               <PlusIcon size={16} className="mr-1" />
               {t("Create Account")}
             </Link>

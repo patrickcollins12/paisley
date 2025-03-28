@@ -44,10 +44,13 @@ function useAccountData(accountid) {
 }
 
 async function update(id, data) {
-  const url = `accounts/${id}`;
-  const response = await httpClient.patch(url, data);
-  // await mutate(['/accounts']);
-  return response;
+  try {
+    const response = await httpClient.patch(`accounts/${id}`, data);
+    return { data: response.data, error: null, isLoading: false };
+  } catch (err) {
+    const errorMsg = err.response?.data?.message || err.message;
+    return { data: null, error: errorMsg, isLoading: false };
+  }
 }
 
 async function create(postData) {

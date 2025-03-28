@@ -195,8 +195,10 @@ async function handleAccountAction(req, res, method) {
 
     // Extract fields and values
     const fields = fieldsToProcess.map(field => field.key);
-    const values = fieldsToProcess.map(field => field.value);
-
+    const values = fieldsToProcess
+        .map(field => field.value)
+        .map(v => v === "" ? null : v)
+        
     try {
         if (method === 'POST') {
             // Handle Create (POST)
@@ -216,7 +218,7 @@ async function handleAccountAction(req, res, method) {
 // POST Route - Create Account
 router.post('/api/accounts', validationRules, async (req, res) => {
     const result = await handleAccountAction(req, res, 'POST');
-    if (result.success) {
+    if (result?.success) {
         res.json(result);
     } else {
         res.status(400).json(result);
@@ -227,7 +229,7 @@ router.post('/api/accounts', validationRules, async (req, res) => {
 router.patch('/api/accounts/:id', validationRules, async (req, res) => {
     const result = await handleAccountAction(req, res, 'PATCH');
 
-    if (result.success) {
+    if (result?.success) {
         res.json(result);
     } else {
         res.status(400).json(result);

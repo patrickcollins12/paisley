@@ -23,8 +23,8 @@ const AccountReusableInput = ({
           <FormControl>
             <Input
               id={name}
-              {...field}
               {...props}
+              {...field}
               className={`col-span-2 ${props.className || ""}`}
               data-1p-ignore
               autoComplete="off"
