@@ -1,5 +1,5 @@
 // react, routing, icons, shadn
-import React, { useState  } from "react";
+import React, { useState } from "react";
 import { getRouteApi, Link } from "@tanstack/react-router"
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle, } from "@/components/ui/card"
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
@@ -192,18 +192,9 @@ const AccountPage = () => {
                     )}
 
 
-                    <Card className="text-sm">
-                        <CardHeader>
-                            <CardTitle>{t("Details")}</CardTitle>
-                            {/* <CardDescription>Last updated: 25 Feb 2025</CardDescription> */}
-                        </CardHeader>
-                        <CardContent className="">
-
-                            {account &&
-                                <AccountDetailsTable data={account} />
-                            }
-                        </CardContent>
-                    </Card>
+                    {account &&
+                        <AccountDetailsTable data={account} />
+                    }
 
 
 

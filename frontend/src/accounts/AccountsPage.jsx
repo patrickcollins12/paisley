@@ -160,6 +160,7 @@ const AccountsPage = () => {
       <>
         {/* Assets Title */}
         <TableRow className="bg-gray-100 dark:bg-gray-900 hover:bg-gray-200 dark:hover:bg-gray-800">
+          <TableCell />
           <TableCell className="md:table-cell p-2 font-bold" colSpan="7">
             {t(what_i_own_or_owe)}
           </TableCell>
@@ -175,6 +176,7 @@ const AccountsPage = () => {
 
         {/* Total Assets Rows */}
         <TableRow className="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 font-bold">
+          <TableCell />
           <TableCell colSpan="2" className="p-2">{t(total_assets_or_liabilities)}</TableCell>
           <TableCell className="p-1 text-right">{formatCurrency(totalValue, { currency: "AUD" })}</TableCell>
           <TableCell colSpan="1" className="p-1 font-bold hidden sm:table-cell"></TableCell>
@@ -197,10 +199,28 @@ const AccountsPage = () => {
             onClick={() => navigate({ to: `/account/${account.accountid}` })}
           >
 
+            <TableCell className={`p-1 ${isParent ? "" : ""} font-medium`}>
+              {/* Expand/Collapse Icon */}
+              {isParent && hasChildren && (
+                <button
+                  className="focus:outline-none"
+                  onClick={(event) => {
+                    event.stopPropagation(); // Prevents the row click from triggering
+                    toggleExpand(account.accountid);
+                  }}
+                >
+                  {<ChevronRight
+                    size={16}
+                    className={`transition-transform m-0 p-0 duration-200 ${isExpanded ? "rotate-90" : ""}`}
+                  />}
+                </button>
+              )}
+
+            </TableCell>
+
             { /* indent the row if it's a child account */}
             <TableCell className={`p-1 ${isParent ? "" : "pl-4"} font-medium`}>
               <div className="flex items-center gap-0">
-
                 {/* Account Logo */}
                 {
                   logos?.[account.institution]?.location ?
@@ -221,21 +241,7 @@ const AccountsPage = () => {
                 {/* <span>{account.shortname}</span> */}
                 <span className="hover:underline">{account.shortname}</span>
 
-                {/* Expand/Collapse Icon */}
-                {isParent && hasChildren && (
-                  <button
-                    className="m-2 focus:outline-none"
-                    onClick={(event) => {
-                      event.stopPropagation(); // Prevents the row click from triggering
-                      toggleExpand(account.accountid);
-                    }}
-                  >
-                    {<ChevronRight
-                      size={16}
-                      className={`transition-transform m-0 p-0 duration-200 ${isExpanded ? "rotate-90" : ""}`}
-                    />}
-                  </button>
-                )}
+
 
               </div>
             </TableCell>
@@ -300,6 +306,7 @@ const AccountsPage = () => {
           <Table className="text-xs">
             <TableHeader>
               <TableRow>
+                <TableHead className="p-2">{/* chevron */}</TableHead>
                 <TableHead className="p-2">{t("Account Name")}</TableHead>
                 <TableHead className="p-1">{t("Account Type")}</TableHead>
                 <TableHead className="p-1 text-right">{t("Balance")}</TableHead>
@@ -339,6 +346,7 @@ const AccountsPage = () => {
 
                     {/* Net worth */}
                     <TableRow className="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 font-bold">
+                      <TableCell />
                       <TableCell colSpan="2" className="p-2">{t("Net Worth")}</TableCell>
                       <TableCell className="p-1 text-right">{formatCurrency(netWorth, { currency: "AUD" })}</TableCell>
                       <TableCell colSpan="1" className="p-1 font-bold hidden sm:table-cell"></TableCell>

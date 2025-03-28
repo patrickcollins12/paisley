@@ -179,10 +179,9 @@ export function AccountEditForm() {
                     <AccountReusableInput
                       name="accountid"
                       control={form.control}
-                      readOnly={isEdit}
                       label={t("Account ID")}
                       description={t(
-                        "The official account ID used by your institution. Note this is used by scrapers and importers to track this account. It must be unique."
+                        "The official account ID used by your institution. Note this is used by scrapers and importers to track this account. It must be unique. e.g. 4567 8901 2345 6789, 123467 7654321"
                       )}
                       required
                     />

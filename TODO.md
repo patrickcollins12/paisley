@@ -1,10 +1,13 @@
 # TODO
 p1
-[x] accounts page - create account work, but minor bug on RHF not playing nice with ReactSelect when a defaultValue is set... 
-[ ] account page - fix updates and use the new components
+[ ] git detached?
+[ ] wire up account_edit/:id to the account page
 [ ] account page - add account details
 [ ] install - bring demo DB up to date
 [ ] account page - layout better with recent always on the right.
+[x] accounts page - create account work, but minor bug on RHF not playing nice with ReactSelect when a defaultValue is set... 
+[x] account page can now edit
+
 
 p2
 [ ] install - create a jwt key on install
