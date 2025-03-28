@@ -9,7 +9,6 @@ const AccountDetailsTable = ({ data }) => {
     const { update, remove } = useUpdateAccounts();
     const { toast } = useToast();
 
-
     // Parse `meta` if it exists and is a valid JSON string
     let metaData = null;
     if (data?.metadata) {
@@ -19,7 +18,6 @@ const AccountDetailsTable = ({ data }) => {
             console.error("Failed to parse meta:", error);
         }
     }
-
 
     async function updateAccounts(id, dataToSave) {
         if (!id) return;

@@ -1,3 +1,28 @@
+/**
+ * @file PlaywrightRunner.js
+ * @description This file defines the PlaywrightRunner class, which is responsible for managing 
+ * the execution of Playwright tests in a Node.js environment. It includes functionality for 
+ * scheduling test runs using cron jobs, parsing test results, and handling temporary files 
+ * for storing test output.
+ * 
+ * The configuration for the scraper and scheduled test runs is loaded from a `config.json` file. 
+ * The class supports running tests at startup, scheduling periodic test runs, and processing 
+ * the results to generate a summary.
+ * 
+ * Dependencies:
+ * - `fs` for file system operations.
+ * - `os` for accessing system-specific information.
+ * - `path` for handling file paths.
+ * - `child_process` for spawning subprocesses to execute Playwright commands.
+ * - `node-cron` for scheduling tasks.
+ * - `Logger` for logging information, warnings, and errors.
+ * 
+ * Usage:
+ * - Instantiate the `PlaywrightRunner` class.
+ * - Call the `startCronScheduler` method to initialize the cron scheduler and optionally run tests at startup.
+ * - The class handles the execution of Playwright commands and processes the results.
+ */
+
 const fs = require('fs').promises;
 const os = require('os');
 const config = require('./Config');
@@ -6,7 +31,10 @@ const path = require('path');
 const { pid } = require('node:process');
 var cron = require('node-cron');
 const logger = require('./Logger');
+
+
 class PlaywrightRunner {
+
     constructor() {
     }
 
@@ -15,6 +43,7 @@ class PlaywrightRunner {
     //    scrape_at_startup: true,
     //    scheduled_scrape_cron: "40 * * * *", // on the 5th minute of every hour. See node-cron
     //    scheduled_scrape_command: "/opt/homebrew/bin/npx playwright test --reporter json --retries 1",
+
     startCronScheduler() {
 
         // scraper enabled?
@@ -63,6 +92,12 @@ class PlaywrightRunner {
             };
 
             let resultsSummary = ""
+
+            // add the current date, time and timezone to the resultsSummary, using the timezone of the current machine...
+            const now = new Date();
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            resultsSummary += `\n\nResults as of: ${now.toLocaleString()} ${tz}\n`;
+
             // Process the results
             const scrapeData = []
             jsonData.suites.forEach(suite => {

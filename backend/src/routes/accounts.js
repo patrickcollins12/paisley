@@ -4,6 +4,8 @@ const { body, validationResult } = require('express-validator'); // Ensure body 
 
 const router = express.Router();
 const db = new BankDatabase();
+const logger = require('../Logger.js');
+
 
 // this query fetches the latest balance for each account
 // it does this by combining the latest transaction and account_history records
@@ -110,110 +112,6 @@ router.get('/api/accounts/:id', async (req, res) => {
     }
 });
 
-/**
- * UPSERT /api/accounts
- * Create or update an account
- */
-router.post('OLD/api/accounts', async (req, res) => {
-    try {
-        const { accountid, institution, name, holders, currency, type, category, timezone, shortname, parentid, metadata } = req.body;
-
-        console.log(`here`)
-        // Ensure accountid is provided
-        if (!accountid) {
-            return res.status(400).json({ success: false, message: "Missing required field: accountid" });
-        }
-
-        const query = `
-            INSERT INTO account (accountid, institution, name, holders, currency, type, timezone, shortname, parentid, metadata)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(accountid) DO UPDATE SET 
-                institution = excluded.institution,
-                name = excluded.name,
-                holders = excluded.holders,
-                currency = excluded.currency,
-                type = excluded.type,
-                category = excluded.category,
-                timezone = excluded.timezone,
-                shortname = excluded.shortname,
-                parentid = excluded.parentid,
-                metadata = excluded.metadata`;
-
-        const stmt = db.db.prepare(query);
-        stmt.run(accountid, institution, name, holders, currency, type, category, timezone, shortname, parentid, metadata);
-
-        res.json({ success: true, message: "Account upserted successfully", accountid });
-    } catch (error) {
-        res.status(500).json({ success: false, message: "Database error", error: error.message });
-    }
-});
-
-
-
-/**
- * UPSERT /api/accounts/:id
- * Create or update an account
- */
-
-// const accountKeys = [
-//     "institution", "name", "holders", "currency", "type", "timezone", "shortname", "parentid", "status", "metadata"
-// ]
-
-// const validationRules = accountKeys.map(key =>
-//     body(key).optional().trim()  // Validate each key dynamically
-// );
-
-// router.post('OLD/api/accounts/:id', validationRules, async (req, res) => {
-//     // Check if there are validation errors
-//     const errors = validationResult(req);
-//     if (!errors.isEmpty()) {
-//         return res.status(400).json({ success: false, errors: errors.array() });
-//     }
-
-//     try {
-//         const { id } = req.params;
-
-//         let fieldsToUpdate = []
-//         let valuesToUpdate = [id]
-
-//         // Add fields that exist in the request body
-//         accountKeys.forEach((key, index) => {
-//             const value = req.body[key];
-//             if (req.body[key] !== undefined) {
-//                 fieldsToUpdate.push(key);
-//                 valuesToUpdate.push(value);
-//             }
-//         })
-
-//         // If no fields are provided, return an error
-//         if (fieldsToUpdate.length === 0) {
-//             return res.status(400).json({ success: false, message: "No fields provided to update." });
-//         }
-
-//         // Build the SQL query dynamically
-//         const placeholders = new Array(fieldsToUpdate.length).fill('?').join(', ');
-//         const updateFields = fieldsToUpdate.map(field => `${field} = excluded.${field}`).join(', ');
-
-//         const query = `
-//             INSERT INTO account (accountid, ${fieldsToUpdate.join(", ")})
-//             VALUES (?, ${placeholders})
-//             ON CONFLICT(accountid) DO UPDATE SET ${updateFields}
-//         `;
-
-//         // Run the statement with dynamically constructed values
-//         const stmt = db.db.prepare(query);
-//         stmt.run(valuesToUpdate);
-
-//         res.json({ success: true, message: "Account upserted successfully", accountid: id });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: "Database error", error: error.message });
-//     }
-// });
-
-// Helper functions to avoid duplication
-
-// Prepare fields to update or insert
-// Helper functions to avoid duplication
 
 // Prepare fields to update or insert
 function prepareFields(fields, requestBody) {
@@ -260,6 +158,9 @@ async function updateAccount(fieldsToUpdate, valuesToUpdate) {
         WHERE accountid = ?
     `;
 
+    // logger.info(`Update query: ${updateQuery}`);
+    // logger.info(`Values to update: ${valuesToUpdate}`);
+
     try {
         const stmt = db.db.prepare(updateQuery);
         stmt.run(valuesToUpdate);
@@ -278,14 +179,13 @@ const validationRules = accountKeys.map(key => body(key).optional().trim());
 // Validation and logic for both creating and updating accounts
 async function handleAccountAction(req, res, method) {
 
-
     // Validate input fields
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-    const { accountid } = req.body;
+
     const fieldsToProcess = prepareFields(accountKeys, req.body);
 
     // If no fields are provided, return an error
@@ -300,9 +200,11 @@ async function handleAccountAction(req, res, method) {
     try {
         if (method === 'POST') {
             // Handle Create (POST)
+            const accountid = req.body.accountid;
             return await insertAccount(accountid, fields, [accountid, ...values]);
         } else if (method === 'PATCH') {
             // Handle Update (PATCH)
+            const accountid = req.params.id;
             return await updateAccount(fields, [...values, accountid]);
         }
     } catch (error) {
@@ -324,50 +226,13 @@ router.post('/api/accounts', validationRules, async (req, res) => {
 // PATCH Route - Update Account
 router.patch('/api/accounts/:id', validationRules, async (req, res) => {
     const result = await handleAccountAction(req, res, 'PATCH');
+
     if (result.success) {
         res.json(result);
     } else {
         res.status(400).json(result);
     }
 });
-
-
-/**
- * UPSERT /api/accounts/:id
- * Create or update an account
- */
-// router.post('/api/accounts/:id', async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const { institution, name, holders, currency, type, timezone, shortname, parentid, status, metadata } = req.body;
-
-//         // if (!name) {
-//         //     return res.status(400).json({ success: false, message: "Missing required field: name" });
-//         // }
-
-//         const query = `
-//             INSERT INTO account (accountid, institution, name, holders, currency, type, timezone, shortname, parentid, status, metadata)
-//             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-//             ON CONFLICT(accountid) DO UPDATE SET 
-//                 institution = excluded.institution,
-//                 name = excluded.name,
-//                 holders = excluded.holders,
-//                 currency = excluded.currency,
-//                 type = excluded.type,
-//                 timezone = excluded.timezone,
-//                 shortname = excluded.shortname,
-//                 status = excluded.status,
-//                 parentid = excluded.parentid,
-//                 metadata = excluded.metadata`;
-
-//         const stmt = db.db.prepare(query);
-//         stmt.run(id, institution, name, holders, currency, type, timezone, shortname, parentid, status, metadata);
-
-//         res.json({ success: true, message: "Account upserted successfully", accountid: id });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: "Database error", error: error.message });
-//     }
-// });
 
 /**
  * DELETE /api/accounts/:id
@@ -389,7 +254,6 @@ router.delete('/api/accounts/:id', async (req, res) => {
 });
 
 module.exports = router;
-
 
 /**
  * @swagger

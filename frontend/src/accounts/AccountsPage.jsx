@@ -16,8 +16,6 @@ import useAccountData from "@/accounts/AccountApiHooks.js";
 import { formatInterest } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
-// import { Dialog, DialogTrigger } from "@/components/ui/dialog"
-// import { AccountCreatePage } from "./AccountCreatePage"
 
 import AccountSparkLine from "@/accounts/AccountSparkLine.jsx";
 import { useTranslation } from 'react-i18next';
@@ -34,11 +32,6 @@ const AccountsPage = () => {
   const [netWorth, setNetWorth] = useState([]);
 
   const { t } = useTranslation();
-
-  // Create dialog state
-  // const [isDialogOpen, setIsDialogOpen] = useState(false);
-  // const openDialog = () => setIsDialogOpen(true);
-  // const closeDialog = () => setIsDialogOpen(false);
 
   ////////
   // row expanding functionality
