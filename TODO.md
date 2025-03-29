@@ -1,13 +1,12 @@
 # TODO
 p1
-[ ] git detached?
-[ ] wire up account_edit/:id to the account page
-[ ] account page - add account details
 [ ] install - bring demo DB up to date
-[ ] account page - layout better with recent always on the right.
+[x] account page - layout better with recent always on the right.
 [x] accounts page - create account work, but minor bug on RHF not playing nice with ReactSelect when a defaultValue is set... 
 [x] account page can now edit
-
+[x] git detached?
+[x] wire up account_edit/:id to the account page
+[x] account page - add account details
 
 p2
 [ ] install - create a jwt key on install
