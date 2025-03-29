@@ -9,6 +9,8 @@ class Config  {
     load(configPath) {
         if (this.loaded) return; // Prevent re-loading
 
+        console.log(`configPath: ${configPath}`)
+        
         if (configPath && configPath !== "") {
             this.configFilePath = configPath
         } else {

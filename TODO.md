@@ -1,6 +1,7 @@
 # TODO
 p1
-[ ] install - bring demo DB up to date
+[ ] install - demo DB data account logos. make the dates fresh?
+[x] install - bring demo DB up to date
 
 p2
 [ ] install - create a jwt key on install

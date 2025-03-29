@@ -2,8 +2,6 @@ const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
 const config = require('../src/Config');
-config.load();
-
 const logLevel = config['log_level'] || 'info';
 const logFile = config['log_file'] || 'paisley.log';
 const logDirectory = config['log_directory'] || 

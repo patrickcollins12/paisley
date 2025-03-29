@@ -1,9 +1,5 @@
 const minimist = require('minimist');
-const ExpressServer = require('./src/ExpressServer');
 const config = require('./src/Config');
-const TransactionFileProcessor = require('./src/TransactionFileProcessor');
-const PlaywrightRunner = require('./src/PlaywrightRunner');
-const logger = require('./src/Logger');
 // Load command line arguments
 const args = minimist(process.argv);
 
@@ -24,7 +20,14 @@ if (args.help) {
   }
   
 // Load the config
+console.log(`Loading config from: ${args["config"]}`);
 config.load(args["config"]);
+
+// round 2 loads
+const ExpressServer = require('./src/ExpressServer');
+const TransactionFileProcessor = require('./src/TransactionFileProcessor');
+const PlaywrightRunner = require('./src/PlaywrightRunner');
+const logger = require('./src/Logger');
 
 ////////////
 // Start the Transaction CSV File Processor
