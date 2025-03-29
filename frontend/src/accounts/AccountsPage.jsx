@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/table";
 import { PlusIcon, ChevronRight, Landmark } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
+import { Switch } from "@/components/ui/switch.jsx";
 import { Link, useNavigate } from "@tanstack/react-router";
 import GlobalFilter from "@/toolbar/GlobalFilter.jsx";
 import { Skeleton } from "@/components/ui/skeleton"
@@ -26,6 +27,7 @@ const AccountsPage = () => {
   const navigate = useNavigate({ from: "/accounts" });
   const { data, error, isLoading } = useAccountData();
   const [accounts, setAccounts] = useState([]);
+  const [showInactive, setShowInactive] = useState(false); // <-- NEW
 
   const [totalAssets, setTotalAssets] = useState([]);
   const [totalLiabilities, setTotalLiabilities] = useState([]);
@@ -63,14 +65,13 @@ const AccountsPage = () => {
   // `dataTable` to pass into `GlobalFilter`
   const dataTable = {
     setGlobalFilter: (value) => setSearchTerm(value), // Updates search term
-    resetGlobalFilter: () => setSearchTerm(""), // Clears search term
+    resetGlobalFilter: () => setSearchTerm("") // Clears search term
   };
 
   // Update filtered accounts when the search term changes
   useEffect(() => {
     setFilteredAccounts(filterAccounts(accounts, searchTerm));
   }, [accounts, searchTerm]);
-  //////////////////
 
 
   const isStale = (date) => (new Date() - new Date(date)) / (1000 * 60 * 60 * 24) > 8;
@@ -80,13 +81,13 @@ const AccountsPage = () => {
   useEffect(() => {
     if (data) {
 
-      const activeAccounts = data.filter(acc => acc.status !== "inactive");
+      const relevantAccounts = showInactive ? data : data.filter(acc => acc.status !== "inactive");
 
       // Create a lookup map for quick parent reference
-      const accountMap = Object.fromEntries(activeAccounts.map(acc => [acc.accountid, { ...acc }]));
+      const accountMap = Object.fromEntries(relevantAccounts.map(acc => [acc.accountid, { ...acc }]));
 
       // Step 1: Aggregate child account data into their respective parents
-      activeAccounts.forEach(child => {
+      relevantAccounts.forEach(child => {
         if (child.parentid && accountMap[child.parentid]) {
           const parent = accountMap[child.parentid];
 
@@ -104,19 +105,10 @@ const AccountsPage = () => {
       });
 
       // Step 2: Remove child accounts (keep only top-level parents)
-      const updatedAccounts = Object.values(accountMap) //.filter(acc => !acc.parentid);
+      const updatedAccounts = Object.values(accountMap);
 
       // Sort accounts by custom sortOrder
-      // Custom sort order for account types
-      // TODO: this sort will fail when int8'n is not in the sortOrder
-      const sortOrder = [
-        "Checking",
-        "Savings",
-        "Crypto",
-        "Investment",
-        "Credit",
-        "Mortgage",
-      ];
+      const sortOrder = ["Checking", "Savings", "Crypto", "Investment", "Credit", "Mortgage"];
 
       const sortedAccounts = updatedAccounts.sort((a, b) => {
         const indexA = sortOrder.indexOf(a.type);
@@ -148,9 +140,9 @@ const AccountsPage = () => {
       );
 
       setNetWorth(totalAssets + totalLiabilities);
-
     }
-  }, [data]);
+  }, [data, showInactive]);
+
 
   //////////////////
   // render each row
@@ -242,6 +234,12 @@ const AccountsPage = () => {
                 <span className="hover:underline">{account.shortname}</span>
 
 
+                {/* Show status if status is not "active" */}
+                {account.status !== "active" && (
+                  <span className="ml-1 text-muted-foreground">({account.status})</span>
+                )}
+
+
 
               </div>
             </TableCell>
@@ -296,9 +294,17 @@ const AccountsPage = () => {
           </Button>
 
           <GlobalFilter dataTable={dataTable} />
+
+          {/* Show Inactive Toggle - Only shown if inactive accounts exist */}
+          {data?.some(acc => acc.status === "inactive") && (
+            <div className="flex items-center space-x-2 text-sm">
+              <Switch id="show-inactive" checked={showInactive} onCheckedChange={setShowInactive} />
+              <label htmlFor="show-inactive">{t("Show Inactive")}</label>
+            </div>
+          )}
+
         </div>
       </div >
-
 
       <div className="flex flex-col items-center mb-4">
         <div className="overflow-auto inline-block">

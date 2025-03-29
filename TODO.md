@@ -1,12 +1,6 @@
 # TODO
 p1
 [ ] install - bring demo DB up to date
-[x] account page - layout better with recent always on the right.
-[x] accounts page - create account work, but minor bug on RHF not playing nice with ReactSelect when a defaultValue is set... 
-[x] account page can now edit
-[x] git detached?
-[x] wire up account_edit/:id to the account page
-[x] account page - add account details
 
 p2
 [ ] install - create a jwt key on install
@@ -14,16 +8,33 @@ p2
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
-[ ] accounts table - show inactive accounts
 [ ] account page - manually add a balance amount
-[ ] account page - edit / control the edit options (asset/liability, currency:AUD/USD/etc, iconned banks)
-[ ] account page - edit / add ?'s to the fields to describe them
 [ ] paisley backend on beelink. feels pretty important!?
 [ ] visualize page - set default filters
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)
 [ ] build a default currency chooser, default is currently based on locale and accounts currencies.
 
+One day:
+[ ] pull paisley scraper/collector out into a separate project. separate git repo?
+[ ] alter rules engine to allow s// of description, or do we just do this in the parser
+[ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
+[ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
+[ ] Add kv logging for events. Events could include playwright runs, failures, logins.
+[ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
+[ ] Simon: Sync url with filters
+[ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
+
+
 done
+[x] accounts table - option to show inactive accounts
+[x] account page - edit / control the edit options (asset/liability, currency:AUD/USD/etc, iconned banks)
+[x] account page - edit / add ?'s to the fields to describe them
+[x] account page - layout better with recent always on the right.
+[x] accounts page - create account work, but minor bug on RHF not playing nice with ReactSelect when a defaultValue is set... 
+[x] account page can now edit
+[x] git detached?
+[x] wire up account_edit/:id to the account page
+[x] account page - add account details
 [x] accounts page - default logo
 [x] account page - add active/inactive status
 [x] account page - make back button work from accounts page
@@ -47,18 +58,6 @@ done
 [x] - react-i18nnext auto-detects language: https://react.i18next.com/
 [x] - Intl.NumberFormat().resolvedOptions().locale => en-AU
 [x] - Default currency en-AU => AU => AUD (https://github.com/tadeegan/locale-currency)
-
-One day:
-[ ] pull paisley scraper/collector out into a separate project. separate git repo?
-[ ] alter rules engine to allow s// of description, or do we just do this in the parser
-[ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
-[ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
-[ ] Add kv logging for events. Events could include playwright runs, failures, logins.
-[ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
-[ ] Simon: Sync url with filters
-[ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
-
-
 [x] New bar graph: transactions per day. Modify account_history route to also give transaction count per day:
        SELECT t.account, DATE(t.datetime) AS dt, t.balance, count(*) AS cnt FROM 'transaction' t WHERE t.account = '302985 1360851' GROUP BY DATE(datetime) ORDER BY dt DESC
 [x] "Last updated" date human readable --> Today 00:30am AEST
@@ -81,14 +80,7 @@ One day:
 
 # PROJECTS
 
-Playwright
-       [x] Invoked from backend instead with node-cron and a * * * in config.js. Remove pm2
-       [x] Write a wrapper and try/catch? Invoke playwright directly?
-
 Replace Playwright with undetected
-
-Finish Accounts
-     Accounts screen with balances
 
 Define hooks on import and classify
        Examples: 
@@ -105,7 +97,14 @@ Create Install process
        Setup default demo database
        explore docker up
 
-Reports
+[x] Playwright
+       [x] Invoked from backend instead with node-cron and a * * * in config.js. Remove pm2
+       [x] Write a wrapper and try/catch? Invoke playwright directly?
+
+[x] Finish Accounts
+     [x] Accounts screen with balances
+
+[x] Reports
        Design the Account Screen as a report
        Balance Reporting over time
 
