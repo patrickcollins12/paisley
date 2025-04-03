@@ -1,6 +1,6 @@
-const Westpac = require('../csv_parsers/westpac.js');
 const config = require('../src/Config');
 config.load()
+const Westpac = require('../csv_parsers/westpac.js');
 
 describe('Westpac Class', () => {
     let westpac;

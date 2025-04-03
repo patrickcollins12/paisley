@@ -2,6 +2,10 @@ import { test } from '@playwright/test';
 const { sign } = require('jsonwebtoken');
 const crypto = require('crypto');
 const axios = require('axios');
+
+const config = (require('../src/Config'));
+config.load()
+
 const { DateTime } = require("luxon");
 const util = require('../src/ScraperUtil');
 const logger = require('../src/Logger');
@@ -40,9 +44,6 @@ const timezoneMap = {
 //                      jxxxxxxxxxxxxxC/KxxxxJR+8cxxxxxxgC/yxxxw==
 //                      -----END EC PRIVATE KEY-----`
 //   },
-const config = (require('../src/Config'));
-config.load()
-
 const bank_config = config['CoinbaseScraper'];
 
 let keyName = bank_config['keyName']

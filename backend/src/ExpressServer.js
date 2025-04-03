@@ -8,9 +8,18 @@ const swaggerJsdoc = require('swagger-jsdoc');
 // const conditionalAuth = require('./ConditionalAuth');
 const JWTAuthenticator = require('./JWTAuthenticator');
 const logger = require('./Logger');
+const config = require('./Config');
 
 class ExpressServer {
     constructor({ enableApiDocs = true, port = 4000, globalDisableAuth = false }) {
+
+        config.load();
+        if (! config['jwt'] || config['jwt'] === "" || config['jwt'] === "XXXX") {
+            logger.error(`Missing required 'jwt' secret in your config file: ${config.configFilePath}`);
+            process.exit(1); // Fail fast
+        }
+
+
         this.routeDirs = [
             path.join(__dirname, 'src', 'routes'),
             path.join(__dirname, 'routes')
@@ -109,6 +118,7 @@ class ExpressServer {
         logger.info(`Swagger backend API docs enabled at ${apidocs}`)
 
     }
+
     async start() {
         return new Promise((resolve, reject) => {
             this.server = this.app.listen(this.port, () => {

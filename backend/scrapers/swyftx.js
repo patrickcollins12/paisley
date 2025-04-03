@@ -4,10 +4,10 @@ const { DateTime } = require("luxon");
 const axios = require('axios').default;
 // test.describe.configure({ retries: 0 });
 
-const util = require('../src/ScraperUtil');
 const config = (require('../src/Config'));
 config.load()
 
+const util = require('../src/ScraperUtil');
 const logger = require('../src/Logger');
 
 const bank_config = config['SwyftxScraper'];

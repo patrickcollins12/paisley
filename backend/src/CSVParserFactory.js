@@ -45,25 +45,6 @@ class CSVParserFactory {
         }
     }
 
-    // moving this logic back up into the caller
-    // async processCSVFile(file) {
-    //     const parser = await this.chooseParser(file);
-    //     if (parser) {
-    //         //   var accountid = parser.extractAccountFromFileName(filePath);
-    //         //   var accountid = parser.extractAccountFromFileName(filePath);
-    //         logger.info(`Using ${parser.identifier} parser for file ${file}`);
-    //         //   parser.setDB(bankdb);
-    //         parser.bankdb = this.bankdb;
-    //         parser.fileName = file;
-    //         await parser.parse(file)
-    //         return true;
-    //     }
-    //     else {
-    //         logger.info(`Couldn't find parser for file ${file}`);
-    //         return false;
-    //     }
-    // }
-
     async chooseParser(file) {
         const fileName = path.basename(file);
         let selectedParser = false;

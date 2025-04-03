@@ -1,4 +1,3 @@
-const util = require('../src/ScraperUtil');
 const os = require('os');
 const path = require('path');
 const fs = require('fs');
@@ -7,7 +6,11 @@ const { unlink, readFile} = require('fs').promises;
 describe('csv saver', () => {
     const homedir = os.homedir()
 
-    const config = require(`${homedir}/paisley/config.js`);
+    // const config = require();
+    const config = require('../src/Config'); 
+    config.load(`${homedir}/paisley/config.js`)
+
+    const util = require('../src/ScraperUtil');
 
     test('should be instantiated correctly', () => {
         expect(config).toBeDefined();

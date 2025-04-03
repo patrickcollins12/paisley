@@ -20,7 +20,6 @@ if (args.help) {
   }
   
 // Load the config
-console.log(`Loading config from: ${args["config"]}`);
 config.load(args["config"]);
 
 // round 2 loads

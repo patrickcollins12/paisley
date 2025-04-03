@@ -18,9 +18,8 @@ describe('BankDatabase Class', () => {
     });
 
     test('should have an open database connection after instantiation', () => {
-        // console log the current pwd
-        console.log(process.cwd())
-        db = new BankDatabase("./backend/demo/demo_transactions.db");
+        const dir = path.join(__dirname, "../demo/demo_transactions.db")
+        db = new BankDatabase(dir);
         expect(db.db.open).toBe(true);
     });
 

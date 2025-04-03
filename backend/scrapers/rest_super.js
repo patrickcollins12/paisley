@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test';
-const util = require('../src/ScraperUtil');
-const axios = require('axios').default;
-const config = require('../src/Config');
 const { DateTime } = require("luxon");
+
+const config = require('../src/Config');
+config.load()
+
+const util = require('../src/ScraperUtil');
+
 const logger = require('../src/Logger');
 
-config.load()
 const bank_config = config['RestSuperScraper'];
 
 test('test', async ({ page }) => {

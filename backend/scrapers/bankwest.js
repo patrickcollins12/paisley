@@ -1,13 +1,13 @@
 import { test } from '@playwright/test';
 const { DateTime } = require("luxon");
-
-const util = require('../src/ScraperUtil');
-const config = require('../src/Config');
-const logger = require('../src/Logger');
-
 import { tabletojson } from 'tabletojson';
 
+const config = require('../src/Config');
 config.load();
+
+const util = require('../src/ScraperUtil');
+const logger = require('../src/Logger');
+
 const bank_config = config['BankwestScraper'];
 
 const baseUrl = `https://ibs.bankwest.com.au`

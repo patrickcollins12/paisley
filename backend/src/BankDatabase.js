@@ -1,5 +1,7 @@
 const Database = require('better-sqlite3');
 const config = require('./Config');
+config.load()
+
 const fs = require('fs');
 const logger = require('./Logger');
 

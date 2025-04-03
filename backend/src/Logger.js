@@ -2,13 +2,18 @@ const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
 const config = require('../src/Config');
+// config.load()
+
 const logLevel = config['log_level'] || 'info';
 const logFile = config['log_file'] || 'paisley.log';
-const logDirectory = config['log_directory'] || 
-    (() => { throw new Error("Missing required 'log_directory' in config."); })();
+
+if (!config['log_directory']) {
+    throw new Error("Missing required 'log_directory' in config.");
+}
+const logDirectory = config['log_directory'];
+
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory, { recursive: true });
 const logFilePath = path.join(logDirectory, logFile);
-
 
 const logFormat = winston.format.printf(({ timestamp, level, message }) =>
     `${timestamp} [${level.toUpperCase()}]: ${message}`
@@ -28,7 +33,7 @@ const logger = winston.createLogger({
         }),
         new winston.transports.File({
             filename: logFilePath,
-            level: 'info',
+            level: logLevel,
             format: winston.format.combine(
                 winston.format.timestamp(),
                 logFormat

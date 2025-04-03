@@ -29,7 +29,9 @@ router.post('/api/login', rateLimiter, [
     body('password').isString().trim().notEmpty().withMessage('Password is required')
 ], async (req, res) => {
 
-    const JWT_SECRET = config['jwt'] || 'not_sec';
+    const JWT_SECRET = config['jwt'];
+    if (!JWT_SECRET) throw new Error("Missing required 'jwt' secret.");
+    
     const manager = new UserManager(config['users_file'])
 
     const errors = validationResult(req);
@@ -46,9 +48,10 @@ router.post('/api/login', rateLimiter, [
         // Generate a JWT for the authenticated user
         // const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
         const token = jwt.sign({ username }, JWT_SECRET);
-
+        logger.info(`User ${username} logged in successfully.`);
         res.json({ success: true, token });
     } else {
+        logger.info(`Failed login attempt for user ${username}.`);
         // Authentication failed
         res.status(401).json({ success: false, message: 'Invalid username or password' });
     }

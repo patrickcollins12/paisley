@@ -14,5 +14,7 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
+vite.config.js.timestamp*
+
 venv/
 __pycache__/

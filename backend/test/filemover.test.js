@@ -1,10 +1,12 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const config = require('../src/Config');
+const config = require('../src/Config'); 
 
 describe('FileMover Class', () => {
     beforeEach(() => {
+        config.load()
+        
         // BankDatabase = require('../BankDatabase');
         fs.mkdirSync("/tmp/basedir", { recursive: true });
         fs.writeFileSync('/tmp/basedir/file.csv', '');

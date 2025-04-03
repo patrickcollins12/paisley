@@ -1,7 +1,7 @@
 const axios = require('axios');
-const ExpressServer = require('../src/ExpressServer.js');
 const config = require('../src/Config.js');
 config.load();
+const ExpressServer = require('../src/ExpressServer.js');
 const database_setup = require('./BankDatabaseDummy.js');
 const port = 4005
 

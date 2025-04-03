@@ -1,12 +1,17 @@
-const Westpac = require('../csv_parsers/westpac.js');
 
 describe('Constructor Class', () => {
+    const config = require('../src/Config'); 
+    config.load()
+    
+    const Westpac = require('../csv_parsers/westpac.js');
     let westpac;
-
+    
     // beforeEach(() => {
     // });
 
     test('should be instantiated correctly', () => {
+
+        
         westpac = new Westpac();
         expect(westpac).toBeDefined();
     });

@@ -2,12 +2,13 @@ const playwright = require("playwright"); // ^1.42.1
 import { test } from '@playwright/test';
 // const { test } = require('@playwright/test');
 const { DateTime } = require("luxon");
-const logger = require('../src/Logger');
 
-const util = require('../src/ScraperUtil');
 const config = require('../src/Config');
 config.load()
 const bank_config = config['WestpacScraper'];
+
+const util = require('../src/ScraperUtil');
+const logger = require('../src/Logger');
 const userAgent =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)" +
   " Chrome/69.0.3497.100 Safari/537.36";

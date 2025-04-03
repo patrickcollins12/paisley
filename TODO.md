@@ -1,11 +1,11 @@
 # TODO
 p1
-[ ] install - demo DB data account logos. make the dates fresh?
-[x] install - bring demo DB up to date
-
-p2
+[x] install - demo DB data account logos. 
+[ ] install - make the dates fresh. 
+[ ] install - add income.
 [ ] install - create a jwt key on install
 [ ] install - fix/finish install script
+[ ] install - clear demo data? create an empty database? 
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
@@ -25,8 +25,8 @@ One day:
 [ ] Simon: Sync url with filters
 [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 
-
 done
+[x] install - bring demo DB up to date
 [x] accounts table - option to show inactive accounts
 [x] account page - edit / control the edit options (asset/liability, currency:AUD/USD/etc, iconned banks)
 [x] account page - edit / add ?'s to the fields to describe them

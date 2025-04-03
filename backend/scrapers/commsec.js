@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
-const util = require('../src/ScraperUtil');
 const config = require('../src/Config');
 config.load()
+const util = require('../src/ScraperUtil');
 const bank_config = config['CommsecScraper'];
 
 test('test', async ({ page }) => {
