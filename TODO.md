@@ -1,17 +1,12 @@
 # TODO
 p1
-[x] install - demo DB data account logos. 
-[x] install - make the dates fresh. 
-[ ] install - add income.
-[x] install - create a jwt key on install
-[x] install - fix/finish install script
-[x] install - clear demo data? create an empty database? 
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
 [ ] account page - manually add a balance amount
 [ ] paisley backend on beelink. feels pretty important!?
 [ ] visualize page - set default filters
+[ ] install - add more demo income.
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)
 [ ] build a default currency chooser, default is currently based on locale and accounts currencies.
 
@@ -26,6 +21,11 @@ One day:
 [ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 
 done
+[x] install - demo DB data account logos. 
+[x] install - make the dates fresh. 
+[x] install - create a jwt key on install
+[x] install - fix/finish install script
+[x] install - clear demo data? create an empty database? 
 [x] install - bring demo DB up to date
 [x] accounts table - option to show inactive accounts
 [x] account page - edit / control the edit options (asset/liability, currency:AUD/USD/etc, iconned banks)
