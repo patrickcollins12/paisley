@@ -2,7 +2,7 @@ import axios from "axios"
 import { clearToken, getToken } from "@/auth/AuthHelpers.jsx"
 
 const httpClient = axios.create({
-  baseURL: 'http://localhost:4000/api',
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json'
   }
