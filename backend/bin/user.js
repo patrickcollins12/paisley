@@ -16,4 +16,3 @@ const password = args["password"]
 const manager = new UserManager()
 manager.saveUser(username, password)
 logger.info(`saved username ${username}`)
-logger.info(manager)

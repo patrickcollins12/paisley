@@ -11,12 +11,12 @@ export default defineConfig({
   plugins: [
     TanStackRouterVite({ autoCodeSplitting: true }),
     react(),
-    visualizer({
-      filename: './dist/stats.html', // output location
-      open: true,                    // auto-open after build
-      gzipSize: true,
-      brotliSize: true
-    }),
+    // visualizer({
+    //   filename: './dist/stats.html', // output location
+    //   open: true,                    // auto-open after build
+    //   gzipSize: true,
+    //   brotliSize: true
+    // }),
     
   ],
 

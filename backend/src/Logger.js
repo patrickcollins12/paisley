@@ -2,9 +2,10 @@ const winston = require('winston');
 const path = require('path');
 const fs = require('fs');
 const config = require('../src/Config');
-// config.load()
+config.load()
 
-const logLevel = config['log_level'] || 'info';
+// const logLevel = config['log_level'] || 'info';
+const logLevel = process.env.LOG_LEVEL || config['log_level'] || 'info';
 const logFile = config['log_file'] || 'paisley.log';
 
 if (!config['log_directory']) {
@@ -25,7 +26,7 @@ const logger = winston.createLogger({
     level: logLevel,
     transports: [
         new winston.transports.Console({
-            level: 'info',
+            level: logLevel,
             format: winston.format.combine(
                 winston.format.colorize(),
                 winston.format.simple()

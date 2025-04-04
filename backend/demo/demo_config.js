@@ -14,7 +14,7 @@ module.exports = {
     // api_keys_file: path.join(paisleydir, "api_keys.json"),
     log_directory: path.join("/tmp", "paisley_demo/logs"),
 
-    log_level: "notice",
+    log_level: "info",
 
     // disable scraping for the demo account
     enable_scraper: false,

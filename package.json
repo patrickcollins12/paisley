@@ -8,11 +8,11 @@
         "docs"
     ],
     "scripts": {
-        "start:frontend": "npm run start --prefix frontend",
-        "start:backend": "npm run start --prefix backend",
+        "start:frontend": "npm run strt --prefix frontend",
+        "start:backend": "npm run strt --prefix backend",
         "start": "npm-run-all --parallel start:frontend start:backend",
-        "dev:frontend": "npm run dev --prefix frontend",
-        "dev:backend": "npm run dev --prefix backend",
+        "dev:frontend": "npm run dv --prefix frontend",
+        "dev:backend": "npm run dv --prefix backend",
         "demo:backend": "npm run demo --prefix backend",
         "dev": "npm-run-all --parallel dev:frontend dev:backend",
         "demo": "npm-run-all --parallel dev:frontend demo:backend",

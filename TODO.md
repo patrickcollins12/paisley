@@ -1,11 +1,11 @@
 # TODO
 p1
 [x] install - demo DB data account logos. 
-[ ] install - make the dates fresh. 
+[x] install - make the dates fresh. 
 [ ] install - add income.
-[ ] install - create a jwt key on install
-[ ] install - fix/finish install script
-[ ] install - clear demo data? create an empty database? 
+[x] install - create a jwt key on install
+[x] install - fix/finish install script
+[x] install - clear demo data? create an empty database? 
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
