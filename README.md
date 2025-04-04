@@ -94,7 +94,7 @@ Setting up paisley requires a few steps.
 
 ## Create a user
 ```
-$ node backend/bin/user.js --user="patrick --password="mypassword"
+$ node backend/bin/user.js --user="patrick" --password="mypassword"
 ```
 
 By default this will use the user.js file as defined in your config.js. Normally at ~/paisley/users.json
@@ -107,7 +107,6 @@ cat ~/paisley/config.js
 
 ## Start the server
 ``` 
-$ npm run build (one time) 
 $ npm run start
 ```
 
