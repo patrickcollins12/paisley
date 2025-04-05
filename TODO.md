@@ -1,6 +1,5 @@
 # TODO
 p1
-[ ] add more documentation and screenshots
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
@@ -23,6 +22,7 @@ One day:
 
 
 done
+[x] add more documentation and screenshots
 [x] install - demo DB data account logos. 
 [x] install - make the dates fresh. 
 [x] install - create a jwt key on install

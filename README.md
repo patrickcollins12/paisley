@@ -13,6 +13,8 @@ Paisley makes it easy.
 
 ![alt text](doc_images/visualize.png)
 
+![alt text](doc_images/flows.png)
+
 ## How does it work?
 
 Paisley pulls data from your financial institutions by scraping balances and importing CSV exports, storing everything locally in a simple SQLite database.
