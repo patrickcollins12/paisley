@@ -36,7 +36,9 @@ export default defineConfig({
 
   server: {
     host: '0.0.0.0', // Allow connections from all IPs
-    allowedHosts: ['all'], // Allow all hosts
+    // allowedHosts: ['localhost', 'beelink.local'], // Allow all hosts
+    allowedHosts: true,
+    
     strictPort: true, // Optional: prevent the server from picking a random port if the specified one is taken
     proxy: {
       '/api': {
