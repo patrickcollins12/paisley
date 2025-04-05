@@ -69,14 +69,14 @@ function Toolbar({ dataTable }) {
           operators={lookupOperators}
         />
 
-        <Button
+        {/* <Button
           onClick={() => searchContext.clear()}
           variant='ghost'
           className="h-8 p-3 text-left font-normal">Clear</Button>
         <Button
           onClick={() => searchContext.save()}
           variant='ghost'
-          className="h-8 p-3 text-left font-normal">Save</Button>
+          className="h-8 p-3 text-left font-normal">Save</Button> */}
 
       </div>
 

@@ -1,5 +1,6 @@
 # TODO
 p1
+[ ] add more documentation and screenshots
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
@@ -16,9 +17,10 @@ One day:
 [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
 [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 [ ] Add kv logging for events. Events could include playwright runs, failures, logins.
-[ ] Simon: enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
-[ ] Simon: Sync url with filters
-[ ] Simon: Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
+[ ] enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
+[ ] Sync url with filters
+[ ] Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
+
 
 done
 [x] install - demo DB data account logos. 
@@ -94,7 +96,7 @@ DB Migrator, prism? knexjs? https://knexjs.org/guide/migrations.html#migration-a
 Docs
        Document how to create a scraper and a CSV importer
        
-Create Install process
+[x] Create Install process
        Setup default demo database
        explore docker up
 

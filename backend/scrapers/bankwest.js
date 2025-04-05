@@ -2,6 +2,27 @@ import { test } from '@playwright/test';
 const { DateTime } = require("luxon");
 import { tabletojson } from 'tabletojson';
 
+/**
+ * This file is a Playwright-based scraper for Bankwest's online banking system.
+ * It automates the process of logging into a Bankwest account, extracting account balances,
+ * interest rates, and transaction data, and saving the information for further processing.
+ * 
+ * The script performs the following steps:
+ * 
+ * 1. **Login**: Automates the login process using credentials from the configuration file.
+ * 2. **Extract Account Table**: Navigates to the homepage, locates the accounts table, and extracts its HTML content.
+ * 3. **Process Account Data**: Converts the table HTML into JSON, extracts account links, and retrieves interest rates for mortgage accounts.
+ * 4. **Save Account Balances and Interest Rates**: Saves the processed account balances and interest rates to a backend API.
+ * 5. **Download Transactions CSV**: Automates the process of downloading a CSV file containing recent transactions.
+ * 
+ * The script uses the following libraries:
+ * - `@playwright/test`: For browser automation and testing.
+ * - `luxon`: For date and time manipulation.
+ * - `tabletojson`: For converting HTML tables into JSON objects.
+ * 
+ * The script also uses utility modules for logging, configuration, and saving data.
+ */
+
 const config = require('../src/Config');
 config.load();
 
@@ -42,7 +63,7 @@ async function login(page) {
   await page.goto(`${baseUrl}/Session/PersonalLogin`);
   await page.getByRole('textbox', { name: 'Personal Access Number (PAN)' }).fill(bank_config['pan']);
   await page.getByRole('textbox', { name: 'Password' }).fill(bank_config['password']);
-  await page.getByRole('button', { name: 'Login' }).click();
+  await page.getByRole('button', { name: 'Log in' }).click();
 
 
   const table = page.locator('#_ctl0_ContentMain_grdBalances');
