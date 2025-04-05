@@ -11,6 +11,8 @@ export default defineConfig({
   plugins: [
     TanStackRouterVite({ autoCodeSplitting: true }),
     react(),
+
+    // Uncomment the following line to enable the build visualizer plugin
     // visualizer({
     //   filename: './dist/stats.html', // output location
     //   open: true,                    // auto-open after build
@@ -19,7 +21,6 @@ export default defineConfig({
     // }),
     
   ],
-
 
   // vitest config
   test: {
@@ -35,10 +36,11 @@ export default defineConfig({
   },
 
   server: {
+
+    // to run on a local server, uncomment these
     host: '0.0.0.0', // Allow connections from all IPs
-    // allowedHosts: ['localhost', 'beelink.local'], // Allow all hosts
-    allowedHosts: true,
-    
+    allowedHosts: true, // Allow connections to all hostnames of this server
+
     strictPort: true, // Optional: prevent the server from picking a random port if the specified one is taken
     proxy: {
       '/api': {

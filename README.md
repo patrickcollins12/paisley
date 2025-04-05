@@ -13,13 +13,13 @@ Paisley makes it easy.
 
 ![alt text](doc_images/visualize.png)
 
-![alt text](doc_images/flows.png)
-
 ## How does it work?
 
 Paisley pulls data from your financial institutions by scraping balances and importing CSV exports, storing everything locally in a simple SQLite database.
 
 For banks without scrapers (or where scrapers are flaky), just drop CSV files into a watched folder. Each institution gets its own csv_parser — a lightweight import script that maps raw CSVs into a normalized format.
+
+![alt text](doc_images/flows.png)
 
 Once transactions are imported, a Rules engine will apply your rules to auto-categorize the transactions. For example:
 
@@ -27,7 +27,6 @@ Once transactions are imported, a Rules engine will apply your rules to auto-cat
 For `description = '7-eleven' and amount < 20` apply tag `Food > Snacks` and party `7-Eleven`
 
 For `description = '7-eleven' and amount > 20` apply tag `Travel > Car > Fuel` and party `7-Eleven`
-
 
 ## Motivation. Who is this for?
 
@@ -125,6 +124,30 @@ $ npm run start
 ```
 
 (or in development mode: ` $ npm run dev `)
+
+## Auto start on reboot
+The best to have paisley auto run at system boot, is using pm2. It will daemonize the server to start when your system starts.
+
+Install [pm2](https://pm2.io/docs/runtime/guide/installation/)
+```
+npm install pm2 -g
+pm2 start npm --name paisley -- run start
+pm2 save
+pm2 startup 
+```
+Follow the instructions pm2 gives to start at system boot.
+
+To manually control:
+```
+pm2 restart paisley
+pm2 stop paisley
+pm2 start paisley
+```
+
+Watch the logs
+```
+tail -f ~/paisley/logs/paisley.log
+```
 
 ## Process a CSV
 

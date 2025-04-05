@@ -1,11 +1,13 @@
 # TODO
 p1
+[ ] document - scraper creation
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
 [ ] account page - manually add a balance amount
+[ ] account delete - cascade
 [ ] paisley backend on beelink. feels pretty important!?
-[ ] visualize page - set default filters
+[ ] visualize page - set default filters.
 [ ] install - add more demo income.
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)
 [ ] build a default currency chooser, default is currently based on locale and accounts currencies.
@@ -22,6 +24,7 @@ One day:
 
 
 done
+[x] pm2
 [x] add more documentation and screenshots
 [x] install - demo DB data account logos. 
 [x] install - make the dates fresh. 
