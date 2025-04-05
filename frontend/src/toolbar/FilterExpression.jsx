@@ -162,6 +162,14 @@ export const namedDateRanges = [
     }
   },
   {
+    id: 'last_6_months', label: 'Last 6 months', group: 1, getDateRange: () => {
+      return {
+        from: DateTime.now().minus({months: 6}),
+        to: DateTime.now()
+      };
+    }
+  },
+  {
     id: 'last_12_months', label: 'Last 12 months', group: 1, getDateRange: () => {
       return {
         from: DateTime.now().minus({months: 12}),

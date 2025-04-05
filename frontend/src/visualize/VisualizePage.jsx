@@ -48,7 +48,8 @@ export default function VisualizePage() {
 
   // add $ to the tooltip
   function formatUpperLabel(info) {
-    return `${info.name} ${formatCurrency(info.value, { style: "decimal",maximumFractionDigits:0 })}`;
+
+    return `${info.name} ${formatCurrency(info.value, { style: "decimal", maximumFractionDigits: 0 })} `;
   }
 
   useEffect(() => {
@@ -62,6 +63,16 @@ export default function VisualizePage() {
             const treePath = info.treePathInfo
               .slice(1)
               .map((item) => item.name);
+
+
+            // Get the top level amount and percentage
+            let percentage = ""
+            try {
+              const topLevelAmount = info.treePathInfo[1].value;
+              percentage = ((info.value / topLevelAmount) * 100).toFixed(1);
+              percentage = `${percentage}%`
+            } catch (e) { }
+
 
             let txnStr = "";
             if (info.data?.description) {
@@ -80,7 +91,8 @@ export default function VisualizePage() {
                       <div>
                         <div class="tooltip-title">${format.encodeHTML(treePathStr)}</div>
                         ${txnStr}
-                        <div>Amount: ${formatCurrency(info.value, {currency: info.data.account_currency	})}</div>
+                        <div>Amount: ${formatCurrency(info.value, { currency: info.data.account_currency })}</div>
+                        <div>Percentage: ${ percentage }</div>
                       </div>
                     `;
           },

@@ -15,7 +15,7 @@
         "dev:backend": "npm run dv --prefix backend",
         "demo:backend": "npm run demo --prefix backend",
         "dev": "npm-run-all --parallel dev:frontend dev:backend",
-        "demo": "npm-run-all --parallel dev:frontend demo:backend",
+        "demo": "npm-run-all --parallel start:frontend demo:backend",
         "build": "npm run build --prefix docs"
     },
     "devDependencies": {
