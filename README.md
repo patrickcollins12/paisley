@@ -99,7 +99,7 @@ Open http://localhost:5173
 
 Login to the demo instance with the admin account (username: `admin`,  password: `admin`)
 
-You're running! You will be presented with demo data. Take a look around!?
+You're running! You will be presented with demo data. Take a look around.
 
 # Setting up paisley
 
@@ -107,7 +107,7 @@ Setting up paisley requires a few steps.
 
 ## Create a user
 ```
-$ node backend/bin/user.js --user="patrick" --password="mypassword"
+$ node backend/bin/user.js --user="yourname" --password="mypassword"
 ```
 
 By default this will use the user.js file as defined in your config.js. Normally at ~/paisley/users.json
@@ -116,6 +116,11 @@ By default this will use the user.js file as defined in your config.js. Normally
 
 ```
 cat ~/paisley/config.js
+```
+## Install Playwright
+```
+$ cd backend 
+$ npx playwright install
 ```
 
 ## Start the server
@@ -126,25 +131,20 @@ $ npm run start
 (or in development mode: ` $ npm run dev `)
 
 ## Auto start on reboot
-The best to have paisley auto run at system boot, is using pm2. It will daemonize the server to start when your system starts.
+To auto start on system boot you can use pm2.
 
 Install [pm2](https://pm2.io/docs/runtime/guide/installation/)
-```
-npm install pm2 -g
-pm2 start npm --name paisley -- run start
-pm2 save
-pm2 startup 
-```
-Follow the instructions pm2 gives to start at system boot.
 
-To manually control:
 ```
-pm2 restart paisley
-pm2 stop paisley
-pm2 start paisley
+npm install pm2 -g                         # install pm2
+pm2 start npm --name paisley -- run start  # setup paisley in pm2 and start it
+pm2 save                                   # save the results
+pm2 startup                                # Set startup scripts. Follow the instructions.
 ```
 
-Watch the logs
+To manually control pm2 try:  `pm2 restart paisley` also stop, start and list.
+
+pm2 pipes all console output to it's own log files `pm2 paisley logs`, or just watch the paisley log files:
 ```
 tail -f ~/paisley/logs/paisley.log
 ```
