@@ -44,7 +44,7 @@ export default defineConfig({
     strictPort: true, // Optional: prevent the server from picking a random port if the specified one is taken
     proxy: {
       '/api': {
-        target: 'http://localhost:4000',
+        target: 'http://127.0.0.1:4000',
       }
     }
   }

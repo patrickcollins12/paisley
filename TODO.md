@@ -1,6 +1,7 @@
 # TODO
 p1
-[ ] document - scraper creation
+[ ] document how to create scrapers
+[x] account page - manually add a balance amount. 
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
