@@ -8,6 +8,8 @@ import { useSearch } from "@/components/search/SearchContext.jsx";
 import { getRouteApi } from "@tanstack/react-router";
 import { useUpdateEffect } from "react-use"
 import { useTranslation } from 'react-i18next';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.jsx";
+import QuickRuleModal from "@/rules/QuickRuleModal.jsx";
 
 const routeApi = getRouteApi('/transactions/');
 
@@ -47,6 +49,10 @@ export default function TransactionPage() {
 
   // column visibility state - meaning what columns are shown and hidden
   const [columnVisibilityState, setColumnVisibilityState] = useState(defaultColumnVisibility);
+  
+  // Quick Rule modal state
+  const [isQuickRuleModalOpen, setIsQuickRuleModalOpen] = useState(false);
+  const [quickRuleInitialString, setQuickRuleInitialString] = useState('');
 
   // pagination state - composed of the number of items per page (pageSize) and current page number (pageIndex)
   const [pageState, setPageState] = useState({
@@ -84,7 +90,7 @@ export default function TransactionPage() {
   }, [searchContext.calculateSearchId()]);
 
   // finally we fetch the data using the search (filters) state, sorting and pagination state
-  const { data } = useFetchTransactions({
+  const { data, mutate } = useFetchTransactions({
     pageIndex: pageState.pageIndex,
     pageSize: pageState.pageSize,
     filters: searchContext.getFilters(),
@@ -98,9 +104,17 @@ export default function TransactionPage() {
       // console.log('update transaction result', result);
     });
   }
+  
+  // Handler for the Quick Rule button
+  function handleQuickRuleClick(description) {
+    // Format the description as a rule string
+    const ruleString = `description = '${description}'`;
+    setQuickRuleInitialString(ruleString);
+    setIsQuickRuleModalOpen(true);
+  }
 
   // const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate), []);
-  const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate, t), [t, handleTransactionUpdate]);
+  const columns = useMemo(() => createColumnDefinitions(handleTransactionUpdate, t, handleQuickRuleClick), [t, handleTransactionUpdate, handleQuickRuleClick]);
 
   const table = useReactTable({
     data: data?.results ?? [],
@@ -120,19 +134,38 @@ export default function TransactionPage() {
     onSortingChange: setSortState,
     onPaginationChange: setPageState
   });
+return (
+  <>
+    <Toolbar
+      dataTable={table}
+    />
 
-  return (
-    <>
-      <Toolbar
-        dataTable={table}
-      />
-
-      <DataTable
-        paginated
-        data={data}
-        table={table}
-        columnVisibilityState={columnVisibilityState}
-      />
-    </>
-  )
+    <DataTable
+      paginated
+      data={data}
+      table={table}
+      columnVisibilityState={columnVisibilityState}
+    />
+    
+    {/* Quick Rule Modal */}
+    <Dialog open={isQuickRuleModalOpen} onOpenChange={setIsQuickRuleModalOpen}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Create Quick Rule</DialogTitle>
+        </DialogHeader>
+        {isQuickRuleModalOpen && (
+          <QuickRuleModal
+            key={quickRuleInitialString}
+            initialRuleString={quickRuleInitialString}
+            onSaveComplete={() => {
+              // Refresh the transaction list after saving the rule
+              mutate();
+              setIsQuickRuleModalOpen(false);
+            }}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  </>
+)
 }
