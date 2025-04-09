@@ -134,7 +134,6 @@ class BankDatabase {
     }
 }
 
-    // Method removed from class body
 
 
 // Singleton instance is not created until the first call without a path
@@ -215,20 +214,25 @@ BankDatabase.prototype.recalculateAccountBalances = async function(accountid) {
                 balance_at_time.set(tx.datetime, backward_balance);
             }
 
+            logger.debug("Balance at time map (after forward/backward):", balance_at_time); // DEBUG LOG
             // 5. Determine Daily Closing Balances
             const daily_closing_balances = new Map(); // Map<date_string, balance>
             const sorted_times = Array.from(balance_at_time.keys()).sort(); // Sort all event times
 
+            logger.debug("Sorted times for daily balance calculation:", sorted_times); // DEBUG LOG
             for (const time of sorted_times) {
                 const dateString = time.substring(0, 10);
+                const balanceForTime = balance_at_time.get(time);
+                logger.debug(`Processing time: ${time}, dateString: ${dateString}, balance: ${balanceForTime}`); // DEBUG LOG
                 // Store the balance associated with the latest event time for each day
-                daily_closing_balances.set(dateString, balance_at_time.get(time));
+                daily_closing_balances.set(dateString, balanceForTime);
             }
 
             // 6. Prepare and Bulk Insert Calculated Balances
             const insertStmt = this.db.prepare(insertHistoryQuery);
             let insertedCount = 0;
 
+            logger.debug("Daily closing balances map:", daily_closing_balances); // DEBUG LOG
             for (const [dateString, balance] of daily_closing_balances.entries()) {
                 const endOfDayTimestamp = `${dateString}T23:59:59.999Z`;
 

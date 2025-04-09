@@ -128,72 +128,87 @@ router.get(
             return res.status(400).json({ error: "Account ID is required when interpolation is enabled." });
         }
 
-        let query = `
-            -- Select data primarily from account_history
-            SELECT
-                h.accountid,
-                h.datetime,
-                h.balance,
-                h.data,
-                h.is_reference, -- Added is_reference flag
-                a.parentid as parentid,
-                'account_history' as source
-            FROM
-                account_history h
-            LEFT JOIN account a on h.accountid = a.accountid
-
-            UNION
-
-            -- Fallback to latest transaction balance ONLY for accounts
-            -- that have NO entries in account_history
-            SELECT
-                t.account,
-                t.datetime,
-                t.balance,
-                null, -- data
-                0 as is_reference, -- Default to 0 for transaction source
-                a.parentid as parentid,
-                'transaction' as source
-            FROM 'transaction' t
-            LEFT JOIN account a on t.account = a.accountid
-            WHERE
-                t.balance IS NOT NULL
-                -- Find the latest transaction row for the account
-                AND t.rowid = (
-                    SELECT MAX(t2.rowid)
-                    FROM 'transaction' t2
-                    WHERE t2.account = t.account
-                )
-                -- Crucially, only include if the account is NOT in account_history
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM account_history h2
-                    WHERE h2.accountid = t.account
-                )
-        `;
-        // Note: Removed the outer SELECT DISTINCT * and WHERE 1=1 as filtering happens within the UNION parts and later with params.
+        let query = '';
         let params = [];
-
-        // Apply WHERE clauses AFTER the UNION
-        // Wrap the base UNION query and apply filters to the combined result
-        let finalQuery = `SELECT * FROM (${query}) AS combined_history WHERE 1=1`;
+        let baseQuery = '';
 
         if (accountid) {
-            finalQuery += ` AND (accountid = ? OR parentid = ?)`;
-            params.push(accountid);
-            params.push(accountid);
+            // Check if this specific account exists in account_history
+            const checkHistoryStmt = db.db.prepare(`SELECT 1 FROM account_history WHERE accountid = ? LIMIT 1`);
+            const historyExists = checkHistoryStmt.get(accountid);
+
+            if (historyExists) {
+                // If history exists, ONLY query account_history for this account
+                logger.info(`Account ${accountid} found in account_history. Querying only history.`);
+                baseQuery = `
+                    SELECT
+                        h.accountid,
+                        h.datetime,
+                        h.balance,
+                        h.data,
+                        h.is_reference,
+                        a.parentid as parentid,
+                        'account_history' as source
+                    FROM account_history h
+                    LEFT JOIN account a on h.accountid = a.accountid
+                    WHERE h.accountid = ?`;
+                params.push(accountid);
+            } else {
+                // If no history exists, ONLY query transaction table for this account
+                logger.info(`Account ${accountid} not found in account_history. Querying only transactions.`);
+                baseQuery = `
+                    SELECT
+                        t.account as accountid,
+                        t.datetime,
+                        t.balance,
+                        null as data,
+                        0 as is_reference,
+                        a.parentid as parentid,
+                        'transaction' as source
+                    FROM 'transaction' t
+                    LEFT JOIN account a on t.account = a.accountid
+                    WHERE t.account = ? AND t.balance IS NOT NULL`;
+                params.push(accountid);
+            }
+
+            // Apply date filters if provided
+            if (from) {
+                baseQuery += ` AND datetime >= ?`;
+                params.push(from);
+            }
+            if (to) {
+                baseQuery += ` AND datetime <= ?`;
+                params.push(to);
+            }
+            baseQuery += ` ORDER BY datetime ASC`; // Order only by datetime for single account
+            query = baseQuery;
+
+        } else {
+            // If no specific accountid, use the previous UNION logic (might need review later)
+            logger.warn(`No specific accountid provided. Using UNION query for account_history.`);
+            baseQuery = `
+                SELECT
+                    h.accountid, h.datetime, h.balance, h.data, h.is_reference,
+                    a.parentid as parentid, 'account_history' as source
+                FROM account_history h
+                LEFT JOIN account a on h.accountid = a.accountid
+                UNION
+                SELECT
+                    t.account, t.datetime, t.balance, null, 0,
+                    a.parentid as parentid, 'transaction' as source
+                FROM 'transaction' t
+                LEFT JOIN account a on t.account = a.accountid
+                WHERE t.balance IS NOT NULL
+                AND t.rowid = (SELECT MAX(t2.rowid) FROM 'transaction' t2 WHERE t2.account = t.account)
+                AND NOT EXISTS (SELECT 1 FROM account_history h2 WHERE h2.accountid = t.account)
+            `;
+            // Wrap and apply filters
+            let finalQuery = `SELECT * FROM (${baseQuery}) AS combined_history WHERE 1=1`;
+            if (from) { finalQuery += ` AND datetime >= ?`; params.push(from); }
+            if (to) { finalQuery += ` AND datetime <= ?`; params.push(to); }
+            finalQuery += ` ORDER BY accountid ASC, datetime ASC`;
+            query = finalQuery;
         }
-        if (from) {
-            finalQuery += ` AND datetime >= ?`;
-            params.push(from);
-        }
-        if (to) {
-            finalQuery += ` AND datetime <= ?`;
-            params.push(to);
-        }
-        finalQuery += ` ORDER BY accountid ASC, datetime ASC`;
-        // The 'query' variable now holds the fully constructed query with filters
-        query = finalQuery;
         // Execute the final query
         try {
             const stmt = db.db.prepare(query); // Use the final constructed query

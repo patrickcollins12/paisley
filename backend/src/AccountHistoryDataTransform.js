@@ -118,21 +118,30 @@ function interpolateSeries(accountSeriesWithRef, commonTimeSeries) {
     // }
 
 
+    // Ensure last point is exact, using the last point from the original data
+    if (series.length > 0 && accountSeries.length > 0) {
+        series[series.length - 1][1] = accountSeries[accountSeries.length - 1][1];
+    }
+
     // Explicitly add/overwrite the reference point if it exists
+    // This ensures the reference point is accurately represented, even if it falls
+    // between interpolation intervals or shares the last timestamp.
     if (referencePoint) {
         const refTime = referencePoint[0];
         const refBalance = referencePoint[1];
-        let found = false;
-        // Check if the exact time exists and update balance
+        let pointUpdated = false;
+
+        // Check if the exact time exists in the interpolated series and update balance
         for (let i = 0; i < series.length; i++) {
             if (series[i][0] === refTime) {
-                series[i][1] = refBalance;
-                found = true;
+                series[i][1] = refBalance; // Overwrite with exact reference balance
+                pointUpdated = true;
                 break;
             }
         }
-        // If exact time not found, add it and re-sort
-        if (!found) {
+
+        // If the exact reference time wasn't an interval point, add it and re-sort
+        if (!pointUpdated) {
             series.push([refTime, refBalance]);
             series.sort((a, b) => new Date(a[0]) - new Date(b[0]));
         }
