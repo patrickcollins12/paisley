@@ -17,7 +17,7 @@ import useAccountData from "@/accounts/AccountApiHooks.js";
 import { formatInterest } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
-
+ 
 import AccountSparkLine from "@/accounts/AccountSparkLine.jsx";
 import { useTranslation } from 'react-i18next';
 
@@ -167,7 +167,7 @@ const AccountsPage = () => {
 
         {filteredAccounts &&
           filteredAccounts
-            .filter((acc) => acc.category === category || (category === 'asset' && acc.category === 'imported')) // Show 'imported' with 'asset'
+            .filter((acc) => acc.category === category) // only liability or asset accounts
             .filter((acc) => !acc.parentid) // only top-level accounts
             .map((account, index) => (
               <React.Fragment key={account.accountid}>{renderRow(account)}</React.Fragment>
