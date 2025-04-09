@@ -10,19 +10,26 @@ exports.normalizeTimeSeries = function (data, interpolate = true) {
     
     // Step 2: Group data by accountid
     const groupedData = {};
-    data.forEach(({ accountid, datetime, balance }) => {
+    // Include is_reference when grouping
+    data.forEach(({ accountid, datetime, balance, is_reference }) => {
         if (!groupedData[accountid]) {
             groupedData[accountid] = [];
         }
-        groupedData[accountid].push([datetime, balance]);
+        // Store as [datetime, balance, is_reference]
+        groupedData[accountid].push([datetime, balance, is_reference === 1 || is_reference === true]); // Ensure boolean
     });
 
     // Sort each account's series by datetime
+    // Sort each account's series by datetime (index 0)
     Object.values(groupedData).forEach(series => series.sort((a, b) => new Date(a[0]) - new Date(b[0])));
 
     // If interpolation is not needed, return the grouped data directly
     if (!interpolate) {
-        return Object.entries(groupedData).map(([accountid, series]) => ({ accountid, series }));
+        // Map back to [datetime, balance] format if not interpolating
+        return Object.entries(groupedData).map(([accountid, series]) => ({
+            accountid,
+            series: series.map(point => [point[0], point[1]]) // Drop is_reference for non-interpolated output
+        }));
     }
 
     // Step 3: Interpolate all series to a common time range
@@ -62,7 +69,12 @@ function generateCommonTimeSeries(startDate, endDate, intervalSec) {
 /**
  * Interpolates a single account's time series to a common time series.
  */
-function interpolateSeries(accountSeries, commonTimeSeries) {
+function interpolateSeries(accountSeriesWithRef, commonTimeSeries) {
+    // Separate reference point if it exists
+    const referencePoint = accountSeriesWithRef.find(point => point[2] === true);
+    // Keep only [datetime, balance] for interpolation logic
+    const accountSeries = accountSeriesWithRef.map(point => [point[0], point[1]]);
+
     const series = [];
     let prevIndex = 0;
 
@@ -84,18 +96,46 @@ function interpolateSeries(accountSeries, commonTimeSeries) {
 
         let interpolatedBalance;
         if (prevTime === nextTime) {
-            interpolatedBalance = prevPoint[1];
-        } else {
+            interpolatedBalance = prevPoint[1]; // Use previous balance if times are identical
+        } else if (currentTime <= prevTime) {
+            interpolatedBalance = prevPoint[1]; // Use previous balance if current time is before or at prev time
+        } else if (currentTime >= nextTime) {
+            interpolatedBalance = nextPoint[1]; // Use next balance if current time is after or at next time
+        }
+        else {
+            // Perform linear interpolation
             const t = (currentTime - prevTime) / (nextTime - prevTime);
+            // Ensure we handle potential NaN if nextTime equals prevTime (shouldn't happen with sorted distinct times)
             interpolatedBalance = Math.round((prevPoint[1] + t * (nextPoint[1] - prevPoint[1])) * 1e12) / 1e12;
         }
 
         series.push([time, interpolatedBalance]);
     });
 
-    // Ensure last point is exact
-    if (series.length > 0) {
-        series[series.length - 1][1] = accountSeries[accountSeries.length - 1][1];
+    // Remove forcing the last point; interpolation should handle it.
+    // if (series.length > 0) {
+    //     series[series.length - 1][1] = accountSeries[accountSeries.length - 1][1];
+    // }
+
+
+    // Explicitly add/overwrite the reference point if it exists
+    if (referencePoint) {
+        const refTime = referencePoint[0];
+        const refBalance = referencePoint[1];
+        let found = false;
+        // Check if the exact time exists and update balance
+        for (let i = 0; i < series.length; i++) {
+            if (series[i][0] === refTime) {
+                series[i][1] = refBalance;
+                found = true;
+                break;
+            }
+        }
+        // If exact time not found, add it and re-sort
+        if (!found) {
+            series.push([refTime, refBalance]);
+            series.sort((a, b) => new Date(a[0]) - new Date(b[0]));
+        }
     }
 
     return series;

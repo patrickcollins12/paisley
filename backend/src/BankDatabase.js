@@ -133,8 +133,138 @@ class BankDatabase {
         });
     }
 }
-    
+
+    // Method removed from class body
 
 
 // Singleton instance is not created until the first call without a path
+
+/**
+ * Recalculates and updates the account_history table for a given account
+ * based on its reference balance and subsequent transactions.
+ * @param {string} accountid The ID of the account to recalculate.
+ * @returns {Promise<void>}
+ */
+BankDatabase.prototype.recalculateAccountBalances = async function(accountid) {
+    // Note: 'this' inside this function refers to the BankDatabase instance
+    logger.info(`Starting recalculation for account: ${accountid}`);
+
+    const getReferenceQuery = `SELECT datetime, balance FROM account_history WHERE accountid = ? AND is_reference = TRUE LIMIT 1`;
+    const deleteCalculatedQuery = `DELETE FROM account_history WHERE accountid = ? AND is_reference = FALSE`;
+    const getTransactionsQuery = `SELECT datetime, credit, debit FROM "transaction" WHERE account = ? ORDER BY datetime ASC`; // Fetch ALL transactions
+    const insertHistoryQuery = `INSERT INTO account_history (accountid, datetime, balance, data, is_reference) VALUES (?, ?, ?, ?, ?)`;
+
+    try {
+        // 1. Find Reference Balance
+        const referenceStmt = this.db.prepare(getReferenceQuery);
+        const referenceBalance = referenceStmt.get(accountid);
+
+        if (!referenceBalance) {
+            logger.warn(`No reference balance found for account ${accountid}. Skipping recalculation.`);
+            return; // Nothing to calculate against
+        }
+
+        const { datetime: ref_datetime, balance: ref_balance } = referenceBalance;
+        logger.info(`Found reference balance for ${accountid}: ${ref_balance} as of ${ref_datetime}`);
+
+        // Start transaction
+        const runRecalculationTransaction = this.db.transaction(() => {
+
+            // 2. Clear Old Calculated Balances
+            const deleteStmt = this.db.prepare(deleteCalculatedQuery);
+            const deleteResult = deleteStmt.run(accountid);
+            logger.info(`Deleted ${deleteResult.changes} old calculated balance(s) for account ${accountid}.`);
+
+            // 3. Fetch ALL Transactions
+            const transactionStmt = this.db.prepare(getTransactionsQuery);
+            const all_transactions = transactionStmt.all(accountid); // Fetch all, no date filter here
+            logger.info(`Found ${all_transactions.length} total transactions for ${accountid}.`);
+
+            // 4. Calculate Balances at specific times (Forward and Backward)
+            const balance_at_time = new Map(); // Map<datetime_string, balance>
+            balance_at_time.set(ref_datetime, ref_balance); // Initialize with reference point
+
+            // --- Forward Pass ---
+            let forward_balance = ref_balance;
+            for (const tx of all_transactions) {
+                if (tx.datetime < ref_datetime) continue; // Skip transactions before reference
+
+                const net_change = (tx.credit || 0) - (tx.debit || 0);
+
+                // If tx is exactly at ref time, update the balance *at* that time
+                if (tx.datetime === ref_datetime) {
+                    forward_balance += net_change;
+                    balance_at_time.set(tx.datetime, forward_balance);
+                } else {
+                    // Otherwise, this is the balance *after* the transaction
+                    forward_balance += net_change;
+                    balance_at_time.set(tx.datetime, forward_balance);
+                }
+            }
+
+            // --- Backward Pass ---
+            let backward_balance = ref_balance;
+            // Iterate in reverse through transactions *before* the reference time
+            for (let i = all_transactions.length - 1; i >= 0; i--) {
+                const tx = all_transactions[i];
+                if (tx.datetime >= ref_datetime) continue; // Skip transactions at or after reference
+
+                const net_change = (tx.credit || 0) - (tx.debit || 0);
+                // Calculate balance *before* this transaction occurred
+                backward_balance -= net_change;
+                balance_at_time.set(tx.datetime, backward_balance);
+            }
+
+            // 5. Determine Daily Closing Balances
+            const daily_closing_balances = new Map(); // Map<date_string, balance>
+            const sorted_times = Array.from(balance_at_time.keys()).sort(); // Sort all event times
+
+            for (const time of sorted_times) {
+                const dateString = time.substring(0, 10);
+                // Store the balance associated with the latest event time for each day
+                daily_closing_balances.set(dateString, balance_at_time.get(time));
+            }
+
+            // 6. Prepare and Bulk Insert Calculated Balances
+            const insertStmt = this.db.prepare(insertHistoryQuery);
+            let insertedCount = 0;
+
+            for (const [dateString, balance] of daily_closing_balances.entries()) {
+                const endOfDayTimestamp = `${dateString}T23:59:59.999Z`;
+
+                // Avoid re-inserting the reference balance itself if its timestamp matches end-of-day
+                // (unlikely but possible if reference was set exactly at 23:59:59.999Z)
+                // Also skip if the balance is for the reference date but the timestamp is different
+                // because the reference entry already represents that point in time.
+                const refDateString = ref_datetime.substring(0, 10);
+                if (dateString === refDateString) {
+                    logger.debug(`Skipping insert for reference date ${dateString}, already covered by reference entry.`);
+                    continue;
+                }
+
+                insertStmt.run(
+                    accountid,
+                    endOfDayTimestamp,
+                    balance,
+                    JSON.stringify({ source: "recalculated" }),
+                    0 // is_reference = false (0)
+                );
+                insertedCount++;
+            }
+            logger.info(`Inserted ${insertedCount} calculated daily balance(s) for account ${accountid}.`);
+
+        }); // End of transaction definition
+
+        // Execute the transaction
+        runRecalculationTransaction();
+        logger.info(`Successfully completed recalculation for account: ${accountid}`);
+
+    } catch (err) {
+        logger.error(`Error during recalculation for account ${accountid}: ${err.message}`, err);
+        // Error handling: The transaction should automatically roll back on error.
+        // Consider re-throwing or handling specific error types if needed.
+        throw err; // Re-throw to allow caller (API route) to handle HTTP response
+    }
+};
+
 module.exports = BankDatabase;

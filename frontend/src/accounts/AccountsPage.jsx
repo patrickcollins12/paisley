@@ -70,7 +70,9 @@ const AccountsPage = () => {
 
   // Update filtered accounts when the search term changes
   useEffect(() => {
-    setFilteredAccounts(filterAccounts(accounts, searchTerm));
+    const filtered = filterAccounts(accounts, searchTerm);
+    console.log('Accounts after text filter:', filtered); // <-- Log after text filter
+    setFilteredAccounts(filtered);
   }, [accounts, searchTerm]);
 
 
@@ -79,9 +81,12 @@ const AccountsPage = () => {
   //////////////////
   // setup the data
   useEffect(() => {
+    console.log('--- Processing accounts ---');
+    console.log('Raw data from API:', data); // <-- Log raw data
     if (data) {
 
       const relevantAccounts = showInactive ? data : data.filter(acc => acc.status !== "inactive");
+      console.log('Relevant accounts after inactive filter:', relevantAccounts); // <-- Log after inactive filter
 
       // Create a lookup map for quick parent reference
       const accountMap = Object.fromEntries(relevantAccounts.map(acc => [acc.accountid, { ...acc }]));
@@ -106,6 +111,7 @@ const AccountsPage = () => {
 
       // Step 2: Remove child accounts (keep only top-level parents)
       const updatedAccounts = Object.values(accountMap);
+      console.log('Accounts after parent/child processing:', updatedAccounts); // <-- Log after parent/child processing
 
       // Sort accounts by custom sortOrder
       const sortOrder = ["Checking", "Savings", "Crypto", "Investment", "Credit", "Mortgage"];
@@ -121,6 +127,7 @@ const AccountsPage = () => {
         // If types are the same, sort by balance (descending order: highest balance first)
         return b.balance - a.balance;
       });
+      console.log('Accounts after sorting:', sortedAccounts); // <-- Log after sorting
 
       setAccounts(sortedAccounts);
 
@@ -160,7 +167,7 @@ const AccountsPage = () => {
 
         {filteredAccounts &&
           filteredAccounts
-            .filter((acc) => acc.category === category) // only liability or asset accounts
+            .filter((acc) => acc.category === category || (category === 'asset' && acc.category === 'imported')) // Show 'imported' with 'asset'
             .filter((acc) => !acc.parentid) // only top-level accounts
             .map((account, index) => (
               <React.Fragment key={account.accountid}>{renderRow(account)}</React.Fragment>

@@ -29,27 +29,82 @@ router.post(
         body("datetime").optional().isISO8601().withMessage("Invalid datetime format"),
         body("balance").isFloat().withMessage("Balance must be a number"),
         body("data").optional().isObject().withMessage("Metadata must be a JSON object"),
+        body("is_reference").optional().isBoolean().toBoolean().withMessage("is_reference must be a boolean"), // Added validation
     ],
     handleValidationErrors,
     async (req, res) => {
-        let db = new BankDatabase();
-        const { accountid, datetime = new Date().toISOString(), balance, data = {} } = req.body;
-
-        const query = `INSERT INTO account_history (accountid, datetime, balance, data) VALUES (?, ?, ?, ?)`;
+        let db; // Initialize db later for transaction scope
+        // Extract is_reference, default to false
+        const { accountid, datetime = new Date().toISOString(), balance, data = {}, is_reference = false } = req.body;
+        // Define queries
+        const insertQuery = `INSERT INTO account_history (accountid, datetime, balance, data, is_reference) VALUES (?, ?, ?, ?, ?)`;
+        const deleteQuery = `DELETE FROM account_history WHERE accountid = ?`;
 
         try {
-            const stmt = db.db.prepare(query);
-            const result = stmt.run(accountid, datetime, balance, JSON.stringify(data));
-            res.status(201).json({ historyid: result.lastInsertRowid, message: "Balance recorded" });
-        } catch (err) {
+            db = new BankDatabase(); // Instantiate DB connection
+            let result;
 
-            logger.error(`Error inserting balance: ${err.message}`);
+            if (is_reference) {
+                // Use a transaction for atomicity when setting a reference balance
+                const runTransaction = db.db.transaction(() => {
+                    // 1. Delete all existing history for the account
+                    const deleteStmt = db.db.prepare(deleteQuery);
+                    deleteStmt.run(accountid);
+                    logger.info(`Deleted existing history for account ${accountid} before setting reference balance.`);
+
+                    // 2. Insert the new reference balance
+                    const insertStmt = db.db.prepare(insertQuery);
+                    result = insertStmt.run(accountid, datetime, balance, JSON.stringify(data), 1); // Convert true to 1
+                    logger.info(`Inserted new reference balance for account ${accountid} with historyid ${result.lastInsertRowid}.`);
+
+                    // Recalculation will happen *after* this transaction commits.
+                });
+                runTransaction(); // Execute the transaction to delete history and insert reference
+
+
+                // Call recalculate *after* the reference balance transaction is successful.
+                // The recalculate function handles its own internal transaction.
+                try {
+                    // Note: We don't wait for recalculation to finish before responding to the user
+                    //       as it might take time. We trigger it asynchronously.
+                    db.recalculateAccountBalances(accountid)
+                        .then(() => {
+                            logger.info(`Recalculation successfully triggered for account ${accountid} after setting reference balance.`);
+                        })
+                        .catch(recalcErr => {
+                            // Log error, but don't fail the initial request as the reference balance *was* set.
+                            logger.error(`Recalculation failed for account ${accountid} after setting reference balance: ${recalcErr.message}`, recalcErr);
+                        });
+                } catch (triggerErr) {
+                     // Catch potential synchronous errors if the async call itself fails immediately
+                     logger.error(`Failed to trigger recalculation for account ${accountid}: ${triggerErr.message}`, triggerErr);
+                }
+                // --- End Sprint 2 ---
+
+                res.status(201).json({ historyid: result.lastInsertRowid, message: "Reference balance recorded, recalculation triggered" }); // Updated message
+
+            } else {
+                // Standard balance insertion (not a reference)
+                const stmt = db.db.prepare(insertQuery);
+                result = stmt.run(accountid, datetime, balance, JSON.stringify(data), 0); // Convert false to 0
+                res.status(201).json({ historyid: result.lastInsertRowid, message: "Balance recorded" });
+            }
+
+        } catch (err) {
+            logger.error(`Error processing account balance: ${err.message}`, { accountid, is_reference });
 
             if (err.message.includes("FOREIGN KEY constraint failed")) {
                 return res.status(400).json({ error: `Account ID '${accountid}' does not exist.` });
             }
+            // Ensure db connection is closed if opened
+            // if (db) db.close(); // Assuming BankDatabase has a close method if needed
 
-            res.status(500).json({ error: err.message });
+            res.status(500).json({ error: `Server error processing balance: ${err.message}` });
+        } finally {
+             // Ensure db connection is closed if opened and BankDatabase has a close method
+             // if (db && typeof db.close === 'function') {
+             //    db.close();
+             // }
         }
     }
 );
@@ -74,64 +129,74 @@ router.get(
         }
 
         let query = `
-                -- balance can come from account_history or transaction table
-                -- which is why we use a UNION to combine the two
-                SELECT DISTINCT * FROM (
+            -- Select data primarily from account_history
+            SELECT
+                h.accountid,
+                h.datetime,
+                h.balance,
+                h.data,
+                h.is_reference, -- Added is_reference flag
+                a.parentid as parentid,
+                'account_history' as source
+            FROM
+                account_history h
+            LEFT JOIN account a on h.accountid = a.accountid
 
-                    SELECT 
-                        h.accountid, 
-                        datetime, 
-                        balance,
-                        data,
-                        a.parentid as parentid,
-                        'account_history' as source
-                    FROM 
-                        account_history h
-					LEFT JOIN account a on h.accountid = a.accountid
+            UNION
 
-                UNION
-
-                    -- get the latest transaction for each account
-                    -- this assumes that the latest transaction is the most recent balance
-                    -- this is why CSV's need to be imported in ascending order
-
-                    SELECT 
-                        t.account,
-                        t.datetime,
-                        t.balance,
-                        null,
-						a.parentid as parentid,
-                        'transaction' as source
-                    FROM 'transaction' t
-					LEFT JOIN account a on t.account = a.accountid
-                    WHERE t.rowid = (
-                            SELECT 
-                                MAX(t2.rowid)
-                                FROM 'transaction' t2
-                                WHERE t2.account = t.account
-                                    AND t2.datetime = t.datetime
-                        ) AND balance is not null
-                    ) WHERE 1=1
-                `;
+            -- Fallback to latest transaction balance ONLY for accounts
+            -- that have NO entries in account_history
+            SELECT
+                t.account,
+                t.datetime,
+                t.balance,
+                null, -- data
+                0 as is_reference, -- Default to 0 for transaction source
+                a.parentid as parentid,
+                'transaction' as source
+            FROM 'transaction' t
+            LEFT JOIN account a on t.account = a.accountid
+            WHERE
+                t.balance IS NOT NULL
+                -- Find the latest transaction row for the account
+                AND t.rowid = (
+                    SELECT MAX(t2.rowid)
+                    FROM 'transaction' t2
+                    WHERE t2.account = t.account
+                )
+                -- Crucially, only include if the account is NOT in account_history
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM account_history h2
+                    WHERE h2.accountid = t.account
+                )
+        `;
+        // Note: Removed the outer SELECT DISTINCT * and WHERE 1=1 as filtering happens within the UNION parts and later with params.
         let params = [];
 
+        // Apply WHERE clauses AFTER the UNION
+        // Wrap the base UNION query and apply filters to the combined result
+        let finalQuery = `SELECT * FROM (${query}) AS combined_history WHERE 1=1`;
+
         if (accountid) {
-            query += ` AND (accountid = ? OR parentid = ?)`;
+            finalQuery += ` AND (accountid = ? OR parentid = ?)`;
             params.push(accountid);
             params.push(accountid);
         }
         if (from) {
-            query += ` AND datetime >= ?`;
+            finalQuery += ` AND datetime >= ?`;
             params.push(from);
         }
         if (to) {
-            query += ` AND datetime <= ?`;
+            finalQuery += ` AND datetime <= ?`;
             params.push(to);
         }
-        query += ` ORDER BY accountid ASC, datetime ASC`;
-
+        finalQuery += ` ORDER BY accountid ASC, datetime ASC`;
+        // The 'query' variable now holds the fully constructed query with filters
+        query = finalQuery;
+        // Execute the final query
         try {
-            const stmt = db.db.prepare(query);
+            const stmt = db.db.prepare(query); // Use the final constructed query
             const rows = stmt.all(...params);
 
             // if there is more than one accountid, we need to forcefully interpolate
@@ -141,13 +206,14 @@ router.get(
                 interpolate = true;
             
             // If interpolation is requested, apply it
+            // Restore original line:
             res.json(util.normalizeTimeSeries(rows, interpolate))
 
         } catch (err) {
             logger.error(`Error fetching account history: ${err.message}`);
             res.status(500).json({ error: err.message });
         }
-    }
+    } // End of async handler
 );
 
 
@@ -329,6 +395,10 @@ module.exports = router;
  *                 type: object
  *                 description: Optional metadata associated with the balance entry.
  *                 example: { "note": "Initial deposit" }
+ *               is_reference:
+ *                 type: boolean
+ *                 description: Optional. If true, marks this balance as the reference point, clears all previous history for the account, and triggers recalculation (in Sprint 2). Defaults to false.
+ *                 example: true
  *     responses:
  *       201:
  *         description: Balance recorded successfully.
