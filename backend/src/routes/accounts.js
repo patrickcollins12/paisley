@@ -96,7 +96,7 @@ router.get('/api/accounts', async (req, res) => {
 router.get('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const account = db.db.prepare(`${sql} AND accountid = ?`).get(id);
+        const account = db.db.prepare(`${sql} AND a.accountid = ?`).get(id); // Specify a.accountid
 
         // get interest data and merge it in
         const sqlFinal = interestSql + " AND accountid = ?"
