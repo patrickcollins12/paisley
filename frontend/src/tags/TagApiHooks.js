@@ -1,25 +1,34 @@
-import useSWR from "swr"
+import useSWR from "swr";
+import httpClient from "@/lib/httpClient.js";
 
-import httpClient from "@/lib/httpClient.js"
-
+// Adopting the same approach as AccountApiHooks: the baseURL is '/api',
+// so do not prefix our endpoint path with '/api'
 async function fetcher(url) {
+  // e.g., if url is 'tags', final path => '/api/tags'
   const response = await httpClient.get(url);
   return response.data;
 }
 
-// tagResource = parties or tags
-// calls /parties or /rules
-export function useFetchTags(tagResource) {
-  
-  if (! ['tags','parties'].includes(tagResource) ) {
-    throw new Error(`Invalid resource in useFetchTags: ${tagResource}.`)
-  }
-
-  const { data, error, isLoading } = useSWR(tagResource, fetcher);
+// Fetch all tags
+export function useFetchTags() {
+  const { data, error, isLoading, mutate } = useSWR("tags", fetcher);
 
   return {
-    data,
+    data: data?.tags,
     error,
-    isLoading
+    isLoading,
+    mutate
+  };
+}
+
+// Rename tag
+export function useRenameTag() {
+  async function rename(oldName, newName) {
+    const payload = { oldName, newName };
+    // e.g., final path => '/api/tags/rename'
+    const response = await httpClient.patch("tags/rename", payload);
+    return response.data;
   }
+
+  return { rename };
 }
