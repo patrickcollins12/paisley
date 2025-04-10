@@ -8,7 +8,7 @@ import { useSearch } from "@/components/search/SearchContext.jsx";
 import { getRouteApi } from "@tanstack/react-router";
 import { useUpdateEffect } from "react-use"
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.jsx";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog.jsx";
 import QuickRuleModal from "@/rules/QuickRuleModal.jsx";
 
 const routeApi = getRouteApi('/transactions/');
@@ -151,7 +151,7 @@ return (
     <Dialog open={isQuickRuleModalOpen} onOpenChange={setIsQuickRuleModalOpen}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Create Quick Rule</DialogTitle>
+          <DialogTitle>New Quick Rule</DialogTitle>
         </DialogHeader>
         {isQuickRuleModalOpen && (
           <QuickRuleModal
