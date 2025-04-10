@@ -4,8 +4,9 @@ import { EditableDescriptionCell } from '@/transactions/EditableDescriptionCell.
 import HeaderCell from "@/components/data-table/HeaderCell.jsx"
 import { TransactionTagsDisplay } from "@/transactions/TransactionTagsDisplay.jsx"
 import { Currency } from "@/components/CurrencyDisplay.jsx"
+import { Button } from "@/components/ui/button.jsx"
 
-export function createColumnDefinitions(onTransactionUpdate, t) {
+export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick) {
 
   return [
     {
@@ -185,7 +186,30 @@ export function createColumnDefinitions(onTransactionUpdate, t) {
       meta: {
         displayName: t("Party")
       }
-    }
+    },
 
+    // Actions column with Quick Rule button
+    {
+      id: 'actions',
+      header: props => <HeaderCell align='center' {...props} />,
+      cell: ({ row }) => {
+        const description = row.original.description;
+        return (
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onQuickRuleClick?.(description)}
+              title="Create a rule based on this description"
+            >
+              Quick Rule
+            </Button>
+          </div>
+        );
+      },
+      meta: {
+        displayName: t("Actions")
+      }
+    }
   ];
 }
