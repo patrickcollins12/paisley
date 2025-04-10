@@ -6,7 +6,7 @@
 const express = require('express');
 const BankDatabase = require('../BankDatabase');
 const TagManager = require('../TagManager');
-const RulesClassifier = require('../RulesClassifier');
+// const RulesClassifier = require('../RulesClassifier');
 const logger = require('../Logger.js');
 
 const router = express.Router();
@@ -89,10 +89,10 @@ router.patch('/api/tags/rename', async (req, res) => {
     TagManager.renameTagInDb(db.db, oldName, newName);
     
     // Then trigger a rule rerun
-    const classifier = new RulesClassifier();
-    logger.info("Starting rule reclassification after tag rename");
-    await classifier.applyAllRules();
-    logger.info("Finished rule reclassification");
+    // const classifier = new RulesClassifier();
+    // logger.info("Starting rule reclassification after tag rename");
+    // await classifier.applyAllRules();
+    // logger.info("Finished rule reclassification");
     
     res.json({ success: true, oldName, newName });
   } catch (err) {

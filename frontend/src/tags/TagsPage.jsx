@@ -87,24 +87,26 @@ export default function TagsPage() {
   if (error) return <div className="text-red-600">{t("Error fetching tags")}</div>;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t("Tags")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ul className="space-y-2">
-          {tagList?.map((tag, idx) => (
-            <React.Fragment key={idx}>
-              {renderTagRow(tag, idx)}
-            </React.Fragment>
-          ))}
-          {tagList?.length === 0 && (
-            <li className="text-sm text-muted-foreground">
-              {t("No tags found")}
-            </li>
-          )}
-        </ul>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center justify-center p-0">
+      <Card className="w-full max-w-2xl">
+        <CardHeader>
+          <CardTitle>{t("Tags")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            {tagList?.map((tag, idx) => (
+              <React.Fragment key={idx}>
+                {renderTagRow(tag, idx)}
+              </React.Fragment>
+            ))}
+            {tagList?.length === 0 && (
+              <li className="text-sm text-muted-foreground">
+                {t("No tags found")}
+              </li>
+            )}
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
