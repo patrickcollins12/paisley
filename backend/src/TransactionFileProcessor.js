@@ -4,6 +4,7 @@ const FileWatcher = require('./FileWatcher');
 const FileMover = require('./FileMover');
 const RulesClassifier = require('./RulesClassifier');
 const logger = require('./Logger');
+const BankDatabase = require('./BankDatabase'); // Import BankDatabase
 class TransactionFileProcessor {
     constructor() {
         this.parsers = {};
@@ -65,6 +66,37 @@ class TransactionFileProcessor {
         this.classifier.applyAllRules(insertedIds);
         logger.info(`Finished processing batch of ${insertedIds.length}`);
         // logger.info(`Batch details:\n${JSON.stringify(this.parseResultsBatch, null, "\t")}`);
+
+        // Trigger Recalculation for Reference Accounts ---
+        try {
+            const db = new BankDatabase(); // Get DB instance
+            const referenceAccountsStmt = db.db.prepare(`SELECT DISTINCT accountid FROM account_history WHERE is_reference = TRUE`);
+            const referenceAccounts = referenceAccountsStmt.all();
+
+            if (referenceAccounts.length > 0) {
+                logger.info(`Found ${referenceAccounts.length} accounts with reference balances. Triggering recalculation...`);
+                for (const row of referenceAccounts) {
+                    const accountid = row.accountid;
+                    try {
+                        // Trigger recalculation asynchronously (don't wait for each one)
+                        db.recalculateAccountBalances(accountid)
+                            .then(() => {
+                                logger.info(`Recalculation successfully triggered for reference account ${accountid} after batch import.`);
+                            })
+                            .catch(recalcErr => {
+                                logger.error(`Recalculation failed for reference account ${accountid} after batch import: ${recalcErr.message}`, recalcErr);
+                            });
+                    } catch (triggerErr) {
+                        logger.error(`Failed to trigger recalculation for reference account ${accountid}: ${triggerErr.message}`, triggerErr);
+                    }
+                }
+            } else {
+                logger.info("No accounts with reference balances found. Skipping batch recalculation trigger.");
+            }
+        } catch (dbError) {
+            logger.error(`Error accessing database for batch recalculation trigger: ${dbError.message}`, dbError);
+        }
+
 
         this.parseResultsBatch = [];
     }

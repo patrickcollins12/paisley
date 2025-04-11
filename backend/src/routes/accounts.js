@@ -12,40 +12,45 @@ const logger = require('../Logger.js');
 // and then selecting the latest of those
 // it then joins this with the account table to get the account details
 const sql = `
-SELECT a.*,
-       b.balance,
-       b.datetime as balance_datetime,
-       b.src as balance_source
-FROM account a
+SELECT
+    a.*, -- Select all columns from the account table
+    COALESCE(ah.balance, t_latest.balance) AS balance, -- Prioritize account_history balance
+    COALESCE(ah.datetime, t_latest.datetime) AS balance_datetime, -- Prioritize account_history datetime
+    CASE
+        WHEN ah.accountid IS NOT NULL THEN 'account_history' -- Source is account_history if found
+        ELSE 'transaction' -- Otherwise, source is transaction
+    END AS balance_source
+FROM
+    account a
 LEFT JOIN (
-    SELECT account,
-           MAX(datetime) AS datetime,
-           balance,
-           src
+    -- Find the latest entry using ROW_NUMBER() ordered by datetime DESC, then is_reference DESC, then rowid DESC
+    SELECT accountid, datetime, balance
     FROM (
-        SELECT account,
-               MAX(t.datetime) as datetime,
-               rowid, -- i was hoping to get this working
-               balance,
-               'transaction' AS src
-        FROM 'transaction' t
-        GROUP BY account
-
-        UNION ALL
-
-        SELECT accountid AS account,
-               datetime,
-               MAX(rowid) AS rowid,
-               balance,
-               'account_history' AS src
-        FROM "account_history"
-        GROUP BY accountid
-		
-    ) AS combined
-    GROUP BY account
-) AS b
-ON a.accountid = b.account
-WHERE 1=1
+        SELECT
+            h.accountid,
+            h.datetime,
+            h.balance,
+            h.is_reference, -- Include is_reference for ordering
+            ROW_NUMBER() OVER(PARTITION BY h.accountid ORDER BY h.datetime DESC, h.is_reference DESC, h.rowid DESC) as rn
+        FROM account_history h
+    )
+    WHERE rn = 1
+) ah ON a.accountid = ah.accountid
+LEFT JOIN (
+    -- Find the latest transaction entry using ROW_NUMBER() ordered by datetime DESC, then rowid DESC
+    SELECT account, datetime, balance
+    FROM (
+        SELECT
+            t.account,
+            t.datetime,
+            t.balance,
+            ROW_NUMBER() OVER(PARTITION BY t.account ORDER BY t.datetime DESC, t.rowid DESC) as rn
+        FROM "transaction" t
+        WHERE t.balance IS NOT NULL -- Only consider transactions with a balance
+    )
+    WHERE rn = 1
+) t_latest ON a.accountid = t_latest.account AND ah.accountid IS NULL -- Join ONLY if no account_history was found
+WHERE 1=1 -- Placeholder for potential future WHERE clauses on 'a'
 `
 const interestSql = `
 SELECT historyid,
@@ -91,7 +96,7 @@ router.get('/api/accounts', async (req, res) => {
 router.get('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const account = db.db.prepare(`${sql} AND accountid = ?`).get(id);
+        const account = db.db.prepare(`${sql} AND a.accountid = ?`).get(id); // Specify a.accountid
 
         // get interest data and merge it in
         const sqlFinal = interestSql + " AND accountid = ?"

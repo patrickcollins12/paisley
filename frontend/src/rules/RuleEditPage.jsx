@@ -20,17 +20,21 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const routeApi = getRouteApi('/rules/$ruleId');
 
-export default function RuleEditPage() {
+export default function RuleEditPage({ initialRuleString = '', isModalMode = false, onSaveComplete = null, propRuleId }) {
 
   const { toast } = useToast();
   const navigate = routeApi.useNavigate();
 
-  // grab the path parameter from the URL
-  const { ruleId } = routeApi.useParams();
+  // grab the path parameter from the URL or use the prop if in modal mode
+  const params = routeApi.useParams();
+  const effectiveRuleId = isModalMode ? propRuleId : params.ruleId;
 
   // convert the ruleId into either a number or null
   // null means that it is a new rule
-  const id = Number.parseInt(ruleId) ? Number(ruleId) : null;
+  const id = Number.parseInt(effectiveRuleId) ? Number(effectiveRuleId) : null;
+
+  // Create a ref for the rule input field to focus it in modal mode
+  const ruleInputRef = useRef(null);
 
   // keep track of the form state
   const [ruleData, setRuleData] = useState({ rule: null, tag: [], party: [] });
@@ -71,6 +75,22 @@ export default function RuleEditPage() {
     setPartyData(data?.party)
     setRuleString(data?.rule ?? '');
   }, [data]);
+
+  // Initialize rule string from prop if provided (for quick rule modal)
+  useEffect(() => {
+    if (initialRuleString && !ruleString) {
+      setRuleString(initialRuleString);
+      setRuleData(prevState => ({ ...prevState, rule: initialRuleString }));
+    }
+  }, [initialRuleString]);
+
+  // Focus and select the rule input text when in modal mode
+  useEffect(() => {
+    if (isModalMode && ruleInputRef.current) {
+      ruleInputRef.current.focus();
+      ruleInputRef.current.select();
+    }
+  }, [isModalMode, initialRuleString]);
 
   // Keeps ruleData in sync with the form. This is a bit ugly but will do for now.
   // Specifically, for the rule string we are going to debounce the update
@@ -118,8 +138,15 @@ export default function RuleEditPage() {
       else {
         toast({ description: 'Rule created successfully', duration: 1000 });
         setError(null);
-        const newId = data?.id;
-        await navigate({ to: '/rules/$ruleId', params: { ruleId: newId } });
+        
+        // If in modal mode, call the onSaveComplete callback
+        if (isModalMode && onSaveComplete) {
+          onSaveComplete();
+        } else {
+          // Otherwise navigate to the rule edit page
+          const newId = data?.id;
+          await navigate({ to: '/rules/$ruleId', params: { ruleId: newId } });
+        }
       }
 
     } catch (unexpectedError) {
@@ -144,12 +171,13 @@ export default function RuleEditPage() {
 
   return (<>
 
-    <BackNav />
+    {/* Only show BackNav when not in modal mode */}
+    {!isModalMode && <BackNav />}
 
-    <div className="flex justify-center gap-3">
-      <Card className="text-sm w-[550px]">
+    <div className={`flex justify-center ${isModalMode ? '' : 'gap-3'}`}>
+      <Card className={`text-sm ${isModalMode ? 'w-full' : 'w-[550px]'}`}>
         <CardHeader>
-          <CardTitle>{(ruleId === "new") ? "New Rule" : "Edit Rule"}</CardTitle>
+          <CardTitle>{(effectiveRuleId === "new") ? "New Rule" : "Edit Rule"}</CardTitle>
           <CardDescription>
             When specific conditions occur, automatically add Tags or Merchants
           </CardDescription>
@@ -178,6 +206,7 @@ export default function RuleEditPage() {
                   <div className="col-span-6">
                     {/* <div className="opacity-50">Final Rule</div> */}
                     <Input
+                      ref={ruleInputRef}
                       value={ruleString}
                       name="rule"
                       onChange={event => setRuleString(event.target.value)}
@@ -249,21 +278,23 @@ export default function RuleEditPage() {
           </form>
         </CardContent>
       </Card>
+{/* Only show matching transactions when not in modal mode */}
+{!isModalMode && (
+  <Card className="text-sm w-[450px]">
+    <CardHeader>
+      <CardTitle>Matching Transactions</CardTitle>
+      <CardDescription>
+        {transactionCount} transactions currently match this rule
+      </CardDescription>
+    </CardHeader>
 
-      <Card className="text-sm w-[450px]">
-        <CardHeader>
-          <CardTitle>Matching Transactions</CardTitle>
-          <CardDescription>
-            {transactionCount} transactions currently match this rule
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="">
-          <ScrollableSidebar className=" flex flex-col gap-3 ">
-            {transactionData?.results.map(transaction => <TransactionCard key={transaction.id} data={transaction} />)}
-          </ScrollableSidebar>
-        </CardContent>
-      </Card>
+    <CardContent className="">
+      <ScrollableSidebar className=" flex flex-col gap-3 ">
+        {transactionData?.results.map(transaction => <TransactionCard key={transaction.id} data={transaction} />)}
+      </ScrollableSidebar>
+    </CardContent>
+  </Card>
+)}
     </div>
   </>
   )

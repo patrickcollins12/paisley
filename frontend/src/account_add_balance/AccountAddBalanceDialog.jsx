@@ -9,7 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react"
 import httpClient from "@/lib/httpClient" // adjust path if needed
 import { useToast } from "@/components/ui/use-toast.js"
-
+import { Checkbox } from "@/components/ui/checkbox" // Import Checkbox
 import {
     DialogTitle,
     DialogHeader,
@@ -21,7 +21,7 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
     const [date, setDate] = useState(new Date())
     const [time, setTime] = useState(format(new Date(), "HH:mm"))
     const { toast } = useToast()
-
+    const [isReference, setIsReference] = useState(false) // State for checkbox
     function sanitizeAmount(input) {
         return input.replace(/[^0-9.-]+/g, "") // removes $, commas, etc.
     }
@@ -37,6 +37,7 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
         console.log("Account ID:", accountid)
         console.log("Amount:", amount)
         console.log("Balance as of:", combinedDate.toISOString())
+        console.log("Is Reference:", isReference) // Log state
 
         const cleanedAmount = sanitizeAmount(amount)
         const numericAmount = parseFloat(cleanedAmount)
@@ -47,6 +48,7 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
             balance: numericAmount,
             datetime: isoDatetime,
             data: { "from": "saved from user (X) on frontend" },
+            is_reference: isReference, // Pass state to saveBalance
         })
 
         if (error) {
@@ -60,16 +62,19 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
     }    // utils/accountBalanceApi.js or similar
 
 
-    async function saveBalance({ accountid, datetime, balance, data }) {
+    // Update function signature to accept is_reference
+    async function saveBalance({ accountid, datetime, balance, data, is_reference }) {
         try {
+            // Pass is_reference in the POST payload
             const response = await httpClient.post("account_balance", {
                 accountid,
                 datetime,
                 balance,
                 data,
+                is_reference, // Include is_reference in the payload
             })
 
-            return { data: response.data, error: null, isLoading: false }
+            return { data: response.data, error: null, isLoading: false } // Correctly placed return
         } catch (err) {
             const apiErrors = err.response?.data?.errors
             let errorMsg
@@ -144,6 +149,21 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
                             className="w-[120px]"
                         />
                     </div>
+                </div>
+
+                {/* Reference Balance Checkbox */}
+                <div className="flex items-center space-x-2">
+                    <Checkbox
+                        id="is-reference"
+                        checked={isReference}
+                        onCheckedChange={setIsReference}
+                    />
+                    <label
+                        htmlFor="is-reference"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        Make this the reference balance
+                    </label>
                 </div>
 
                 {/* Submit button */}
