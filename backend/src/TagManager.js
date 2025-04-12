@@ -34,14 +34,18 @@ module.exports = {
 
       for (const row of rows) {
         let parsed;
+        let originalStructure = null;
         try {
-          // First try to extract tags from {"tags": [...]} format
+          // Parse the JSON data from the row
           const extracted = JSON.parse(row.tags);
+          
+          // We expect a structure with a tags array, like {"tags": ["tag1", "tag2"], "rule": [1,2]}
           if (extracted.tags && Array.isArray(extracted.tags)) {
             parsed = extracted.tags;
+            originalStructure = extracted;
           } else {
-            // Try parsing directly as array
-            parsed = Array.isArray(extracted) ? extracted : null;
+            logger.warn(`pk=${row.pkVal} in ${tableName}.${columnName} has unexpected JSON format. Skipping.`);
+            continue;
           }
         } catch (err) {
           logger.warn(`pk=${row.pkVal} in ${tableName}.${columnName} has invalid JSON. Skipping.`);
@@ -76,14 +80,18 @@ module.exports = {
 
         if (changed) {
           logger.info(`pk=${row.pkVal} changed from ${JSON.stringify(parsed)} to ${JSON.stringify(newTagsArray)}`);
-          const updatedJson = JSON.stringify(newTagsArray);
+          
+          // Update the tags array in the original structure and preserve the structure
+          originalStructure.tags = newTagsArray;
+          const updatedJson = JSON.stringify(originalStructure);
+          
           const updateStmt = db.prepare(`
             UPDATE '${tableName}'
             SET ${columnName} = ?
             WHERE ${pkName} = ?
           `);
           const info = updateStmt.run(updatedJson, row.pkVal);
-          logger.info(`pk=${row.pkVal} update - changes: ${info.changes}`);
+         logger.info(`pk=${row.pkVal} update - changes: ${info.changes}`);
         } else {
           logger.info(`pk=${row.pkVal} had no changes for tags array.`);
         }
