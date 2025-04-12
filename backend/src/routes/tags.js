@@ -11,6 +11,43 @@ const logger = require('../Logger.js');
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /api/tags:
+ *   get:
+ *     summary: Retrieve all unique tags
+ *     description: Fetches all unique tags from transactions and transaction_enriched tables, including parent tag chains.
+ *     tags: [Tags]
+ *     responses:
+ *       200:
+ *         description: List of tags retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 tags:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   example: ["Food", "Food > Restaurant", "Transport", "Utilities"]
+ *       400:
+ *         description: Error retrieving tags
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Error message describing the specific issue."
+ */
 // GET /api/tags
 router.get('/api/tags', async (req, res) => {
   let db = new BankDatabase();
@@ -76,6 +113,75 @@ router.get('/api/tags', async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/tags/rename:
+ *   patch:
+ *     summary: Rename a tag
+ *     description: Renames all occurrences of a tag from oldName to newName in the database.
+ *     tags: [Tags]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - oldName
+ *               - newName
+ *             properties:
+ *               oldName:
+ *                 type: string
+ *                 description: The current name of the tag
+ *                 example: "Food"
+ *               newName:
+ *                 type: string
+ *                 description: The new name for the tag
+ *                 example: "Groceries"
+ *     responses:
+ *       200:
+ *         description: Tag renamed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 oldName:
+ *                   type: string
+ *                   example: "Food"
+ *                 newName:
+ *                   type: string
+ *                   example: "Groceries"
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Missing oldName or newName in request body."
+ *       500:
+ *         description: Server error during rename operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Error message describing the specific issue."
+ */
 // PATCH /api/tags/rename
 router.patch('/api/tags/rename', async (req, res) => {
   const { oldName, newName } = req.body;
@@ -100,5 +206,12 @@ router.patch('/api/tags/rename', async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+/**
+ * @swagger
+ * tags:
+ *   name: Tags
+ *   description: API for managing transaction tags
+ */
 
 module.exports = router;
