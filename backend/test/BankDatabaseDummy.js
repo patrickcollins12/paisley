@@ -18,6 +18,16 @@ function database_setup() {
             'party' JSON, 
             PRIMARY KEY("id")
         );
+
+        CREATE TABLE "account_history" (
+            "historyid" INTEGER PRIMARY KEY AUTOINCREMENT,
+            "accountid" TEXT NOT NULL,
+            "datetime" TEXT,
+            "balance" REAL,
+            "data" JSON,
+            FOREIGN KEY("accountid") REFERENCES "account"("accountid") ON DELETE CASCADE
+        );
+
         CREATE TABLE "rule" (
             "id"    INTEGER NOT NULL UNIQUE,
             "rule"  TEXT NOT NULL,

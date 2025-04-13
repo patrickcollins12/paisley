@@ -1,15 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const { body, query, validationResult } = require("express-validator");
-const BankDatabase = require("../BankDatabase");
+const AccountHistory = require("../AccountHistory");
+const BalanceHistoryRecreator = require("../BalanceHistoryRecreator");
 const logger = require("../Logger");
 
-// Set to false to enforce authentication. Set it to true when doing unit tests
-const disableAuth = false;
-
-/**
- * Middleware: Handle validation errors
- */
 function handleValidationErrors(req, res, next) {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -18,10 +13,6 @@ function handleValidationErrors(req, res, next) {
     next();
 }
 
-/**
- * POST /account_balance
- * Records a new balance for an account at a specific date.
- */
 router.post(
     "/api/account_balance",
     [
@@ -29,32 +20,41 @@ router.post(
         body("datetime").optional().isISO8601().withMessage("Invalid datetime format"),
         body("balance").isFloat().withMessage("Balance must be a number"),
         body("data").optional().isObject().withMessage("Metadata must be a JSON object"),
+        body("recreate_history").optional().isBoolean().withMessage("recreate_history must be a boolean")
     ],
     handleValidationErrors,
     async (req, res) => {
-        let db = new BankDatabase();
-        const { accountid, datetime = new Date().toISOString(), balance, data = {} } = req.body;
-
-        const query = `INSERT INTO account_history (accountid, datetime, balance, data) VALUES (?, ?, ?, ?)`;
+        const {
+            accountid,
+            datetime = new Date().toISOString(),
+            balance,
+            data = {},
+            recreate_history = false
+        } = req.body;
 
         try {
-            const stmt = db.db.prepare(query);
-            const result = stmt.run(accountid, datetime, balance, JSON.stringify(data));
-            res.status(201).json({ historyid: result.lastInsertRowid, message: "Balance recorded" });
-        } catch (err) {
+            // First record the new balance
+            const result = await AccountHistory.recordBalance(accountid, datetime, balance, data);
 
-            logger.error(`Error inserting balance: ${err.message}`);
-
-            if (err.message.includes("FOREIGN KEY constraint failed")) {
-                return res.status(400).json({ error: `Account ID '${accountid}' does not exist.` });
+            // If requested, recreate the balance history
+            if (recreate_history) {
+                await BalanceHistoryRecreator.recreateHistory(
+                    accountid,
+                    datetime,
+                    balance,
+                    AccountHistory.recordBalance
+                );
             }
 
+            res.status(201).json(result);
+        } catch (err) {
+            if (err.message.includes("Account ID")) {
+                return res.status(400).json({ error: err.message });
+            }
             res.status(500).json({ error: err.message });
         }
     }
 );
-
-const util = require('../AccountHistoryDataTransform');
 
 router.get(
     "/api/account_history",
@@ -62,94 +62,19 @@ router.get(
         query("accountid").optional().isString().withMessage("Account ID must be a string"),
         query("from").optional().isISO8601().withMessage("Invalid 'from' date"),
         query("to").optional().isISO8601().withMessage("Invalid 'to' date"),
-        query("interpolate").optional().toBoolean()
+        query("interpolate").optional().toBoolean(),
     ],
     async (req, res) => {
-        let db = new BankDatabase();
-        let { accountid, from, to, interpolate=false } = req.query;
-
-        // Enforce that 'accountid' is required if 'interpolate' is true
-        if (interpolate && !accountid) {
-            return res.status(400).json({ error: "Account ID is required when interpolation is enabled." });
-        }
-
-        let query = `
-                -- balance can come from account_history or transaction table
-                -- which is why we use a UNION to combine the two
-                SELECT DISTINCT * FROM (
-
-                    SELECT 
-                        h.accountid, 
-                        datetime, 
-                        balance,
-                        data,
-                        a.parentid as parentid,
-                        'account_history' as source
-                    FROM 
-                        account_history h
-					LEFT JOIN account a on h.accountid = a.accountid
-
-                UNION
-
-                    -- get the latest transaction for each account
-                    -- this assumes that the latest transaction is the most recent balance
-                    -- this is why CSV's need to be imported in ascending order
-
-                    SELECT 
-                        t.account,
-                        t.datetime,
-                        t.balance,
-                        null,
-						a.parentid as parentid,
-                        'transaction' as source
-                    FROM 'transaction' t
-					LEFT JOIN account a on t.account = a.accountid
-                    WHERE t.rowid = (
-                            SELECT 
-                                MAX(t2.rowid)
-                                FROM 'transaction' t2
-                                WHERE t2.account = t.account
-                                    AND t2.datetime = t.datetime
-                        ) AND balance is not null
-                    ) WHERE 1=1
-                `;
-        let params = [];
-
-        if (accountid) {
-            query += ` AND (accountid = ? OR parentid = ?)`;
-            params.push(accountid);
-            params.push(accountid);
-        }
-        if (from) {
-            query += ` AND datetime >= ?`;
-            params.push(from);
-        }
-        if (to) {
-            query += ` AND datetime <= ?`;
-            params.push(to);
-        }
-        query += ` ORDER BY accountid ASC, datetime ASC`;
+        const { accountid, from, to, interpolate = false } = req.query;
 
         try {
-            const stmt = db.db.prepare(query);
-            const rows = stmt.all(...params);
-
-            // if there is more than one accountid, we need to forcefully interpolate
-            let accountids = [...new Set(rows.map(row => row.accountid))];
-
-            if (accountids.length > 1)
-                interpolate = true;
-            
-            // If interpolation is requested, apply it
-            res.json(util.normalizeTimeSeries(rows, interpolate))
-
+            const result = await AccountHistory.getAccountHistory(accountid, from, to, interpolate);
+            res.json(result);
         } catch (err) {
-            logger.error(`Error fetching account history: ${err.message}`);
             res.status(500).json({ error: err.message });
         }
     }
 );
-
 
 router.get(
     "/api/account_transaction_volume",
@@ -159,44 +84,12 @@ router.get(
         query("to").optional().isISO8601().withMessage("Invalid 'to' date"),
     ],
     async (req, res) => {
-        let db = new BankDatabase();
-        let { accountid, from, to } = req.query;
-
-        let params = [];
-        let query = `
-            SELECT 
-                t.account, 
-                DATE(t.datetime) AS date, 
-                COUNT(*) AS transaction_count 
-            FROM 'transaction' t 
-            WHERE 1=1
-            `;
-
-        // Dynamically build conditions
-        if (accountid) {
-            query += " AND t.account = ?";
-            params.push(accountid);
-        }
-        if (from) {
-            query += " AND t.datetime >= ?";
-            params.push(from);
-        }
-        if (to) {
-            query += " AND t.datetime <= ?";
-            params.push(to);
-        }
-
-        // Final GROUP BY and ORDER BY
-        query += " GROUP BY t.account, DATE(t.datetime) ORDER BY date DESC";
-
-        // logger.info(`${query}, ${params}`);
+        const { accountid, from, to } = req.query;
 
         try {
-            const stmt = db.db.prepare(query);
-            const rows = stmt.all(...params);
-            res.json(rows);
+            const result = await AccountHistory.getTransactionVolume(accountid, from, to);
+            res.json(result);
         } catch (err) {
-            logger.error(`Error fetching account transaction volume: ${err.message}`);
             res.status(500).json({ error: err.message });
         }
     }
@@ -210,82 +103,12 @@ router.get(
         query("to").optional().isISO8601().withMessage("Invalid 'to' date"),
     ],
     async (req, res) => {
-        let db = new BankDatabase();
-
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
-        }
-
         const { accountid, from, to } = req.query;
-        let params = [];
-
-        let query = `
-            WITH InterestChanges AS (
-                SELECT historyid,
-                    accountid,
-                    datetime,
-                    json_extract(data, '$.interest') AS interest,
-                    LAG(json_extract(data, '$.interest')) OVER (
-                        PARTITION BY accountid
-                        ORDER BY datetime
-                    ) AS previous_interest
-                FROM account_history
-                WHERE json_extract(data, '$.interest') IS NOT NULL
-            ),
-            NewestInterest AS (
-                SELECT historyid,
-                    accountid,
-                    datetime,
-                    json_extract(data, '$.interest') AS interest,
-                    ''
-                FROM account_history AS a
-                WHERE json_extract(data, '$.interest') IS NOT NULL
-                    AND datetime = (
-                        SELECT MAX(datetime)
-                        FROM account_history AS b
-                        WHERE a.accountid = b.accountid
-                    )
-            )
-            SELECT historyid,
-                accountid,
-                datetime,
-                interest
-            FROM (
-                    SELECT *
-                    FROM InterestChanges
-                    WHERE interest != previous_interest
-                        OR previous_interest IS NULL
-                    UNION ALL
-                    SELECT *
-                    FROM NewestInterest
-                )
-            WHERE 1 = 1
-        `;
-
-        // Apply filters dynamically
-        if (accountid) {
-            query += " AND accountid = ?";
-            params.push(accountid);
-        }
-        if (from) {
-            query += " AND datetime >= ?";
-            params.push(from);
-        }
-        if (to) {
-            query += " AND datetime <= ?";
-            params.push(to);
-        }
-
-        query += " ORDER BY datetime DESC";
-
 
         try {
-            const stmt = db.db.prepare(query);
-            const rows = stmt.all(...params);
-            res.json(rows);
+            const result = await AccountHistory.getInterestChanges(accountid, from, to);
+            res.json(result);
         } catch (err) {
-            logger.error(`Error executing query: ${err.message}`);
             res.status(500).json({ error: err.message });
         }
     }
@@ -370,6 +193,7 @@ module.exports = router;
  *                   type: string
  *                   example: "Database error message"
  */
+
 /**
  * @swagger
  * /api/account_history:
@@ -544,3 +368,5 @@ module.exports = router;
  *       500:
  *         description: Internal server error.
  */
+
+module.exports = router;

@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react"
 import httpClient from "@/lib/httpClient" // adjust path if needed
 import { useToast } from "@/components/ui/use-toast.js"
+import { Checkbox } from "@/components/ui/checkbox"
 
 import {
     DialogTitle,
@@ -20,6 +21,7 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
     const [amount, setAmount] = useState("")
     const [date, setDate] = useState(new Date())
     const [time, setTime] = useState(format(new Date(), "HH:mm"))
+    const [recreateHistory, setRecreateHistory] = useState(true)
     const { toast } = useToast()
 
     function sanitizeAmount(input) {
@@ -37,6 +39,7 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
         console.log("Account ID:", accountid)
         console.log("Amount:", amount)
         console.log("Balance as of:", combinedDate.toISOString())
+        console.log("Recreate history:", recreateHistory)
 
         const cleanedAmount = sanitizeAmount(amount)
         const numericAmount = parseFloat(cleanedAmount)
@@ -47,26 +50,58 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
             balance: numericAmount,
             datetime: isoDatetime,
             data: { "from": "saved from user (X) on frontend" },
+            recreate_history: recreateHistory
         })
 
         if (error) {
-            // console.error("Failed to save balance:", error)
-            toast({ description: error, duration: 2000, variant: "destructive" })
+            // Check if this is a "no previous balance" error
+            if (error.includes("No previous balance found")) {
+                // Ask user if they want to proceed without recreation
+                const proceed = window.confirm(
+                    "This appears to be the first balance record for this account. " +
+                    "Would you like to save it as the initial balance point?"
+                );
+                if (proceed) {
+                    // Retry without recreation
+                    const { data: retryResult, error: retryError } = await saveBalance({
+                        accountid,
+                        balance: numericAmount,
+                        datetime: isoDatetime,
+                        data: { 
+                            "from": "saved from user (X) on frontend",
+                            "first_balance_point": true 
+                        },
+                        recreate_history: false
+                    });
+                    
+                    if (retryError) {
+                        toast({ description: retryError, duration: 2000, variant: "destructive" });
+                    } else {
+                        toast({ 
+                            description: "Initial balance point saved!", 
+                            duration: 2000 
+                        });
+                        if (onSuccess) onSuccess();
+                    }
+                }
+            } else {
+                toast({ description: error, duration: 2000, variant: "destructive" });
+            }
         } else {
-            // console.log("Balance saved:", result)
-            toast({ description: "Balance saved!", duration: 2000 })
-            if (onSuccess) onSuccess()
+            toast({ description: "Balance saved!", duration: 2000 });
+            if (onSuccess) onSuccess();
         }
     }    // utils/accountBalanceApi.js or similar
 
 
-    async function saveBalance({ accountid, datetime, balance, data }) {
+    async function saveBalance({ accountid, datetime, balance, data, recreate_history }) {
         try {
             const response = await httpClient.post("account_balance", {
                 accountid,
                 datetime,
                 balance,
                 data,
+                recreate_history
             })
 
             return { data: response.data, error: null, isLoading: false }
@@ -144,6 +179,21 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
                             className="w-[120px]"
                         />
                     </div>
+                </div>
+
+                {/* Recreate history checkbox */}
+                <div className="flex items-center space-x-2">
+                    <Checkbox 
+                        id="recreate-history"
+                        checked={recreateHistory}
+                        onCheckedChange={setRecreateHistory}
+                    />
+                    <Label 
+                        htmlFor="recreate-history"
+                        className="text-sm font-normal"
+                    >
+                        Recreate balance history using transactions
+                    </Label>
                 </div>
 
                 {/* Submit button */}
