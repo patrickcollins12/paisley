@@ -47,6 +47,7 @@ function Root() {
             <Link to="/rules" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
               {t('Rules')}
             </Link>
+<Link to="/tags" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">{t('Tags')}</Link>
             <Link to="/visualize" className="[&.active]:text-foreground text-muted-foreground transition-colors hover:text-foreground">
               {t('Visualize')}
             </Link>
