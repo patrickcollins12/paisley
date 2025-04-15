@@ -93,9 +93,9 @@ async function createOrUpdateMainAccount() {
             "metadata": JSON.stringify(user_data)
         }
 
-        // Note this is an upsert operation, so will overwrite the existing account 
-        // if has been modified manually.
-        await util.saveToPaisley("/api/accounts", account_from_user_payload)
+        // await util.saveToPaisley("/api/accounts", account_from_user_payload)
+        await util.updatePaisleyResource(`/api/accounts`, user_data.id, account_from_user_payload);
+        
 
     } catch (error) {
 
@@ -191,7 +191,7 @@ async function getCoinbaseBalances(account_from_user_payload) {
 
                 // logger.info(`parentid: ${JSON.stringify(account_from_user_payload, null, 2)}`)
                 // logger.info(`Payload: ${JSON.stringify(payload, null, 2)}`)
-                await util.saveToPaisley("/api/accounts", payload, account.uuid)
+                await util.updatePaisleyResource("/api/accounts", account.uuid, payload)
 
                 const cryptocode = account.currency
                 const currency = account_from_user_payload.currency
@@ -205,8 +205,7 @@ async function getCoinbaseBalances(account_from_user_payload) {
 
                 logger.info(`Datetime: ${datetime}, timezone: ${payload.timezone}`)
 
-                util.saveToPaisley(
-                    "/api/account_balance/",
+                util.savePaisleyBalance(
                     {
                         "accountid": account.uuid,
                         "datetime": datetime,

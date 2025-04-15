@@ -124,7 +124,7 @@ async function processOwnedAsset(ownedAsset, user, rates) {
     let fullName = `${user.user.profile.name.first} ${user.user.profile.name.last}`
     let currency = user.user.profile.currency.code
 
-    let account_update = {
+    let account_update_payload = {
         "accountid": asset_account_id,
         "institution": "Swyftx",
         "name": asset_name,
@@ -136,9 +136,9 @@ async function processOwnedAsset(ownedAsset, user, rates) {
         "parentid": bank_config['account']
     };
 
-    await util.saveToPaisley(`/api/accounts`, account_update, asset_account_id);
+    await util.updatePaisleyResource(`/api/accounts`, asset_account_id, account_update_payload);
 
-    let account_history = {
+    let account_history_payload = {
         'datetime': DateTime.now().setZone("Australia/Sydney").toISO(),
         "accountid": asset_account_id,
         "balance": balance.toFixed(2),
@@ -152,7 +152,7 @@ async function processOwnedAsset(ownedAsset, user, rates) {
         }
     };
 
-    await util.saveToPaisley("/api/account_balance", account_history);
+    await util.savePaisleyBalance(account_history_payload);
 }
 
 test('test', async () => {
