@@ -35,6 +35,7 @@ describe('Rules classifier', () => {
       debit: 0,
       balance: 1000,
       type: "DEP",
+      jsondata: null,
       tags: JSON.stringify({"tags": ['tag1', 'tag2'], "rule":[1,2]}),
       party: JSON.stringify({"party": ['Shop 1'], "rule":[1]  })
     });

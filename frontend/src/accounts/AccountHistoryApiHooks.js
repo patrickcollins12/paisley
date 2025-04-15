@@ -14,7 +14,7 @@ async function fetcher([url, params]) {
 }
 
 function useAccountHistoryData({ accountid, from, to, interpolate = false }) {
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading, mutate } = useSWR(
     ['account_history', { accountid, from, to, interpolate }], // Pass the parameters object
     fetcher
   );
@@ -22,34 +22,9 @@ function useAccountHistoryData({ accountid, from, to, interpolate = false }) {
   return {
     data,
     error,
-    isLoading
+    isLoading,
+    mutate
   };
 }
 
 export default useAccountHistoryData;
-
-
-// import useSWR from "swr";
-// import httpClient from "@/lib/httpClient.js";
-
-// async function fetcher([url, id, from, to]) {
-//   const params = new URLSearchParams();
-//   params.append('accountid', id);
-//   if (from) params.append('from', from);
-//   if (to) params.append('to', to);
-//   const newUrl = `${url}?${params.toString()}`
-//   const response = await httpClient.get(newUrl);
-//   return response.data;
-// }
-
-// function useAccountHistoryData(id, from, to) {
-//   const { data, error, isLoading } = useSWR(['account_history', id, from, to], fetcher);
-  
-//   return {
-//     data,
-//     error,
-//     isLoading
-//   };
-// }
-
-// export default useAccountHistoryData;

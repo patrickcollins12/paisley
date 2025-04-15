@@ -39,17 +39,17 @@ test('Bankwest Scraper Test', async ({ page }) => {
   // Step 1 - Login
   await login(page);
 
-  // Step 2 - Navigate to main page and process get the table on the homepage
-  const tableHtml = await getHomePageTable(page)
+  // Step 2 - Get table HTML
+  const tableHtml = await getHomePageTable(page);
 
-  // Step 3 - process the table
-  const tableObj = await processHomePageTable(page, tableHtml);
+  // Step 3 - Process table HTML to initial JSON object
+  const initialTableObj = await processHomePageTable(page, tableHtml); // Renamed for clarity
 
-  // Step 4 - process mortgage accounts and get interest rates
-  await processMortgageAccounts(page, tableObj);
+  // Step 4 - Transform mortgage accounts within the data, returns new structure
+  const processedTableData = await processMortgageAccounts(page, initialTableObj); // Renamed for clarity
 
-  // Step 5 - save the balances and interest
-  await saveBalancesAndInterest(tableObj)
+  // Step 5 - Save accounts and balances from the processed data
+  await saveBalancesAndInterest(processedTableData); // Pass the processed data
 
   // Step 6 - Download transactions CSV
   await downloadTransactionsCSV(page);
@@ -179,141 +179,259 @@ async function processHomePageTable(page, html) {
 }
 
 /**
- * Finds the home page accounts table, extracts links, and retrieves interest rates.
+ * Cleans a number string by removing currency symbols and commas.
+ * @param {string} v - The number string to clean.
+ * @returns {number} The cleaned number.
  */
-async function processMortgageAccounts(page, tableObj) {
+const cleanNumber = (v) =>
+  typeof v === 'string' ? Number(v.replace(/[$,%]/g, '').replace(/,/g, '')) : v;
 
-  const filteredAccounts = tableObj
-    .filter(row =>
-      row.Link?.startsWith('/CMWeb/AccountManage/AccountManage.aspx'));
+const MORTGAGE_ACCOUNT_PATH_PREFIX = "/CMWeb/AccountManage/AccountManage.aspx";
+const CREDIT_LIMIT_SUFFIX = "_limit";
+const AVAILABLE_FUNDS_SUFFIX = "_avail";
 
-  // logger.info(`Filtered Accounts: ${filteredAccounts}`);
-
-  for (const obj of filteredAccounts) {
-    const link = baseUrl + obj['Link']
-    logger.info(`Navigating to: ${link}`);
-    await page.goto(link);
-    logger.info("Clicked on mortgage-type account");
-
-    // Extract interest rate
-    const interestRate = await getInterestRate(page);
-    obj['Interest Rate'] = interestRate;
-    logger.info(`Found interest rate: ${interestRate}, for ${obj['Account Name']}`);
-  }
-
-  logger.info("Finished processing mortgage accounts.");
-}
-
-/** 
- * Saves the balances and interest rates to a CSV file.
+/**
+ * Creates the payload for saving an account to the Paisley /api/accounts endpoint.
+ * @param {string} accountId - The unique ID for the new account.
+ * @param {string} name - The original account name.
+ * @param {string} type - The account type (e.g., "Mortgage").
+ * @param {object} [extraMetadata={}] - Optional additional metadata to include.
+ * @returns {object} The payload object.
  */
-async function saveBalancesAndInterest(tableObj) {
-  // const tableObj =
-  //   [
-  //     {
-  //       'Account Name': 'Complete Variable Home Loan',
-  //       'Account Number': '302-985 1XXXX36',
-  //       Balance: '-$545,113.03',
-  //       'Credit Limit': '$549,447.71',
-  //       'Uncleared Funds': '$0.00',
-  //       'Available Balance': '$4,334.68',
-  //       Link: '/CMWeb/AccountManage/AccountManage.aspx?q=lhk6admO%2fDKMbaawFipI7lDSuBU2YBqLcxc%3d',
-  //       'Interest Rate': '5.84%'
-  //     },
-  //     {
-  //       'Account Name': 'OFFSET TRANSACTION ACCOUNT',
-  //       'Account Number': '302-985 13XX1',
-  //       Balance: '$18,984.03',
-  //       'Credit Limit': '$0.00',
-  //       'Uncleared Funds': '$0.00',
-  //       'Available Balance': '$18,725.00',
-  //       Link: 'TransactionList.aspx?q=ldHIvsp%2f1SYOdA3g1TrVNDYYGtc3yZr3gh34A%2fH9RNHOpw%2bj6sE'
-  //     },
-  //     {
-  //       'Account Name': 'Easy Transaction Account',
-  //       'Account Number': '306-821 47XXXX9',
-  //       Balance: '$0.00',
-  //       'Credit Limit': '$0.00',
-  //       'Uncleared Funds': '$0.00',
-  //       'Available Balance': '$0.00',
-  //       Link: 'TransactionList.aspx?q=ldHIvsOzcYWE3%2bEUeekMvDlrhcjsp3KudJGs8Q2FvId1sWecmpyuCuwXcKP5rlVld'
-  //     },
-  //     {
-  //       'Account Name': 'Self goal',
-  //       'Account Number': '306-821 47XXXX7',
-  //       Balance: '$262.31',
-  //       'Credit Limit': '$0.00',
-  //       'Uncleared Funds': '$0.00',
-  //       'Available Balance': '$262.31',
-  //       Link: 'TransactionList.aspx?q=ldHIvsOGeJADDokLamTVbby7SQca0yTbtKaT%2bEmk5hr8fiYpfnTRABskUAI'
-  //     },
-  //     { 'Account Name': 'Total Balance:-$122,866.69', Link: undefined },
-  //     { 'Account Name': 'Total Available:$6,321.99', Link: undefined }
-  //   ]
-
-
-  // only where the object contains an account number
-  const filteredAccounts = tableObj
-    .filter(row =>
-      row['Account Number'] !== undefined);
-
-  for (const acc of filteredAccounts) {
-    const account_number = acc['Account Number'];
-
-    // clean up the account number to remove "-"'s
-    const accountid = account_number.replace(/-/g, '');
-    const balance = acc['Balance'];
-
-    const cleanNumber = (v) => 
-      typeof v === 'string' ? Number(v.replace(/[$,%]/g, '').replace(/,/g, '')) : v;
-
-    let data = {
-      'datetime': DateTime.now().setZone("Australia/Sydney").toISO(),
-      "accountid": accountid,
-      "balance": cleanNumber(balance),
-      "data": {}
-    }
-
-    data.data = Object.fromEntries(
-      [
-        ['credit_limit', acc['Credit Limit']], 
-        ['uncleared_funds', acc['Uncleared Funds']], 
-        ['available_balance', acc['Available Balance']], 
-        ['interest', acc['Interest Rate'] ? cleanNumber(acc['Interest Rate']) / 100 : undefined] // Convert percentage to decimal
-      ]
-      .map(([k, v]) => [k, cleanNumber(v)]) // Convert values to numbers
-      .filter(([_, v]) => v !== undefined && v !== 0 && v !== '') // Remove undefined, 0, and empty values
-    );
-
-    // logger.info(JSON.stringify(data, null, 2));
-    await util.saveToPaisley("/api/account_balance", data);
-  }
-
-
+function createAccountPayload(accountId, name, type, extraMetadata = {}) {
+    return {
+        accountid: accountId,
+        name: name,
+        institution: "Bankwest",
+        currency: "AUD",
+        type: type,
+        status: "active",
+        timezone: "Australia/Sydney",
+        metadata: JSON.stringify(extraMetadata)
+    };
 }
 
 /**
- * Extracts the interest rate from an iframe in the mortgage account page.
+ * Creates the payload for saving a balance to the Paisley /api/account_balance endpoint.
+ * @param {string} accountId - The account ID to save the balance for.
+ * @param {string} isoDatetime - The ISO datetime string for the balance.
+ * @param {number} balance - The balance amount.
+ * @param {object} [extraData={}] - Optional additional data for the balance entry.
+ * @returns {object} The payload object.
  */
-async function getInterestRate(page) {
+function createBalancePayload(accountId, isoDatetime, balance, extraData = {}) {
+    return {
+        datetime: isoDatetime,
+        accountid: accountId,
+        balance: balance,
+        data: { ...extraData, from: "scraper:bankwest" }
+    };
+}
 
-  const interestRateLabel = page
-    .locator('iframe[title="AccountManage"]')
-    .contentFrame()
-    .getByText('Interest rate')
-    .first();
-  await interestRateLabel.waitFor({ state: 'visible', timeout: 10000 });
+/**
+ * Navigates to an account page and extracts the interest rate using the iframe method.
+ * @param {import("playwright").Page} page - The Playwright page object.
+ * @param {string} accountPageLink - The relative URL path to the account page.
+ * @returns {Promise<number|null>} The interest rate as a number (decimal), or null if not found/error.
+ */
+async function scrapeInterestRateForAccount(page, accountPageLink) {
+    const fullUrl = baseUrl + accountPageLink;
+    try {
+        logger.info(`Navigating to account details: ${fullUrl}`);
+        await page.goto(fullUrl);
+        // Wait for the iframe to be present and potentially loaded
+        const iframeLocator = page.locator('iframe[title="AccountManage"]');
+        await iframeLocator.waitFor({ state: 'visible', timeout: 15000 });
+        const frame = iframeLocator.contentFrame();
 
-  const html = await interestRateLabel.evaluate(el => el.outerHTML);
+        if (!frame) {
+             logger.error(`Could not get content frame for iframe[title="AccountManage"] at ${fullUrl}`);
+             return null;
+        }
 
-  const interestRateValue = await interestRateLabel
-    .locator('xpath=following-sibling::div[1]');
-  await interestRateValue.waitFor({ state: 'visible', timeout: 10000 });
+        // Now find elements within the frame
+        logger.debug(`Locating 'Interest rate' text within the frame...`);
+        const interestRateLabel = frame.getByText('Interest rate', { exact: true }).first();
+        await interestRateLabel.waitFor({ state: 'visible', timeout: 10000 });
+        logger.debug(`Found 'Interest rate' label.`);
 
-  const interest = await interestRateValue.textContent()
-  logger.info(`Found the interest rate: ${interest}`);
-  return interest
+        // Find the value in the immediately following sibling div
+        const interestRateValueLocator = interestRateLabel.locator('xpath=following-sibling::div[1]');
+        await interestRateValueLocator.waitFor({ state: 'visible', timeout: 10000 });
 
+        const interestRateText = await interestRateValueLocator.textContent();
+        logger.info(`Found interest rate text: ${interestRateText} for ${accountPageLink}`);
+
+        // Clean and parse the rate
+        const rate = parseFloat(interestRateText?.replace(/%$/, '').trim());
+        if (!isNaN(rate)) {
+            logger.debug(`Parsed interest rate: ${rate}%`);
+            return rate / 100; // Convert percentage to decimal
+        } else {
+            logger.warn(`Could not parse interest rate from text: "${interestRateText}" at ${fullUrl}`);
+            return null;
+        }
+
+    } catch (error) {
+        logger.error(`Error scraping interest rate from ${fullUrl} using iframe method: ${error.message}`, error);
+        return null; // Don't block processing for other accounts
+    }
+}
+
+/**
+ * Processes mortgage accounts found in the table data.
+ * Scrapes interest rates, creates separate limit/available accounts, and saves balances.
+ * @param {import("playwright").Page} page - The Playwright page object.
+ * @param {Array<object>} allAccountsData - The array of account data scraped from the main table.
+ */
+async function processMortgageAccounts(page, allAccountsData) {
+    const processedData = []; // Build a new array
+    const mortgageLinks = new Set(
+        allAccountsData
+            .filter(acc => acc.Link?.startsWith(MORTGAGE_ACCOUNT_PATH_PREFIX))
+            .map(acc => acc.Link)
+    );
+
+    logger.info(`Found ${mortgageLinks.size} potential mortgage accounts to process.`);
+
+    for (const accountData of allAccountsData) {
+        const isMortgage = accountData.Link?.startsWith(MORTGAGE_ACCOUNT_PATH_PREFIX);
+
+        if (isMortgage) {
+            const originalAccountId = accountData['Account Number']?.replace(/-/g, '');
+            const accountName = accountData['Account Name'];
+
+            if (!originalAccountId || !accountName) {
+                logger.warn("Skipping mortgage account row due to missing number or name:", accountData);
+                continue; // Skip this row entirely
+            }
+
+            logger.info(`Processing and transforming mortgage: ${accountName} (${originalAccountId})`);
+
+            try {
+                // --- Scrape Interest Rate ---
+                const interestRateDecimal = await scrapeInterestRateForAccount(page, accountData.Link);
+
+                // --- Prepare Synthetic Data ---
+                const limitAccountId = `${originalAccountId}${CREDIT_LIMIT_SUFFIX}`;
+                const availableAccountId = `${originalAccountId}${AVAILABLE_FUNDS_SUFFIX}`;
+
+                const invertedCreditLimit = -cleanNumber(accountData['Credit Limit']);
+                const availableBalance = cleanNumber(accountData['Available Balance']);
+
+                // --- Create Synthetic Limit Row ---
+                const limitRow = {
+                    // Copy relevant base info if needed, or define structure here
+                    'Account Name': `${accountName} (Limit)`, // Distinguish name
+                    'Account Number': limitAccountId, // Use synthetic ID
+                    'Balance': invertedCreditLimit, // Use calculated balance
+                    'Type': 'Mortgage', // Keep original type?
+                    // Add scraped interest rate as temporary property
+                    '_temp_metadata': interestRateDecimal !== null ? { currentInterestRate: interestRateDecimal } : {},
+                    // Add other fields needed for createAccountPayload if not generating later
+                    'institution': "Bankwest",
+                    'currency': "AUD",
+                    'status': "active",
+                    'timezone': "Australia/Sydney",
+                };
+                processedData.push(limitRow);
+                logger.debug(`Created synthetic limit row for ${limitAccountId}`);
+
+                // --- Create Synthetic Available Row ---
+                const availableRow = {
+                    'Account Name': `${accountName} (Available)`, // Distinguish name
+                    'Account Number': availableAccountId, // Use synthetic ID
+                    'Balance': availableBalance, // Use calculated balance
+                    'Type': 'Mortgage', // Or 'Offset' / 'Redraw' ?
+                     // Add other fields needed for createAccountPayload if not generating later
+                     'institution': "Bankwest",
+                     'currency': "AUD",
+                     'status': "active",
+                     'timezone': "Australia/Sydney",
+                     '_temp_metadata': {} // Ensure metadata field exists
+                };
+                processedData.push(availableRow);
+                logger.debug(`Created synthetic available row for ${availableAccountId}`);
+
+            } catch (error) {
+                logger.error(`Failed to process and transform mortgage account ${accountName} (${originalAccountId}): ${error.message}`, error);
+                // Decide if you want to add the original row back or just skip it on error
+            }
+        } else {
+            // --- Keep Non-Mortgage Row ---
+            // Add required fields if missing from scraping (assuming defaults)
+             accountData['Type'] = accountData['Type'] || 'Transaction'; // Example default
+             accountData['institution'] = "Bankwest";
+             accountData['currency'] = "AUD";
+             accountData['status'] = "active";
+             accountData['timezone'] = "Australia/Sydney";
+             accountData['_temp_metadata'] = {}; // Ensure metadata field exists
+            processedData.push(accountData);
+        }
+    }
+
+    logger.info(`Finished transforming account data. Original rows: ${allAccountsData.length}, Processed rows: ${processedData.length}`);
+    return processedData; // Return the new array with transformed data
+}
+
+/** 
+ * Saves the balances and attempts to create accounts for the processed data.
+ */
+async function saveBalancesAndInterest(processedTableData) {
+    logger.info(`Saving balances/accounts for ${processedTableData.length} processed rows.`);
+    const nowISO = DateTime.now().setZone("Australia/Sydney").toISO();
+
+    for (const accountRow of processedTableData) {
+        const accountId = accountRow['Account Number']?.replace(/-/g, '');
+        const balance = accountRow['Balance'];
+        const accountName = accountRow['Account Name'];
+        const accountType = accountRow['Type'] || 'Unknown'; 
+
+        if (!accountId || balance === undefined || balance === null) {
+            logger.warn(`Skipping row due to missing Account Number or Balance:`, accountRow);
+            continue;
+        }
+
+        const cleanBalance = cleanNumber(balance);
+
+        try {
+            // 1. Attempt to Create Account
+            const accountMetadata = accountRow['_temp_metadata'] || {};
+            const accountPayload = createAccountPayload(
+                accountId, 
+                accountName, 
+                accountType, 
+                accountMetadata
+            );
+            
+            try {
+                await util.createPaisleyResource("/api/accounts", accountPayload);
+                logger.debug(`Successfully created account ${accountId}`);
+            } catch (createError) {
+                // Check if it's the specific "already exists" error from our API
+                // Adjust the condition based on the exact error message/structure
+                if (createError.responseData?.message === "Account ID already exists." || createError.message?.includes("Account ID already exists")) {
+                    logger.debug(`Account ${accountId} already exists. Proceeding to save balance.`);
+                    // Optionally, you could call updatePaisleyResource here if needed
+                    // await util.updatePaisleyResource("/api/accounts", accountId, accountPayload);
+                } else {
+                    // For any other creation error, re-throw it to be caught by the outer catch
+                    throw createError;
+                }
+            }
+
+            // 2. Save Balance (only if account creation succeeded or error was ignored)
+            const balancePayload = createBalancePayload(accountId, nowISO, cleanBalance, {});
+            await util.savePaisleyBalance(balancePayload); // Use the dedicated balance function
+            logger.debug(`Saved balance ${cleanBalance} for ${accountId}`);
+
+        } catch (error) {
+            // Catch errors from balance saving or non-ignored account creation errors
+            logger.error(`Failed processing for account ${accountName} (${accountId}): ${error.message}`, error.responseData || error);
+            // Continue to next account
+        }
+    }
+    logger.info(`Finished saving balances.`);
 }
 
 /**

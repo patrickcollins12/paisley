@@ -1,13 +1,17 @@
 # TODO
+
 p1
+[ ] integrate john's changes
+[ ] i've broken swyftx and coinbase
+[ ] migrate back to beelink
+
+p2
 [ ] document how to create scrapers
-[x] account page - manually add a balance amount. 
+[ ] on record_balance on frontend, if liability account, make the amount negative.
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
-[ ] account page - manually add a balance amount
 [ ] account delete - cascade
-[ ] paisley backend on beelink. feels pretty important!?
 [ ] visualize page - set default filters.
 [ ] install - add more demo income.
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)
@@ -19,12 +23,14 @@ One day:
 [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
 [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 [ ] Add kv logging for events. Events could include playwright runs, failures, logins.
-[ ] enable  column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
+[ ] enable column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 [ ] Sync url with filters
-[ ] Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
-
 
 done
+[x] Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
+[x] paisley backend on beelink. feels pretty important!?
+[x] account page - manually add a balance amount
+[x] account page - manually add a balance amount. 
 [x] pm2
 [x] add more documentation and screenshots
 [x] install - demo DB data account logos. 
@@ -99,7 +105,7 @@ DB Migrator, prism? knexjs? https://knexjs.org/guide/migrations.html#migration-a
 
 Docs
        Document how to create a scraper and a CSV importer
-       
+
 [x] Create Install process
        Setup default demo database
        explore docker up
