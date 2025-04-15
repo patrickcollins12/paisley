@@ -79,82 +79,39 @@ const AccountsPage = () => {
   //////////////////
   // setup the data
   useEffect(() => {
+    // Data fetched from the API (`useAccountData`) is now pre-aggregated and pre-sorted on the server.
     if (data) {
 
+      // Filter by active/inactive status (client-side toggle)
       const relevantAccounts = showInactive ? data : data.filter(acc => acc.status !== "inactive");
 
-      // Create a lookup map for quick parent reference
-      const accountMap = Object.fromEntries(relevantAccounts.map(acc => [acc.accountid, { ...acc }]));
+      // Data is already aggregated and sorted, just update state.
+      setAccounts(relevantAccounts);
 
-      // Step 1: Aggregate child account data into their respective parents
-      relevantAccounts.forEach(child => {
-        if (child.parentid && accountMap[child.parentid]) {
-          const parent = accountMap[child.parentid];
-
-          // --- Simple If Logic --- 
-          if (!parent._markedForChildAggregation) {
-            // This is the FIRST child we've hit for this parent.
-            // Discard the parent's original balance and start with this child's balance.
-            parent.balance = child.balance || 0;
-            parent._markedForChildAggregation = true; // Mark it so subsequent children ADD to this.
-          } else {
-            // This is a SUBSEQUENT child for this parent.
-            // Add its balance to the running sum (which was initialized by the first child).
-            parent.balance += (child.balance || 0);
-          }
-          // --- End Simple If Logic ---
-
-          // Mark this account as a parent (for UI/filtering purposes)
-          parent.hasChildren = true;
-
-          // Track the latest balance_datetime among the parent and its children
-          if (!parent.balance_datetime || new Date(child.balance_datetime) > new Date(parent.balance_datetime)) {
-            parent.balance_datetime = child.balance_datetime;
-          }
-        }
-      });
-
-      // Clean up the temporary marker (optional but good practice)
-      Object.values(accountMap).forEach(acc => delete acc._markedForChildAggregation);
-
-      // Step 2: Remove child accounts (keep only top-level parents)
-      const updatedAccounts = Object.values(accountMap);
-
-      // Sort accounts by custom sortOrder
-      const sortOrder = ["Checking", "Savings", "Crypto", "Investment", "Credit", "Mortgage"];
-
-      const sortedAccounts = updatedAccounts.sort((a, b) => {
-        const indexA = sortOrder.indexOf(a.type);
-        const indexB = sortOrder.indexOf(b.type);
-
-        // First, sort by type using the predefined order
-        const typeComparison = (indexA === -1 ? Infinity : indexA) - (indexB === -1 ? Infinity : indexB);
-        if (typeComparison !== 0) return typeComparison;
-
-        // If types are the same, sort by balance (descending order: highest balance first)
-        return b.balance - a.balance;
-      });
-
-      setAccounts(sortedAccounts);
-
-      // calculate total assets, liabilities and net worth
+      // Calculate totals based on the received (already aggregated) accounts
       setTotalAssets(
-        sortedAccounts
-          .filter(acc => !acc.parentid) // only top-level accounts
+        relevantAccounts 
           .filter((acc) => acc.category === "asset")
-          .reduce((sum, acc) => sum + acc.balance, 0)
+          .reduce((sum, acc) => sum + (acc.balance || 0), 0)
       );
 
       setTotalLiabilities(
-        sortedAccounts
-          .filter(acc => !acc.parentid) // only top-level accounts
+        relevantAccounts
           .filter((acc) => acc.category === "liability")
-          .reduce((sum, acc) => sum + acc.balance, 0)
+          .reduce((sum, acc) => sum + (acc.balance || 0), 0)
       );
 
-      setNetWorth(totalAssets + totalLiabilities);
+      // Corrected net worth:
+      // Note: We calculate totals *after* applying the showInactive filter client-side.
+      // This means totals reflect only the currently visible accounts.
+      // If totals should always reflect *all* active accounts regardless of the toggle,
+      // this calculation would also need to move server-side or use the unfiltered `data`.
+      const currentAssets = relevantAccounts.filter(a => a.category === 'asset').reduce((sum, a) => sum + (a.balance || 0), 0);
+      const currentLiabilities = relevantAccounts.filter(a => a.category === 'liability').reduce((sum, a) => sum + (a.balance || 0), 0);
+      setNetWorth(currentAssets - Math.abs(currentLiabilities)); 
+
     }
-  }, [data, showInactive]);
+  }, [data, showInactive]); // Depend on fetched data and the toggle
 
 
   //////////////////
@@ -280,12 +237,14 @@ const AccountsPage = () => {
           </TableRow>
 
           {/* Render Child Rows if Expanded */}
-          {isExpanded &&
-            filteredAccounts
-              .filter((acc) => acc.parentid === account.accountid)
+          {isExpanded && account.children && account.children.length > 0 && (
+            account.children
+              // Optionally filter children based on showInactive toggle if needed
+              .filter(child => showInactive || child.status !== 'inactive') 
               .map((subAccount) => (
                 <React.Fragment key={subAccount.accountid}>{renderRow(subAccount)}</React.Fragment>
-              ))}
+              ))
+          )}
         </>
       );
     }

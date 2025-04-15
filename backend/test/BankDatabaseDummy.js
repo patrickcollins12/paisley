@@ -18,6 +18,8 @@ function database_setup() {
             'party' JSON, 
             'jsondata' JSON,
             PRIMARY KEY("id")
+            -- Consider adding FK constraint to account if needed by tests
+            -- FOREIGN KEY("account") REFERENCES "account"("accountid") ON DELETE CASCADE
         );
 
         CREATE TABLE "account_history" (
@@ -49,7 +51,14 @@ function database_setup() {
 	        "institution"	TEXT,
 	        "name"	TEXT,
 	        "holders"	TEXT,
-	        "currency"	TEXT, "type" TEXT, "timezone" TEXT, "shortname" TEXT,
+	        "currency"	TEXT,
+          "type" TEXT, 
+          "category" TEXT, -- Add category if used/needed by other logic
+          "timezone" TEXT, 
+          "shortname" TEXT,
+          "parentid" TEXT, -- Add parentid
+          "status" TEXT,   -- Add status
+          "metadata" TEXT, -- Add metadata (as TEXT to store JSON string)
 	        PRIMARY KEY("accountid")
         );
     `);

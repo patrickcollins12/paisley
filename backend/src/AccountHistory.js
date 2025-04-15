@@ -218,14 +218,22 @@ class AccountHistory {
         try {
             // logger.debug("Executing getAccountHistory query:", query, params);
             const stmt = db.db.prepare(query);
-            const rows = stmt.all(...params);
+            let rows = stmt.all(...params);
             // logger.debug("Raw rows from DB:", rows);
 
             // if there is more than one accountid, we need to forcefully interpolate
+            // because echarts must have the same datetime for all series
             let accountids = [...new Set(rows.map(row => row.accountid))];
 
             if (accountids.length > 1) {
                 interpolate = true;
+            }
+
+            // if there is an accountid specified, and multiple accounts are returned, 
+            // then there are child accounts. in this instance we actually must delete 
+            // the parent accountid from the returned rows
+            if (accountid && accountids.length > 1) {
+                rows = rows.filter(row => row.accountid !== accountid);
             }
 
             return TimeSeriesTransformer.normalizeTimeSeries(rows, interpolate)

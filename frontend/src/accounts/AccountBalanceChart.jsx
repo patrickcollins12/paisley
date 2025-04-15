@@ -16,7 +16,7 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
     const resolvedTheme = useResolvedTheme();
     const [option, setOption] = useState({});                   // echarts options
 
-    const { data: accountData, error: accountError, isLoading: accountIsLoading } = useAccountData();
+    const { data: accountData, error: accountError, isLoading: accountIsLoading } = useAccountData(accountid);
 
     // // Fetch data using the custom hook
     const { data, error, isLoading } = useAccountHistoryData(
@@ -50,9 +50,8 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                             const accountid = seriesItem.seriesName
                             const marker = seriesItem.marker
                             const val = seriesItem.data[1]
-                            const accountObj = accountData.find(acc => acc.accountid === accountid)
-                            const shortname = accountObj?.shortname || accountid
-                            const currency = accountObj?.currency || ""
+                            const shortname = accountData?.shortname || accountid
+                            const currency = accountData?.currency || ""
                             const amount = formatCurrency(val, {currency: currency})
                             
                             retStr += (index === 0) ? `${formatDate(date)}<br/>` : ""

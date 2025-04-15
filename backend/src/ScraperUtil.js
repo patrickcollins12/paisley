@@ -70,7 +70,7 @@ async function _callPaisleyApi(method, apiPath, payload, id = null) {
         'Content-Type': 'application/json'
     };
 
-    logger.info(`Calling ${method.toUpperCase()} ${url} with payload:\n ${JSON.stringify(payload, null, 2)}`);
+    // logger.info(`Calling ${method.toUpperCase()} ${url} with payload:\n ${JSON.stringify(payload, null, 2)}`);
 
     try {
         const response = await axios({
@@ -86,7 +86,6 @@ async function _callPaisleyApi(method, apiPath, payload, id = null) {
         const errorData = error.response?.data;
         const message = errorData?.message || (error.isAxiosError ? error.message : 'Unknown API call error');
         logger.error(`Failed (${status || 'N/A'}) calling ${method.toUpperCase()} on ${url}: ${message}`, errorData || '');
-        // Re-throw a structured error or the original error
         const structuredError = new Error(`Paisley API Error (${status || 'N/A'}): ${message}`);
         structuredError.originalError = error;
         structuredError.responseData = errorData;

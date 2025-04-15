@@ -14,6 +14,7 @@ options = {
 
 A full set of options can be found here: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#parameters
 */
+
 export function formatCurrency(value, options = {}) {
 
     // set the defaults if not passed in

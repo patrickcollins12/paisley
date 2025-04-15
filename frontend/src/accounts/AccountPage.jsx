@@ -38,21 +38,16 @@ const AccountPage = () => {
     const { accountId } = routeApi.useParams();
 
     // Fetch all accounts data using the custom hook
-    const { data, error, isLoading } = useAccountData();
+    const { data, error, isLoading } = useAccountData(accountId);
 
     // dynamic graph start dates from the badge clicker called ChartTimeSelection
     const [startDate, setStartDate] = useState(null);
 
     // Filter the array to find the actual account with the matching accountId
-    const account = data?.find(acc => acc.accountid === accountId) || null;
+    const account = data || null;
 
-    // Find child accounts where the accountId is the parent account
-    const childAccounts = data?.filter(acc => acc.parentid === accountId) || [];
-
-    // If account.balance is null or zero, then sum up the child accounts balances
-    if (account && (!account.balance || account.balance === 0)) {
-        account.balance = childAccounts.reduce((acc, child) => acc + child.balance, 0);
-    }
+    // Find child accounts using the children property from the found account object
+    const childAccounts = account?.children || [];
 
     // Once the data is loaded, fetch the right institutional logo
     let logoObject = account ? logos[account.institution] : null;
@@ -121,7 +116,7 @@ const AccountPage = () => {
                                             {account &&
                                                 <>
                                                     <span className="text-4xl font-extrabold">
-                                                        {account && formatCurrency(account.balance, { style: "decimal", currency: account.currency, })}
+                                                        {account && formatCurrency(account.balance, { currency: account.currency, })}
                                                     </span>
                                                     <span className="text-xl font-extrabold opacity-20">{account && account.currency}</span>
 
@@ -131,8 +126,6 @@ const AccountPage = () => {
                                                             accountid={account.accountid}
                                                             category={account.category}
                                                             startDate={startDate} />
-
-
                                                     </div>
 
                                                 </>

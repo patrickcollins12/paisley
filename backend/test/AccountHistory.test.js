@@ -6,41 +6,35 @@ describe('AccountHistory', () => {
     let db;
 
     beforeEach(async () => {
-        // Setup fresh database for each test
-        db = database_setup();
+        // Setup fresh database for each test using the dummy setup
+        db = database_setup(); 
 
-        // Drop existing tables if they exist
-        db.exec(`
-            DROP TABLE IF EXISTS account_history;
-            DROP TABLE IF EXISTS account;
-        `);
-
-        // Create required tables with correct schema
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS account (
-                accountid TEXT PRIMARY KEY,
-                name TEXT,
-                parentid TEXT
-            );
-
-            CREATE TABLE IF NOT EXISTS account_history (
-                historyid INTEGER PRIMARY KEY AUTOINCREMENT,
-                accountid TEXT NOT NULL,
-                datetime TEXT,
-                balance REAL,
-                data JSON,
-                FOREIGN KEY(accountid) REFERENCES account(accountid) ON DELETE CASCADE
-            );
-        `);
-
-        // Insert test account
-        db.prepare(`
-            INSERT INTO account (accountid, name, parentid) VALUES (?, ?, ?)
-        `).run('TEST001', 'Test Account', null);
+        // Clear relevant tables before each test, instead of dropping/recreating
+        // This ensures we use the schema from BankDatabaseDummy.js
+        try {
+            db.exec(`
+                DELETE FROM account_history;
+                DELETE FROM "transaction";
+                DELETE FROM account;
+            `);
+            
+            // Insert the base test account needed for most tests
+            db.prepare(`
+                INSERT INTO account (accountid, name, currency, type, parentid) VALUES (?, ?, ?, ?, ?)
+            `).run('TEST001', 'Test Account', 'USD', 'Checking', null);
+            
+        } catch (error) {
+            console.error("Error cleaning/setting up test DB:", error);
+            // If setup fails, close DB and rethrow to fail tests clearly
+            db.close(); 
+            throw error;
+        }
     });
 
     afterEach(() => {
-        db.close();
+        if (db && db.open) { // Check if DB is open before closing
+             db.close();
+        }
     });
 
     test('records balance correctly', async () => {
@@ -63,14 +57,27 @@ describe('AccountHistory', () => {
     });
 
     test('gets account history correctly', async () => {
-        // Insert some test data
-        await AccountHistory.recordBalance('TEST001', '2024-01-01T00:00:00Z', 1000.00);
-        await AccountHistory.recordBalance('TEST001', '2024-01-02T00:00:00Z', 1500.00);
+        // Mock data setup - Insert only history/transaction data 
+        // Account TEST001 should already exist from beforeEach
+        await db.exec(`
+            INSERT INTO account_history (accountid, datetime, balance) VALUES ('TEST001', '2024-01-01T00:00:00Z', 1000.00);
+            -- Provide a unique ID for the transaction
+            INSERT INTO "transaction" (id, account, datetime, balance) VALUES ('TXN_HIST_TEST_1', 'TEST001', '2024-01-02T00:00:00Z', 1500.00);
+        `);
 
+        // Call the function being tested
         const history = await AccountHistory.getAccountHistory('TEST001', '2024-01-01T00:00:00Z', '2024-01-02T00:00:00Z');
-        expect(history).toHaveLength(2);
-        expect(history[0].balance).toBe(1000.00);
-        expect(history[1].balance).toBe(1500.00);
+
+        // Assertions (already updated in previous step)
+        expect(history).toHaveLength(1); 
+        expect(history[0]).toHaveProperty('accountid', 'TEST001');
+        expect(history[0]).toHaveProperty('series');
+        expect(history[0].series).toBeInstanceOf(Array);
+        expect(history[0].series).toHaveLength(2); 
+        expect(history[0].series[0][0]).toBe('2024-01-01T00:00:00Z');
+        expect(history[0].series[0][1]).toBe(1000.00);
+        expect(history[0].series[1][0]).toBe('2024-01-02T00:00:00Z');
+        expect(history[0].series[1][1]).toBe(1500.00);
     });
 
     test('gets interest changes correctly', async () => {

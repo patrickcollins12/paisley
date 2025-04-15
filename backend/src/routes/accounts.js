@@ -1,265 +1,121 @@
 const express = require('express');
-const BankDatabase = require('../BankDatabase');
-const { body, validationResult } = require('express-validator'); // Ensure body is imported correctly
-
-const router = express.Router();
-const db = new BankDatabase();
+const { body, validationResult } = require('express-validator');
+// Removed: const BankDatabase = require('../BankDatabase');
+// Import accountKeys if needed for validation setup
+const { getAllAggregatedSorted, getOneAggregated, createAccount, updateAccount, deleteAccount, accountKeys } = require('../AccountService'); 
 const logger = require('../Logger.js');
 
+const router = express.Router();
+// Removed: const dbInstance = new BankDatabase();
 
-// Revised query using ROW_NUMBER() to correctly get the latest balance entry per account
-const sql = `
-SELECT 
-    a.*,
-    latest_balance.balance,
-    latest_balance.datetime as balance_datetime,
-    latest_balance.src as balance_source
-FROM 
-    account a
-LEFT JOIN (
-    SELECT 
-        accountid,
-        datetime,
-        balance,
-        src,
-        ROW_NUMBER() OVER(PARTITION BY accountid ORDER BY datetime DESC) as rn
-    FROM (
-        -- Select relevant balance entries from account_history
-        SELECT 
-            accountid,
-            datetime,
-            balance,
-            'account_history' AS src
-        FROM 
-            account_history
-        WHERE 
-            balance IS NOT NULL
-        
-        UNION ALL
-        
-        -- Select relevant balance entries from transactions (if they exist)
-        SELECT 
-            account AS accountid,
-            datetime,
-            balance,
-            'transaction' AS src
-        FROM 
-            "transaction"
-        WHERE 
-            balance IS NOT NULL
-    ) AS combined_balances
-) AS latest_balance ON a.accountid = latest_balance.accountid AND latest_balance.rn = 1
-WHERE 1=1
-`;
-const interestSql = `
-SELECT historyid,
-  accountid,
-  MAX(datetime) as datetime,
-  json_extract(data, '$.interest') AS interest
-FROM account_history AS a
-WHERE interest IS NOT NULL
-`
+// Define validation rules using imported accountKeys
+const validationRules = accountKeys.map(key => body(key).optional().trim());
 
-/**
- * GET /api/accounts
- * Retrieve all accounts
- */
+// --- Route Handlers --- 
+
 router.get('/api/accounts', async (req, res) => {
     try {
-        // get account data
-        const accounts = db.db.prepare(sql).all();
-
-        // get interest data
-        const interest = db.db.prepare(interestSql + " GROUP BY accountid").all();
-
-        // merge interest rate and interest datetime into accounts by accountid
-        interest.forEach(account => {
-            const acc = accounts.find(a => a.accountid === account.accountid);
-            if (acc) {
-                acc.interest = account.interest;
-                acc['interest_datetime'] = account.datetime;
-            }
-        }
-        );
+        // Removed: const db = new BankDatabase();
+        const accounts = await getAllAggregatedSorted(); // Call service without DB instance
         res.json({ success: true, account: accounts });
-
     } catch (error) {
-        res.status(500).json({ success: false, message: "Database error", error: error.message });
+        logger.error(`Error in GET /api/accounts handler: ${error.message}`, error);
+        // Use a more generic error message unless specific handling is needed
+        res.status(500).json({ success: false, message: "Error fetching accounts" }); 
     }
 });
 
-/**
- * GET /api/accounts/:id
- * Retrieve a single account by accountid
- */
 router.get('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const account = db.db.prepare(`${sql} AND accountid = ?`).get(id);
-
-        // get interest data and merge it in
-        const sqlFinal = interestSql + " AND accountid = ?"
-
-        const interest = db.db.prepare(sqlFinal).all(id);
-        interest.forEach(interestAccount => {
-            account['interest'] = interestAccount.interest;
-            account['interest_datetime'] = interestAccount.datetime;
-        });
+        // Call the new service function that handles finding the account in the aggregated list
+        const account = await getOneAggregated(id); 
 
         if (!account) {
+            // Service function returns null if not found
             return res.status(404).json({ success: false, message: "Account not found" });
         }
-
-        res.json({ success: true, account });
+        // Return the found account object
+        res.json({ success: true, account }); 
     } catch (error) {
-        res.status(500).json({ success: false, message: "Database error", error: error.message });
+         logger.error(`Error in GET /api/accounts/:id handler: ${error.message}`, error);
+         res.status(500).json({ success: false, message: "Error fetching account" });
     }
 });
 
-
-// Prepare fields to update or insert
-function prepareFields(fields, requestBody) {
-    let values = [];
-
-    // Collect key-value pairs and prepare values
-    fields.forEach((key) => {
-        const value = requestBody[key];
-        if (value !== undefined) {
-            values.push({ key, value });
-        }
-    });
-
-    return values;
-}
-
-// Insert account function
-async function insertAccount(accountid, fieldsToInsert, valuesToInsert) {
-    const placeholders = new Array(fieldsToInsert.length).fill('?').join(', ');
-    const columns = ['accountid', ...fieldsToInsert].join(", ");
-    const insertQuery = `
-        INSERT INTO account (${columns})
-        VALUES (?, ${placeholders})
-    `;
-
-    try {
-        const stmt = db.db.prepare(insertQuery);
-        stmt.run(valuesToInsert);
-        return { success: true, message: "Account created successfully", accountid };
-    } catch (insertError) {
-        if (insertError.message.includes("UNIQUE constraint failed")) {
-            return { success: false, message: "Account ID already exists." };
-        }
-        throw insertError; // Rethrow if it's an unexpected error
+router.post('/api/accounts', validationRules, async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
     }
-}
-
-// Update account function
-async function updateAccount(fieldsToUpdate, valuesToUpdate) {
-    const updateFields = fieldsToUpdate.map(field => `${field} = ?`).join(', ');
-    const updateQuery = `
-        UPDATE account 
-        SET ${updateFields}
-        WHERE accountid = ?
-    `;
-
-    // logger.info(`Update query: ${updateQuery}`);
-    // logger.info(`Values to update: ${valuesToUpdate}`);
+    // Account ID validation could also be moved to the service, but keeping it here is fine
+    if (!req.body.accountid) {
+        return res.status(400).json({ success: false, message: "Account ID is required for creation." });
+    }
 
     try {
-        const stmt = db.db.prepare(updateQuery);
-        stmt.run(valuesToUpdate);
-        return { success: true, message: "Account updated successfully" };
+        const result = await createAccount(req.body);
+        if (result.success) {
+            // Use 201 for created, include accountid
+            res.status(201).json(result); 
+        } else {
+            // Service handles UNIQUE constraint, return 400 for that or other specific validation failures
+            res.status(400).json(result); 
+        }
     } catch (error) {
-        throw error; // Rethrow if it's an error
+        // Catch errors re-thrown by the service (unexpected DB errors)
+        logger.error(`Error in POST /api/accounts handler: ${error.message}`, error);
+        res.status(500).json({ success: false, message: "Error creating account" });
     }
-}
+});
 
-const accountKeys = [
-    "institution", "name", "holders", "currency", "type", "category", "timezone", "shortname", "parentid", "status", "metadata"
-];
-
-const validationRules = accountKeys.map(key => body(key).optional().trim());
-
-// Validation and logic for both creating and updating accounts
-async function handleAccountAction(req, res, method) {
-
-    // Validate input fields
+router.patch('/api/accounts/:id', validationRules, async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ success: false, errors: errors.array() });
     }
 
-
-    const fieldsToProcess = prepareFields(accountKeys, req.body);
-
-    // If no fields are provided, return an error
-    if (fieldsToProcess.length === 0) {
-        return res.status(400).json({ success: false, message: "No fields provided to create or update the account." });
-    }
-
-    // Extract fields and values
-    const fields = fieldsToProcess.map(field => field.key);
-    const values = fieldsToProcess
-        .map(field => field.value)
-        .map(v => v === "" ? null : v)
-        
     try {
-        if (method === 'POST') {
-            // Handle Create (POST)
-            const accountid = req.body.accountid;
-            return await insertAccount(accountid, fields, [accountid, ...values]);
-        } else if (method === 'PATCH') {
-            // Handle Update (PATCH)
-            const accountid = req.params.id;
-            return await updateAccount(fields, [...values, accountid]);
+        const { id } = req.params;
+        const result = await updateAccount(id, req.body);
+        if (result.success) {
+            res.json(result);
+        } else {
+            // Service returns success: false if not found or no fields
+            const statusCode = result.message.includes("not found") ? 404 : 400;
+            res.status(statusCode).json(result); 
         }
     } catch (error) {
-        res.status(500).json({ success: false, message: "Database error", error: error.message });
-    }
-}
-
-
-// POST Route - Create Account
-router.post('/api/accounts', validationRules, async (req, res) => {
-    const result = await handleAccountAction(req, res, 'POST');
-    if (result?.success) {
-        res.json(result);
-    } else {
-        res.status(400).json(result);
+        // Catch errors re-thrown by the service
+        logger.error(`Error in PATCH /api/accounts/:id handler: ${error.message}`, error);
+        res.status(500).json({ success: false, message: "Error updating account" });
     }
 });
 
-// PATCH Route - Update Account
-router.patch('/api/accounts/:id', validationRules, async (req, res) => {
-    const result = await handleAccountAction(req, res, 'PATCH');
-
-    if (result?.success) {
-        res.json(result);
-    } else {
-        res.status(400).json(result);
-    }
-});
-
-/**
- * DELETE /api/accounts/:id
- * Delete an account
- */
 router.delete('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const result = db.db.prepare("DELETE FROM account WHERE accountid = ?").run(id);
+        const result = await deleteAccount(id);
 
-        if (result.changes === 0) {
-            return res.status(404).json({ success: false, message: "Account not found" });
+        if (!result.success) {
+            // Service handles not found case
+            return res.status(404).json(result); 
         }
-
-        res.json({ success: true, message: "Account deleted successfully" });
+        res.json(result); // Contains { success: true, message: "..." }
     } catch (error) {
-        res.status(500).json({ success: false, message: "Database error", error: error.message });
+        // Catch errors re-thrown by the service
+        logger.error(`Error in DELETE /api/accounts/:id handler: ${error.message}`, error);
+        res.status(500).json({ success: false, message: "Error deleting account" });
     }
 });
 
+// Removed helper functions: prepareFields, insertAccount, updateAccount
+// Removed constant: accountKeys (now imported)
+// Removed function: handleAccountAction
+
 module.exports = router;
+
+// --- Swagger Definitions --- 
 
 /**
  * @swagger
@@ -270,51 +126,135 @@ module.exports = router;
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     AccountBase:
+ *       type: object
+ *       properties:
+ *         accountid: { type: string, format: uuid, description: "Unique identifier for the account" }
+ *         institution: { type: string, nullable: true, description: "Financial institution name" }
+ *         name: { type: string, description: "Account name" }
+ *         holders: { type: string, nullable: true, description: "Account holder names" }
+ *         currency: { type: string, description: "ISO currency code (e.g., USD)" }
+ *         type: { type: string, description: "Account type (e.g., Checking, Savings, Credit)" }
+ *         category: { type: string, nullable: true, description: "User-defined category" }
+ *         timezone: { type: string, nullable: true, description: "Account timezone" }
+ *         shortname: { type: string, nullable: true, description: "Short alias for the account" }
+ *         parentid: { type: string, format: uuid, nullable: true, description: "ID of the parent account, if any" }
+ *         status: { type: string, nullable: true, description: "Account status (e.g., active, closed)" }
+ *         metadata: { type: string, nullable: true, description: "JSON string for additional metadata" }
+ *     AccountWithBalance:
+ *       allOf:
+ *         - $ref: '#/components/schemas/AccountBase'
+ *         - type: object
+ *           properties:
+ *             balance: { type: number, nullable: true, description: "Latest known balance" }
+ *             balance_datetime: { type: string, format: date-time, nullable: true, description: "Timestamp of the latest balance" }
+ *             balance_source: { type: string, nullable: true, description: "Source of the latest balance ('account_history' or 'transaction')" }
+ *             interest: { type: number, nullable: true, description: "Latest known interest rate" }
+ *             interest_datetime: { type: string, format: date-time, nullable: true, description: "Timestamp of the latest interest rate" }
+ *     AggregatedAccount:
+ *       allOf:
+ *         - $ref: '#/components/schemas/AccountWithBalance'
+ *         - type: object
+ *           properties:
+ *             hasChildren: { type: boolean, description: "Indicates if this account has children (for aggregated balance)" }
+ *             children: 
+ *               type: array
+ *               description: "Child accounts (only present for top-level accounts)"
+ *               items: 
+ *                 $ref: '#/components/schemas/AccountWithBalance' # Children won't have their own children nested further
+ *     AccountInput:
+ *       type: object
+ *       required:
+ *         - accountid # Assuming accountid is required on creation based on previous logic
+ *         - name
+ *         - currency
+ *         - type
+ *       properties:
+ *         accountid: { type: string, format: uuid }
+ *         institution: { type: string, nullable: true }
+ *         name: { type: string }
+ *         holders: { type: string, nullable: true }
+ *         currency: { type: string, example: "USD" }
+ *         type: { type: string, example: "Checking" }
+ *         category: { type: string, nullable: true }
+ *         timezone: { type: string, nullable: true }
+ *         shortname: { type: string, nullable: true }
+ *         parentid: { type: string, format: uuid, nullable: true }
+ *         status: { type: string, nullable: true }
+ *         metadata: { type: string, nullable: true, description: "JSON string" }
+ *     AccountUpdateInput:
+ *       type: object
+ *       description: "Provide only the fields you want to update."
+ *       properties:
+ *         institution: { type: string, nullable: true }
+ *         name: { type: string }
+ *         holders: { type: string, nullable: true }
+ *         currency: { type: string, example: "USD" }
+ *         type: { type: string, example: "Checking" }
+ *         category: { type: string, nullable: true }
+ *         timezone: { type: string, nullable: true }
+ *         shortname: { type: string, nullable: true }
+ *         parentid: { type: string, format: uuid, nullable: true }
+ *         status: { type: string, nullable: true }
+ *         metadata: { type: string, nullable: true, description: "JSON string" }
+ *     SuccessResponse:
+ *       type: object
+ *       properties:
+ *         success: { type: boolean, example: true }
+ *         message: { type: string }
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         success: { type: boolean, example: false }
+ *         message: { type: string }
+ *         errors: { type: array, items: { type: object }, nullable: true, description: "Validation errors, if any" }
+ */
+
+/**
+ * @swagger
  * /api/accounts:
  *   get:
- *     summary: Retrieve all accounts
- *     description: Fetch a list of all accounts.
+ *     summary: Retrieve all accounts (aggregated and sorted)
+ *     description: Fetch a list of all top-level accounts, with child balances aggregated into parents, sorted by type and balance. Includes latest interest data where available.
  *     tags: [Accounts]
  *     responses:
  *       200:
- *         description: List of accounts retrieved successfully
+ *         description: List of aggregated accounts retrieved successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 accounts:
+ *                 success: { type: boolean, example: true }
+ *                 account: # Renamed from 'account' to match response key
  *                   type: array
  *                   items:
- *                     type: object
- *                     properties:
- *                       accountid:
- *                         type: string
- *                         example: "12345"
- *                       name:
- *                         type: string
- *                         example: "Main Savings"
+ *                     $ref: '#/components/schemas/AggregatedAccount'
  *       500:
- *         description: Database error
+ *         description: Server error fetching accounts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 
 /**
  * @swagger
  * /api/accounts/{id}:
  *   get:
- *     summary: Retrieve an account
- *     description: Fetch a specific account by its ID.
+ *     summary: Retrieve a single account by ID
+ *     description: Fetch a specific account by its ID, including latest balance and interest data.
  *     tags: [Accounts]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: The ID of the account to retrieve
  *         schema:
  *           type: string
+ *           format: uuid
+ *         description: The ID of the account to retrieve.
  *     responses:
  *       200:
  *         description: Account retrieved successfully
@@ -323,22 +263,107 @@ module.exports = router;
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
+ *                 success: { type: boolean, example: true }
  *                 account:
- *                   type: object
- *                   properties:
- *                     accountid:
- *                       type: string
- *                       example: "12345"
- *                     name:
- *                       type: string
- *                       example: "Main Savings"
+ *                   $ref: '#/components/schemas/AccountWithBalance'
  *       404:
  *         description: Account not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Database error
+ *         description: Server error fetching account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
+/**
+ * @swagger
+ * /api/accounts:
+ *   post:
+ *     summary: Create a new account
+ *     description: Create a new financial account.
+ *     tags: [Accounts]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AccountInput'
+ *     responses:
+ *       201:
+ *         description: Account created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/SuccessResponse'
+ *                 - type: object
+ *                   properties:
+ *                     accountid: { type: string, format: uuid }
+ *       400:
+ *         description: Invalid input data (e.g., missing required fields, validation error, duplicate accountid)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error creating account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+
+/**
+ * @swagger
+ * /api/accounts/{id}:
+ *   patch:
+ *     summary: Update an existing account
+ *     description: Update specific fields of an existing account by its ID.
+ *     tags: [Accounts]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The ID of the account to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AccountUpdateInput'
+ *     responses:
+ *       200:
+ *         description: Account updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: Invalid input data or no fields provided for update.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Account not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error updating account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 
 /**
@@ -346,79 +371,33 @@ module.exports = router;
  * /api/accounts/{id}:
  *   delete:
  *     summary: Delete an account
- *     description: Remove an account from the system.
+ *     description: Remove an account from the system by its ID.
  *     tags: [Accounts]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: The ID of the account to delete
  *         schema:
  *           type: string
+ *           format: uuid
+ *         description: The ID of the account to delete.
  *     responses:
  *       200:
  *         description: Account deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
  *       404:
  *         description: Account not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  *       500:
- *         description: Database error
- */
-
-/**
- * @swagger
- * /api/accounts/{id}:
- *   post:
- *     summary: Create or update an account
- *     description: If the account exists, update it. If not, create a new account.
- *     tags: [Accounts]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: The ID of the account (UUID)
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Main Savings"
- *               institution:
- *                 type: string
- *                 example: "Bank A"
- *               holders:
- *                 type: string
- *                 example: "John Doe"
- *               currency:
- *                 type: string
- *                 example: "AUD"
- *               type:
- *                 type: string
- *                 example: "savings"
- *               timezone:
- *                 type: string
- *                 example: "Australia/Sydney"
- *               shortname:
- *                 type: string
- *                 example: "Savings"
- *               parentid:
- *                 type: string
- *                 example: "98765"
- *               metadata:
- *                 type: string
- *                 example: "{}"
- *     responses:
- *       200:
- *         description: Account created or updated successfully
- *       400:
- *         description: Missing required field (name)
- *       500:
- *         description: Database error
+ *         description: Server error deleting account
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */

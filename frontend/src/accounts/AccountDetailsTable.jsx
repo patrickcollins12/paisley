@@ -33,13 +33,22 @@ const AccountDetailsTable = ({ data }) => {
     // Fetch history using the hook (use the imported name)
     const { data: historyData, error: historyError, mutate: mutateHistory } = useAccountHistoryData({ accountid: data?.accountid });
 
-    // Parse `metadata` if it exists and is a valid JSON string
-    let metaData = null;
-    if (data?.metadata) {
+    // Parse `metadata` if it exists, is not empty, and represents a non-empty object or array
+    let parsedMetadata = null;
+    if (data?.metadata?.trim()) { // Check if string exists and is not empty/whitespace
         try {
-            metaData = JSON.parse(data.metadata);
+            const tempParsed = JSON.parse(data.metadata);
+
+            // Check if it's an object with keys OR an array with length
+            if (tempParsed && typeof tempParsed === 'object' && 
+                ( (Array.isArray(tempParsed) && tempParsed.length > 0) || 
+                  (!Array.isArray(tempParsed) && Object.keys(tempParsed).length > 0) )) 
+            {
+                parsedMetadata = tempParsed;
+            }
         } catch (error) {
             console.error("Failed to parse metadata:", error);
+            // parsedMetadata remains null
         }
     }
 
@@ -48,9 +57,11 @@ const AccountDetailsTable = ({ data }) => {
         "accountid",
         // "currency",
         // "shortname",
+        "children",
+        "hasChildren",
         "balance",
         "balance_datetime",
-        "metadata",
+        "metadata", // Keep original metadata suppressed
     ]);
 
     if (!data) return null;
@@ -103,7 +114,7 @@ const AccountDetailsTable = ({ data }) => {
                                 <DialogTrigger asChild>
                                     <DropdownMenuItem onSelect={(event) => event.preventDefault()} >
                                         <CirclePlus className="mr-2 h-4 w-4" />
-                                        <span>Add Balance</span>
+                                        <span>Record a balance</span>
                                     </DropdownMenuItem>
                                 </DialogTrigger>
                                 
@@ -164,7 +175,7 @@ const AccountDetailsTable = ({ data }) => {
                 </table>
 
                 {/* Meta Data Section */}
-                {metaData && (
+                {parsedMetadata && ( // Use the new variable here
                     <div className="mt-4">
                         <button
                             className="flex items-center gap-1 text-sm hover:text-foreground transition"
@@ -184,7 +195,7 @@ const AccountDetailsTable = ({ data }) => {
                             <div className="mt-2">
                                 <table className="table-auto">
                                     <tbody>
-                                        {Object.entries(metaData).map(([key, value]) => (
+                                        {Object.entries(parsedMetadata).map(([key, value]) => ( // Use the new variable here
                                             <tr key={key}>
                                                 <td className="font-bold pr-3 whitespace-nowrap">
                                                     {formatCamelCase(key)}
