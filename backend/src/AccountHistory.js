@@ -1,4 +1,7 @@
-const logger = require('./logger');
+const logger = require('./Logger');
+// import logger from './Logger';
+// import BankDatabase from './BankDatabase';
+// import TimeSeriesTransformer from './TimeSeriesTransformer';
 const BankDatabase = require('./BankDatabase');
 const TimeSeriesTransformer = require('./TimeSeriesTransformer');
 
@@ -138,7 +141,7 @@ class BalanceRecreator {
 }
 
 class AccountHistory {
-    
+
     static async recordBalance(accountid, datetime, balance, data = {}) {
         const db = new BankDatabase();
         const query = `INSERT INTO account_history (accountid, datetime, balance, data) VALUES (?, ?, ?, ?)`;
@@ -158,39 +161,47 @@ class AccountHistory {
 
     static async getAccountHistory(accountid, from, to, interpolate = false) {
         const db = new BankDatabase();
+        // Simplified query using UNION ALL and relying on outer DISTINCT if needed (or removing it)
+        // Also ensure filtering happens *after* the UNION ALL
         let query = `
             SELECT DISTINCT * FROM (
                 SELECT 
                     h.accountid, 
-                    datetime, 
-                    balance,
-                    data,
+                    h.datetime, 
+                    h.balance,
+                    h.data,
                     a.parentid as parentid,
                     'account_history' as source
                 FROM 
                     account_history h
                     LEFT JOIN account a on h.accountid = a.accountid
-                UNION
+                WHERE h.balance IS NOT NULL -- Ensure history balance exists
+
+                UNION ALL -- Use UNION ALL instead of UNION
+
                 SELECT 
-                    t.account,
+                    t.account AS accountid, -- Alias consistently
                     t.datetime,
                     t.balance,
-                    null,
+                    NULL AS data, -- Revert to selecting NULL for transaction data column
                     a.parentid as parentid,
                     'transaction' as source
                 FROM 'transaction' t
                     LEFT JOIN account a on t.account = a.accountid
-                WHERE t.rowid = (
+                WHERE t.balance IS NOT NULL -- Ensure transaction balance exists
+                  AND t.rowid = (
                     SELECT MAX(t2.rowid)
                     FROM 'transaction' t2
                     WHERE t2.account = t.account
                         AND t2.datetime = t.datetime
-                ) AND balance is not null
-            ) WHERE 1=1
+                )
+            ) AS combined_sources
+            WHERE 1=1
         `;
         const params = [];
 
         if (accountid) {
+            // Filter within the WHERE clause after UNION ALL
             query += ` AND (accountid = ? OR parentid = ?)`;
             params.push(accountid, accountid);
         }
@@ -205,12 +216,20 @@ class AccountHistory {
         query += ` ORDER BY accountid ASC, datetime ASC`;
 
         try {
+            // logger.debug("Executing getAccountHistory query:", query, params);
             const stmt = db.db.prepare(query);
             const rows = stmt.all(...params);
+            // logger.debug("Raw rows from DB:", rows);
 
-            return interpolate
-                ? TimeSeriesTransformer.normalizeTimeSeries(rows, interpolate)
-                : rows;
+            // if there is more than one accountid, we need to forcefully interpolate
+            let accountids = [...new Set(rows.map(row => row.accountid))];
+
+            if (accountids.length > 1) {
+                interpolate = true;
+            }
+
+            return TimeSeriesTransformer.normalizeTimeSeries(rows, interpolate)
+
         } catch (err) {
             logger.error(`Error fetching account history: ${err.message}`);
             throw err;

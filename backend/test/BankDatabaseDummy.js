@@ -16,6 +16,7 @@ function database_setup() {
             "type"  INTEGER,
             "tags" JSON,
             'party' JSON, 
+            'jsondata' JSON,
             PRIMARY KEY("id")
         );
 

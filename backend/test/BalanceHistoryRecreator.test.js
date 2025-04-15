@@ -7,48 +7,12 @@ describe('BalanceHistoryRecreator', () => {
 
     beforeEach(async () => {
         // Setup fresh database for each test
-        db = database_setup();
+        db = database_setup();  // This already creates all needed tables
 
-        // Drop existing tables if they exist
-        db.exec(`
-            DROP TABLE IF EXISTS account_history;
-            DROP TABLE IF EXISTS transactions;
-            DROP TABLE IF EXISTS account;
-        `);
-
-        // Create required tables with correct schema
-        db.exec(`
-            CREATE TABLE IF NOT EXISTS account (
-                accountid TEXT PRIMARY KEY,
-                name TEXT,
-                parentid TEXT
-            );
-
-            CREATE TABLE IF NOT EXISTS account_history (
-                historyid INTEGER PRIMARY KEY AUTOINCREMENT,
-                accountid TEXT NOT NULL,
-                datetime TEXT,
-                balance REAL,
-                data JSON,
-                FOREIGN KEY(accountid) REFERENCES account(accountid) ON DELETE CASCADE
-            );
-
-            CREATE TABLE IF NOT EXISTS transactions (
-                transactionid INTEGER PRIMARY KEY AUTOINCREMENT,
-                accountid TEXT NOT NULL,
-                datetime TEXT,
-                credit REAL,
-                debit REAL,
-                balance REAL,
-                data JSON,
-                FOREIGN KEY(accountid) REFERENCES account(accountid) ON DELETE CASCADE
-            );
-        `);
-
-        // Insert test account
+        // Insert test account if it doesn't exist
         db.prepare(`
-            INSERT INTO account (accountid, name, parentid) VALUES (?, ?, ?)
-        `).run('TEST001', 'Test Account', null);
+            INSERT OR IGNORE INTO account (accountid, name) VALUES (?, ?)
+        `).run('TEST001', 'Test Account');
     });
 
     afterEach(() => {
@@ -95,23 +59,23 @@ describe('BalanceHistoryRecreator', () => {
     });
 
     describe('getTransactions', () => {
-        test('retrieves transactions within date range', async () => {
+        test('retrieves transaction within date range', async () => {
             // Insert test transactions
             db.prepare(`
-                INSERT INTO transactions (accountid, datetime, credit, debit)
-                VALUES (?, ?, ?, ?)
-            `).run('TEST001', '2024-01-01T12:00:00Z', 100.00, 0);
+                INSERT INTO "transaction" (id, account, datetime, credit, debit)
+                VALUES (?, ?, ?, ?, ?)
+            `).run('get-tx-1', 'TEST001', '2024-01-01T12:00:00Z', 100.00, 0);
             db.prepare(`
-                INSERT INTO transactions (accountid, datetime, credit, debit)
-                VALUES (?, ?, ?, ?)
-            `).run('TEST001', '2024-01-02T12:00:00Z', 0, 50.00);
+                INSERT INTO "transaction" (id, account, datetime, credit, debit)
+                VALUES (?, ?, ?, ?, ?)
+            `).run('get-tx-2', 'TEST001', '2024-01-02T12:00:00Z', 0, 50.00);
 
             const recreator = new BalanceHistoryRecreator('TEST001', '2024-01-03T00:00:00Z', 1500.00);
-            const transactions = await recreator.getTransactions('2024-01-01T00:00:00Z', '2024-01-03T00:00:00Z');
+            const transaction = await recreator.getTransactions('2024-01-01T00:00:00Z', '2024-01-03T00:00:00Z');
 
-            expect(transactions).toHaveLength(2);
-            expect(transactions[0].credit).toBe(100.00);
-            expect(transactions[1].debit).toBe(50.00);
+            expect(transaction).toHaveLength(2);
+            expect(transaction[0].credit).toBe(100.00);
+            expect(transaction[1].debit).toBe(50.00);
         });
     });
 
@@ -141,16 +105,22 @@ describe('BalanceHistoryRecreator', () => {
 
             // Insert transactions
             db.prepare(`
-                INSERT INTO transactions (accountid, datetime, credit, debit)
-                VALUES (?, ?, ?, ?)
-            `).run('TEST001', '2024-01-01T12:00:00Z', 100.00, 0);
+                INSERT INTO "transaction" (id, account, datetime, credit, debit)
+                VALUES (?, ?, ?, ?, ?)
+            `).run('recreate-tx-1', 'TEST001', '2024-01-01T12:00:00Z', 100.00, 0);
             db.prepare(`
-                INSERT INTO transactions (accountid, datetime, credit, debit)
-                VALUES (?, ?, ?, ?)
-            `).run('TEST001', '2024-01-02T12:00:00Z', 0, 50.00);
+                INSERT INTO "transaction" (id, account, datetime, credit, debit)
+                VALUES (?, ?, ?, ?, ?)
+            `).run('recreate-tx-2', 'TEST001', '2024-01-02T12:00:00Z', 0, 50.00);
 
-            // Mock recordBalance function
-            const recordBalance = jest.fn().mockResolvedValue({ historyid: 1, message: 'Balance recorded' });
+            // Mock recordBalance function to actually store the entries
+            const recordBalance = jest.fn().mockImplementation((accountid, datetime, balance, metadata) => {
+                db.prepare(`
+                    INSERT INTO account_history (accountid, datetime, balance, data)
+                    VALUES (?, ?, ?, ?)
+                `).run(accountid, datetime, balance, JSON.stringify(metadata));
+                return { historyid: 1, message: 'Balance recorded' };
+            });
 
             await BalanceHistoryRecreator.recreateHistory(
                 'TEST001',
@@ -159,24 +129,112 @@ describe('BalanceHistoryRecreator', () => {
                 recordBalance
             );
 
-            // Should have called recordBalance for each transaction and the final balance
-            expect(recordBalance).toHaveBeenCalledTimes(3);
+            // Verify the entries were created
+            const entries = db.prepare(`
+                SELECT * FROM account_history 
+                WHERE accountid = ? 
+                AND json_extract(data, '$.from') = 'recreation'
+                ORDER BY datetime ASC
+            `).all('TEST001');
+
+            expect(entries).toHaveLength(3);
             
             // Check the first transaction balance
-            expect(recordBalance).toHaveBeenCalledWith(
-                'TEST001',
-                '2024-01-01T12:00:00Z',
-                1100.00,
-                expect.any(Object)
-            );
+            expect(entries[0].balance).toBe(1100.00);
+            expect(JSON.parse(entries[0].data).direction).toBe('forward');
             
             // Check the second transaction balance
-            expect(recordBalance).toHaveBeenCalledWith(
+            expect(entries[1].balance).toBe(1050.00);
+            expect(JSON.parse(entries[1].data).direction).toBe('forward');
+            
+            // Check the final balance
+            expect(entries[2].balance).toBe(1050.00);
+            expect(JSON.parse(entries[2].data).is_manual_balance).toBe(true);
+        });
+
+        test('deletes old recreation entries before creating new ones', async () => {
+            // Insert initial balance point
+            db.prepare(`
+                INSERT INTO account_history (accountid, datetime, balance, data)
+                VALUES (?, ?, ?, ?)
+            `).run('TEST001', '2024-01-01T00:00:00Z', 1000.00, '{}');
+
+            // Insert some old recreation entries
+            db.prepare(`
+                INSERT INTO account_history (accountid, datetime, balance, data)
+                VALUES (?, ?, ?, ?)
+            `).run('TEST001', '2024-01-01T12:00:00Z', 1100.00, JSON.stringify({ from: 'recreation' }));
+            db.prepare(`
+                INSERT INTO account_history (accountid, datetime, balance, data)
+                VALUES (?, ?, ?, ?)
+            `).run('TEST001', '2024-01-02T00:00:00Z', 1200.00, JSON.stringify({ from: 'recreation' }));
+
+            // Verify old recreation entries exist before deletion
+            const initialRecreationEntries = db.prepare(`
+                SELECT * FROM account_history 
+                WHERE accountid = ? 
+                AND json_extract(data, '$.from') = 'recreation'
+                ORDER BY datetime ASC
+            `).all('TEST001');
+
+            expect(initialRecreationEntries).toHaveLength(2);
+            expect(initialRecreationEntries[0].datetime).toBe('2024-01-01T12:00:00Z');
+            expect(initialRecreationEntries[0].balance).toBe(1100.00);
+            expect(JSON.parse(initialRecreationEntries[0].data).from).toBe('recreation');
+            expect(initialRecreationEntries[1].datetime).toBe('2024-01-02T00:00:00Z');
+            expect(initialRecreationEntries[1].balance).toBe(1200.00);
+            expect(JSON.parse(initialRecreationEntries[1].data).from).toBe('recreation');
+
+            // Also verify the initial balance point exists
+            const initialBalancePoint = db.prepare(`
+                SELECT * FROM account_history 
+                WHERE accountid = ? 
+                AND datetime = ?
+            `).get('TEST001', '2024-01-01T00:00:00Z');
+
+            expect(initialBalancePoint).toBeDefined();
+            expect(initialBalancePoint.balance).toBe(1000.00);
+
+            // Insert transactions
+            db.prepare(`
+                INSERT INTO "transaction" (id, account, datetime, credit, debit)
+                VALUES (?, ?, ?, ?, ?)
+            `).run('delete-tx-1', 'TEST001', '2024-01-01T12:00:00Z', 100.00, 0);
+            db.prepare(`
+                INSERT INTO "transaction" (id, account, datetime, credit, debit)
+                VALUES (?, ?, ?, ?, ?)
+            `).run('delete-tx-2', 'TEST001', '2024-01-02T12:00:00Z', 0, 50.00);
+
+            // Mock recordBalance function to actually store the entries
+            const recordBalance = jest.fn().mockImplementation((accountid, datetime, balance, metadata) => {
+                db.prepare(`
+                    INSERT INTO account_history (accountid, datetime, balance, data)
+                    VALUES (?, ?, ?, ?)
+                `).run(accountid, datetime, balance, JSON.stringify(metadata));
+                return { historyid: 1, message: 'Balance recorded' };
+            });
+
+            // Run recreation
+            await BalanceHistoryRecreator.recreateHistory(
                 'TEST001',
-                '2024-01-02T12:00:00Z',
+                '2024-01-03T00:00:00Z',
                 1050.00,
-                expect.any(Object)
+                recordBalance
             );
+            
+            const recreator = new BalanceHistoryRecreator('TEST001', '2024-01-03T00:00:00Z', 1050.00);
+            await recreator.deleteOldRecreationEntries("2024-01-01T00:00:00Z", "2024-01-03T00:00:00Z");
+        
+            // Verify old recreation entries were deleted
+            const remainingRecreationEntries = db.prepare(`
+                SELECT * FROM account_history 
+                WHERE accountid = ? 
+                AND datetime >= ? 
+                AND datetime <= ?
+                AND json_extract(data, '$.from') = 'recreation'
+            `).all('TEST001', '2024-01-01T00:00:00Z', '2024-01-03T00:00:00Z');
+            expect(remainingRecreationEntries).toHaveLength(0);
         });
     });
+
 }); 

@@ -26,11 +26,13 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
             interpolate: false
         });
 
+    
     useEffect(() => {
 
         if (data && !isLoading) {
 
             const { series, legend } = generateEChartSeries(data);
+
 
             setOption({
                 // legend: {

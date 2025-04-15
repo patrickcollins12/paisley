@@ -7,46 +7,50 @@ const db = new BankDatabase();
 const logger = require('../Logger.js');
 
 
-// this query fetches the latest balance for each account
-// it does this by combining the latest transaction and account_history records
-// and then selecting the latest of those
-// it then joins this with the account table to get the account details
+// Revised query using ROW_NUMBER() to correctly get the latest balance entry per account
 const sql = `
-SELECT a.*,
-       b.balance,
-       b.datetime as balance_datetime,
-       b.src as balance_source
-FROM account a
+SELECT 
+    a.*,
+    latest_balance.balance,
+    latest_balance.datetime as balance_datetime,
+    latest_balance.src as balance_source
+FROM 
+    account a
 LEFT JOIN (
-    SELECT account,
-           MAX(datetime) AS datetime,
-           balance,
-           src
+    SELECT 
+        accountid,
+        datetime,
+        balance,
+        src,
+        ROW_NUMBER() OVER(PARTITION BY accountid ORDER BY datetime DESC) as rn
     FROM (
-        SELECT account,
-               MAX(t.datetime) as datetime,
-               rowid, -- i was hoping to get this working
-               balance,
-               'transaction' AS src
-        FROM 'transaction' t
-        GROUP BY account
-
+        -- Select relevant balance entries from account_history
+        SELECT 
+            accountid,
+            datetime,
+            balance,
+            'account_history' AS src
+        FROM 
+            account_history
+        WHERE 
+            balance IS NOT NULL
+        
         UNION ALL
-
-        SELECT accountid AS account,
-               datetime,
-               MAX(rowid) AS rowid,
-               balance,
-               'account_history' AS src
-        FROM "account_history"
-        GROUP BY accountid
-		
-    ) AS combined
-    GROUP BY account
-) AS b
-ON a.accountid = b.account
+        
+        -- Select relevant balance entries from transactions (if they exist)
+        SELECT 
+            account AS accountid,
+            datetime,
+            balance,
+            'transaction' AS src
+        FROM 
+            "transaction"
+        WHERE 
+            balance IS NOT NULL
+    ) AS combined_balances
+) AS latest_balance ON a.accountid = latest_balance.accountid AND latest_balance.rn = 1
 WHERE 1=1
-`
+`;
 const interestSql = `
 SELECT historyid,
   accountid,

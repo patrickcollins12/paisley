@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { body, query, validationResult } = require("express-validator");
+const { body, query, validationResult, param } = require("express-validator");
 const AccountHistory = require("../AccountHistory");
 const BalanceHistoryRecreator = require("../BalanceHistoryRecreator");
 const logger = require("../Logger");
@@ -38,12 +38,11 @@ router.post(
 
             // If requested, recreate the balance history
             if (recreate_history) {
-                await BalanceHistoryRecreator.recreateHistory(
-                    accountid,
-                    datetime,
-                    balance,
-                    AccountHistory.recordBalance
-                );
+                logger.info(`Manual balance added for ${accountid} at ${datetime}. Triggering FULL history recreation.`);
+                // Create an instance (constructor args might not be strictly needed for full recalc)
+                const recreator = new BalanceHistoryRecreator(accountid, datetime, balance);
+                // Call the full recreation method, passing the same recordBalance function
+                await recreator.recreateFullAccountHistory(AccountHistory.recordBalance);
             }
 
             res.status(201).json(result);
@@ -52,6 +51,47 @@ router.post(
                 return res.status(400).json({ error: err.message });
             }
             res.status(500).json({ error: err.message });
+        }
+    }
+);
+
+// New route for triggering full history recreation
+router.post(
+    "/api/account_history/:accountid/recreate",
+    [
+        param("accountid").isString().notEmpty().withMessage("Account ID URL parameter is required")
+    ],
+    handleValidationErrors, // Reuse validation error handler
+    async (req, res) => {
+        const { accountid } = req.params;
+
+        // !!! IMPORTANT: Add authorization check here! !!!
+        // Verify the logged-in user has permission to modify this accountid
+        // Example (pseudo-code):
+        // if (!await Permissions.canUserModifyAccount(req.user.id, accountid)) {
+        //     return res.status(403).json({ error: "Forbidden" });
+        // }
+
+        try {
+            logger.info(`Triggering FULL history recreation for account ${accountid} via dedicated route.`);
+            
+            // Create an instance - constructor args aren't needed for full recalc logic itself,
+            // but accountid is needed for DB operations within the instance methods.
+            const recreator = new BalanceHistoryRecreator(accountid, null, null); 
+            
+            // Call the full recreation method, passing the static recordBalance function
+            await recreator.recreateFullAccountHistory(AccountHistory.recordBalance);
+            
+            // Send success response
+            res.status(200).json({ message: `History recreation initiated for account ${accountid}` });
+
+        } catch (err) {
+            logger.error(`Error during full history recreation trigger for account ${accountid}: ${err.message}`, err);
+            // Specific error check if needed (e.g., account not found during recreation)
+            // if (err.message.includes("Account not found")) { // Example
+            //     return res.status(404).json({ error: err.message });
+            // }
+            res.status(500).json({ error: "Failed to recreate account history." });
         }
     }
 );
@@ -367,6 +407,65 @@ module.exports = router;
  *         description: Invalid request parameters.
  *       500:
  *         description: Internal server error.
+ */
+
+/**
+ * @swagger
+ * /api/account_history/{accountid}/recreate:
+ *   post:
+ *     summary: Triggers a full recalculation of the account history.
+ *     description: Initiates a full recalculation of the specified account's history based on its transactions and existing manual balance points (anchor points). Deletes all previously calculated 'recreation' entries and replaces them.
+ *     tags:
+ *       - Accounts
+ *     parameters:
+ *       - in: path
+ *         name: accountid
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The unique ID of the account whose history should be recreated.
+ *     responses:
+ *       200:
+ *         description: History recreation initiated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "History recreation initiated for account acc123"
+ *       400:
+ *         description: Invalid input (e.g., missing or invalid accountid format).
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 errors: 
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       403:
+ *         description: Forbidden - User does not have permission to modify this account.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden"
+ *       500:
+ *         description: Server error during history recreation.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to recreate account history."
  */
 
 module.exports = router;

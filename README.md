@@ -7,6 +7,25 @@ Need to track down hidden subscriptions scattered across multiple banks or cards
 Curious how much went toward groceries last month?
 Paisley makes it easy.
 
+- [Paisley - Locally Hosted Personal Finances](#paisley---locally-hosted-personal-finances)
+  - [How does it work?](#how-does-it-work)
+  - [Motivation. Who is this for?](#motivation-who-is-this-for)
+  - [Features](#features)
+- [Install and setup](#install-and-setup)
+  - [Step 1: Install Dependencies. Node v22 and Sqlite.](#step-1-install-dependencies-node-v22-and-sqlite)
+  - [Step 2: Install and try the paisley demo instance](#step-2-install-and-try-the-paisley-demo-instance)
+  - [Step 3: open paisley](#step-3-open-paisley)
+- [Setting up paisley](#setting-up-paisley)
+  - [Create a user](#create-a-user)
+  - [Review the config file](#review-the-config-file)
+  - [Install Playwright](#install-playwright)
+  - [Start the server](#start-the-server)
+  - [Auto start on reboot](#auto-start-on-reboot)
+  - [Process a CSV](#process-a-csv)
+  - [Running your scrapers](#running-your-scrapers)
+  - [Creating your own scraper](#creating-your-own-scraper)
+
+
 ![alt text](doc_images/transactions.png)
 
 ![alt text](doc_images/rule_edit.png)
@@ -63,8 +82,9 @@ Setup is fairly straight forward, but is currently manual... maybe one day I'll 
 
 If you're interested in the details, Paisley runs as a NodeJS application with two main server processes: a Vite React frontend webserver and an Express server backend. They both are hosted at `localhost:5173` (the backend is proxied through as `/api`).
 
-## Step 1: Update to at least node v22. 
-Best way is to install and use [nvm](https://github.com/nvm-sh/nvm)
+## Step 1: Install Dependencies. Node v22 and Sqlite.
+
+Upgrade to at least node v22. Best way is to install and use [nvm](https://github.com/nvm-sh/nvm)
 
 ```
 $ node --version
@@ -73,7 +93,6 @@ $ nvm alias default 'lts/*'
 $ nvm install --lts
 ```
 
-## Step 2: Install sqlite3
 Install sqlite3. For instance:
 
 `$ brew install sqlite3` 
@@ -82,7 +101,7 @@ OR
 
 `$ sudo apt install sqlite3`
 
-## Step 3: Install and try the paisley demo instance
+## Step 2: Install and try the paisley demo instance
 ```
 $ gh repo clone patrickcollins12/paisley
 $ cd paisley
@@ -93,7 +112,7 @@ $ npm run demo
 On install you'll see `npm warn deprecated` - you can ignore these warnings
 On install, the setup script also created some default files in `~/paisley`
 
-## Step 4: open paisley
+## Step 3: open paisley
 
 Open http://localhost:5173
 
