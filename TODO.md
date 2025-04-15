@@ -1,7 +1,7 @@
 # TODO
 
 p1
-[ ] integrate john's changes
+[x] integrate john's changes
 [ ] i've broken swyftx and coinbase
 [ ] migrate back to beelink
 
