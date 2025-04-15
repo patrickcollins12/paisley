@@ -91,18 +91,31 @@ const AccountsPage = () => {
         if (child.parentid && accountMap[child.parentid]) {
           const parent = accountMap[child.parentid];
 
-          // Sum balances
-          parent.balance = (parent.balance || 0) + (child.balance || 0);
+          // --- Simple If Logic --- 
+          if (!parent._markedForChildAggregation) {
+            // This is the FIRST child we've hit for this parent.
+            // Discard the parent's original balance and start with this child's balance.
+            parent.balance = child.balance || 0;
+            parent._markedForChildAggregation = true; // Mark it so subsequent children ADD to this.
+          } else {
+            // This is a SUBSEQUENT child for this parent.
+            // Add its balance to the running sum (which was initialized by the first child).
+            parent.balance += (child.balance || 0);
+          }
+          // --- End Simple If Logic ---
 
-          // Mark this account as a parent
+          // Mark this account as a parent (for UI/filtering purposes)
           parent.hasChildren = true;
 
-          // Track the latest balance_datetime
+          // Track the latest balance_datetime among the parent and its children
           if (!parent.balance_datetime || new Date(child.balance_datetime) > new Date(parent.balance_datetime)) {
             parent.balance_datetime = child.balance_datetime;
           }
         }
       });
+
+      // Clean up the temporary marker (optional but good practice)
+      Object.values(accountMap).forEach(acc => delete acc._markedForChildAggregation);
 
       // Step 2: Remove child accounts (keep only top-level parents)
       const updatedAccounts = Object.values(accountMap);

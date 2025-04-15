@@ -72,7 +72,7 @@ router.get('/api/accounts', async (req, res) => {
         // get interest data
         const interest = db.db.prepare(interestSql + " GROUP BY accountid").all();
 
-        // merge interest rate and interest daatetime into accounts by accountid
+        // merge interest rate and interest datetime into accounts by accountid
         interest.forEach(account => {
             const acc = accounts.find(a => a.accountid === account.accountid);
             if (acc) {
