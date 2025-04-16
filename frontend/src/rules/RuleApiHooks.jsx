@@ -1,5 +1,6 @@
 import useSWR, { mutate } from "swr"
 import httpClient from "@/lib/httpClient.js"
+import { cache } from "swr/_internal"
 
 async function rulesFetcher([url]) {
   // console.log('fetcher', query);
@@ -31,6 +32,18 @@ async function update(id, data) {
 async function create(postData) {
   try {
     const response = await httpClient.post('rule', postData);
+    
+    // Mutate the rules cache to refresh the rules list
+    await mutate(['/rules']);
+    
+    // Mutate all transaction-related caches to refresh transaction data
+    // This will ensure that any components using transaction data will be updated
+    for (const key of cache.keys()) {
+      if (key.includes('/transactions')) {
+        await mutate(key);
+      }
+    }
+    
     return { data: response.data, error: null, isLoading: false };
   } catch (err) {
     const errorMsg = err.response?.data?.errors?.[0]?.msg || err.message;
