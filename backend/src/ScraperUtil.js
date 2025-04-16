@@ -85,6 +85,11 @@ async function _callPaisleyApi(method, apiPath, payload, id = null) {
         const status = error.response?.status;
         const errorData = error.response?.data;
         const message = errorData?.message || (error.isAxiosError ? error.message : 'Unknown API call error');
+
+        if ( message.includes("Account ID already exists")) {
+            return
+        }
+
         logger.error(`Failed (${status || 'N/A'}) calling ${method.toUpperCase()} on ${url}: ${message}`, errorData || '');
         const structuredError = new Error(`Paisley API Error (${status || 'N/A'}): ${message}`);
         structuredError.originalError = error;

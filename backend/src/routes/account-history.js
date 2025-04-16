@@ -34,9 +34,7 @@ router.post(
 
         try {
             // First record the new balance
-            logger.info(`Recording balance for ${accountid} at ${datetime} with amount ${balance} with recreate_history: ${recreate_history}`);
             const result = await AccountHistory.recordBalance(accountid, datetime, balance, data);
-            logger.info(`Recording balance for ${accountid} at ${datetime} with amount ${balance} with recreate_history: ${recreate_history}. Done`);
             // If requested, recreate the balance history
             if (recreate_history) {
                 logger.info(`Manual balance added for ${accountid} at ${datetime}. Triggering FULL history recreation.`);

@@ -1,9 +1,6 @@
 # TODO
 
 p1
-[x] integrate john's changes
-[x] i've broken swyftx and coinbase
-[ ] migrate back to beelink
 
 p2
 [ ] document how to create scrapers
@@ -27,6 +24,9 @@ One day:
 [ ] Sync url with filters
 
 done
+[x] integrate john's changes
+[x] i've broken swyftx and coinbase
+[x] migrate back to beelink
 [x] Add "Create rule" from description filter, start with: description = 'assad', description = /assad/i
 [x] paisley backend on beelink. feels pretty important!?
 [x] account page - manually add a balance amount

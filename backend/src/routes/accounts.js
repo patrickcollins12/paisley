@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 // Removed: const BankDatabase = require('../BankDatabase');
 // Import accountKeys if needed for validation setup
-const { getAllAggregatedSorted, getOneAggregated, createAccount, updateAccount, deleteAccount, accountKeys } = require('../AccountService'); 
+const { getAllAggregatedSorted, getOneAggregated, accountExists, createAccount, updateAccount, deleteAccount, accountKeys } = require('../AccountService'); 
 const logger = require('../Logger.js');
 
 const router = express.Router();
@@ -51,6 +51,11 @@ router.post('/api/accounts', validationRules, async (req, res) => {
     // Account ID validation could also be moved to the service, but keeping it here is fine
     if (!req.body.accountid) {
         return res.status(400).json({ success: false, message: "Account ID is required for creation." });
+    }
+
+    // if account exists, return 400
+    if (await accountExists(req.body.accountid)) {
+        return res.status(400).json({ success: false, message: "Account ID already exists." });
     }
 
     try {

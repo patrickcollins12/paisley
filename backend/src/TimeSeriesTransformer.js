@@ -38,8 +38,8 @@ class TimeSeriesTransformer {
 
     static determineInterval(startDate, endDate) {
         const totalDurationSec = endDate - startDate;
-        if (totalDurationSec <= 7 * 24 * 60 * 60) return 60 * 60; // Hourly for < 7 days
-        if (totalDurationSec <= 60 * 24 * 60 * 60) return 24 * 60 * 60; // Daily for < 2 month
+        if (totalDurationSec <= 45 * 24 * 60 * 60) return 60 * 60; // Hourly for < 45 days
+        if (totalDurationSec <= 1 * 365 * 24 * 60 * 60) return 24 * 60 * 60; // Daily for 1 year
         if (totalDurationSec <= 5 * 365 * 24 * 60 * 60) return 7 * 24 * 60 * 60; // Weekly for < 5 years
         return 30 * 24 * 60 * 60; // Monthly otherwise
     }

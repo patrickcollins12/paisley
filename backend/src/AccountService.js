@@ -334,6 +334,13 @@ async function getOneWithInterest(accountId) {
     return account;
 }
 
+async function accountExists(id) {
+    const accountQuery = `select * from account WHERE accountid = ?`;
+    // Use the service's dbInstance
+    const account = dbInstance.db.prepare(accountQuery).get(id);
+    return account !== undefined;
+}
+
 /**
  * Creates a new account.
  * @param {object} accountData - The account data from the request body.
@@ -365,9 +372,11 @@ async function createAccount(accountData) {
         logger.info(`AccountService: Account ${accountid} created successfully.`);
         return { success: true, message: "Account created successfully", accountid };
     } catch (error) {
-        logger.error(`AccountService: Error creating account ${accountid}: ${error.message}`, error);
-        if (error.message.includes("UNIQUE constraint failed")) {
+        // logger.error("HUH!", error);
+        if (error.includes("UNIQUE constraint failed")) {
             return { success: false, message: "Account ID already exists." };
+        } else {
+            logger.error(`AccountService: Error creating account ${accountid}: ${error.message}`, error);
         }
         // Re-throw unexpected errors to be caught by the route handler
         throw new Error("Database error during account creation."); 
@@ -441,6 +450,7 @@ module.exports = {
     getAllAggregatedSorted,
     getOneAggregated,
     getOneWithInterest,
+    accountExists,
     createAccount,
     updateAccount,
     deleteAccount,
