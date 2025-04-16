@@ -38,7 +38,7 @@ export const DataTable = memo(function TransactionsDataTable({ table, data, ...p
               </TableRow>
             ))}
             {table.getRowModel().rows.map(row => (
-              <TableRow key={row.id}>
+              <TableRow key={row.id} className="group">
                 {row.getVisibleCells().map(cell => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

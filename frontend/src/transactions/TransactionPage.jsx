@@ -10,6 +10,7 @@ import { useUpdateEffect } from "react-use"
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog.jsx";
 import QuickRuleModal from "@/rules/QuickRuleModal.jsx";
+import { TooltipProvider } from "@/components/ui/tooltip.jsx";
 
 const routeApi = getRouteApi('/transactions/');
 
@@ -135,7 +136,7 @@ export default function TransactionPage() {
     onPaginationChange: setPageState
   });
 return (
-  <>
+  <TooltipProvider delayDuration={100}>
     <Toolbar
       dataTable={table}
     />
@@ -149,7 +150,7 @@ return (
     
     {/* Quick Rule Modal */}
     <Dialog open={isQuickRuleModalOpen} onOpenChange={setIsQuickRuleModalOpen}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl sm:top-0 sm:translate-y-12">
         <DialogHeader>
           <DialogTitle>New Quick Rule</DialogTitle>
         </DialogHeader>
@@ -166,6 +167,6 @@ return (
         )}
       </DialogContent>
     </Dialog>
-  </>
+  </TooltipProvider>
 )
 }
