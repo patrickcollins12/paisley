@@ -2,11 +2,9 @@ import { AccountDisplay } from '@/transactions/AccountDisplay.jsx';
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 import { EditableDescriptionCell } from '@/transactions/EditableDescriptionCell.jsx';
 import HeaderCell from "@/components/data-table/HeaderCell.jsx"
-import { TransactionTagsDisplay } from "@/transactions/TransactionTagsDisplay.jsx"
 import { Currency } from "@/components/CurrencyDisplay.jsx"
-import { Button } from "@/components/ui/button.jsx"
-import { Sparkles } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip.jsx";
+import { TransactionTagsDisplay } from "@/transactions/TransactionTagsDisplay.jsx"
+import TagsCellContent from './TagsCellContent.jsx';
 
 export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick) {
 
@@ -133,60 +131,12 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
       accessorKey: 'tags',
       header: props => <HeaderCell align='left' {...props} />,
       enableResizing: true,
-      // width: 500,
-      cell: props => {
-        const { row } = props;
-        const description = row.original.description;
-        const autoTags = row.original.auto_tags;
-
-        return (
-          <div className="flex items-center gap-1">
-
-            {/* Tag editor */}
-            <div className="flex-grow">
-              <TransactionTagsDisplay
-                type="tags"
-                updateHandler={onTransactionUpdate}
-                manual={row.original.manual_tags}
-                auto={row.original.auto_tags}
-                full={row.original.tags}
-                rules={row.original.auto_tags_rule_ids}
-                data={row.original}
-                placeholder="Add tags..."
-                isMulti={true}
-                autoFocus={false}
-                isClearable={true}
-                maxMenuHeight={200}
-                openMenuOnFocus={false}
-              />
-            </div>
-
-            {/* Quick rule button next to tag editor */}
-            {(!autoTags || autoTags.length === 0) && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="invisible group-hover:visible h-6 w-6"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onQuickRuleClick?.(description);
-                    }}
-                  >
-                    <Sparkles className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Quick rule</p>
-                </TooltipContent>
-              </Tooltip>
-
-
-            )}
-          </div>
-        );
-      },
+      // Render the imported component
+      cell: props => <TagsCellContent 
+                      row={props.row} 
+                      onTransactionUpdate={onTransactionUpdate} 
+                      onQuickRuleClick={onQuickRuleClick} 
+                    />,
       meta: {
         displayName: t("Tags")
       }
