@@ -2,7 +2,7 @@
 
 p1
 [x] integrate john's changes
-[ ] i've broken swyftx and coinbase
+[x] i've broken swyftx and coinbase
 [ ] migrate back to beelink
 
 p2

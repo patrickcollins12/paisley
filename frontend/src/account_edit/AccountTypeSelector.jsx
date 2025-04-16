@@ -1,20 +1,19 @@
 import { FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form"
 import { useTranslation } from 'react-i18next'
 import CreatableSelect from 'react-select/creatable';
-
 import { getSelectClassNames, manualValueContainerFix, DropdownIndicator } from "@/components/ReactSelectStyles"
 
-const AccountCurrencySelector = ({ form, name, label, description, ...props }) => {
+// Import the central definition
+import { accountTypes } from '../accounts/accountTypes.js';
+
+const AccountTypeSelector = ({ form, name, label, description, ...props }) => {
   const { t } = useTranslation();
 
-  const types = [
-    { label: t("Savings"), value: "Savings" },
-    { label: t("Credit"), value: "Credit" },
-    { label: t("Checking"), value: "Checking" },
-    { label: t("Investment"), value: "Investment" },
-    { label: t("Crypto"), value: "Crypto" },
-    { label: t("Mortage"), value: "Mortgage" },
-  ];
+  // Generate types dynamically
+  const types = accountTypes.map(type => ({
+    label: t(type.labelKey),
+    value: type.value // Use lowercase value from central definition
+  }));
 
   return (
     <>
@@ -53,5 +52,4 @@ const AccountCurrencySelector = ({ form, name, label, description, ...props }) =
   );
 };
 
-
-export default AccountCurrencySelector;
+export default AccountTypeSelector;

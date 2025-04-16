@@ -13,6 +13,7 @@ import AccountDetailsTable from './AccountDetailsTable.jsx'
 import TransactionCard from "@/transactions/TransactionCard.jsx"
 import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
 import { BackNav } from "@/components/BackNav.jsx"
+import AccountIcon from './AccountIcon';
 
 //data loaders
 import useAccountData from "@/accounts/AccountApiHooks.js";
@@ -22,10 +23,6 @@ import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 // import { formatDate } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 import { useTranslation } from 'react-i18next';
-
-
-// load the logos, feel free to edit this and contribute
-import logos from '/src/logos/logos.json';
 
 // main component
 const AccountPage = () => {
@@ -48,9 +45,6 @@ const AccountPage = () => {
 
     // Find child accounts using the children property from the found account object
     const childAccounts = account?.children || [];
-
-    // Once the data is loaded, fetch the right institutional logo
-    let logoObject = account ? logos[account.institution] : null;
 
     // Fetch transactions `accountData?.shortname` is valid
     const { data: transactionData, error: transactionError, isLoading: transactionLoading } = useFetchTransactions(
@@ -98,10 +92,15 @@ const AccountPage = () => {
                                                 }
 
                                             </span>
-                                            {logoObject && logoObject.location &&
-                                                <span className={`p-3 border ${logoObject.background || ''} rounded-lg`}>
-                                                    <img className="h-8" src={`${logoObject.location}`} />
-                                                </span>}
+                                            {account && (
+                                                <AccountIcon
+                                                    institution={account.institution}
+                                                    type={account.type}
+                                                    className="p-3"
+                                                    logoClassName="h-8"
+                                                    iconSize={32}
+                                                />
+                                            )}
                                         </div>
                                     </CardTitle>
 

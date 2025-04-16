@@ -27,7 +27,7 @@ export function TagEditorPopover({ values, allValues, updateHandler, cellValues,
       <PopoverTrigger asChild>
 
         <div className={
-          "min-h-[29px] px-1 pt-1 rounded-lg transition-all grow bg-transparent " +
+          "min-h-[29px] px-1 pt-1 rounded-md transition-all grow bg-transparent " +
           "hover:bg-background hover:ring-1 hover:ring-gray-300 hover:dark:ring-gray-700"
         }>
           {cellValues?.map((tag, index) => {

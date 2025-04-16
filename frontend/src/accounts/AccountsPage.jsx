@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { PlusIcon, ChevronRight, Landmark } from "lucide-react";
+import { PlusIcon, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button.jsx";
 import { Switch } from "@/components/ui/switch.jsx";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -21,7 +21,7 @@ import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 import AccountSparkLine from "@/accounts/AccountSparkLine.jsx";
 import { useTranslation } from 'react-i18next';
 
-import logos from '/src/logos/logos.json';
+import AccountIcon from './AccountIcon';
 
 const AccountsPage = () => {
   const navigate = useNavigate({ from: "/accounts" });
@@ -183,21 +183,8 @@ const AccountsPage = () => {
             { /* indent the row if it's a child account */}
             <TableCell className={`p-1 ${isParent ? "" : "pl-4"} font-medium`}>
               <div className="flex items-center gap-0">
-                {/* Account Logo */}
-                {
-                  logos?.[account.institution]?.location ?
-                    (
-                      <span className={`mr-3 p-1 border ${logos[account.institution]["background"]} rounded-lg`}>
-                        <img className="h-5" src={`${logos[account.institution]["location"]}`} />
-                      </span>
-                    )
-                    :
-                    (
-                      <span className={`mr-3 p-1 border rounded-lg`}>
-                        <Landmark size={20} className="opacity-40" />
-                      </span>
-                    )
-                }
+                {/* Replace logo logic with the new component */}
+                <AccountIcon institution={account.institution} type={account.type} />
 
                 {/* Account Name */}
                 {/* <span>{account.shortname}</span> */}
