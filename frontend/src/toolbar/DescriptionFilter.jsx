@@ -15,6 +15,7 @@ function DescriptionFilter({ operators }) {
   const searchContext = useSearch()
   const activeFilters = searchContext.getFilters(fieldName);
 
+  // Initialize state based on current context
   const [value, setValue] = useState(activeFilters.length > 0 ? activeFilters[0].value : '');
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [operator, setOperator] = useState(activeFilters.length > 0 ? activeFilters[0].operatorDefinition.id : defaultOperator(operators));

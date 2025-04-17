@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import { filterExpression } from "@/toolbar/FilterExpression.jsx"
 import { useDebounce } from "react-use"
 import { useSearch } from "@/components/search/SearchContext.jsx"
-
+import { useTranslation } from 'react-i18next';
 function AllFilter({ operators }) {
 
   const fieldName = 'all';
   const searchContext = useSearch();
   const activeFilters = searchContext.getFilters(fieldName);
   const [value, setValue] = useState(activeFilters.length > 0 ? activeFilters[0].value : '');
-
+  const { t } = useTranslation();
   // TODO: Fix the debounce clear that happens when the app starts up
   const handleUpdate = () => {
     if (!value) {
@@ -51,14 +51,14 @@ function AllFilter({ operators }) {
         <button
           className="absolute top-1/2 transform -translate-y-1/2 right-2"
           onClick={handleClear} // Clear input on click
-          aria-label="Clear input"
+          aria-label={t("Clear input")}
         >
           <X size={16} className="text-slate-400 hover:text-black dark:hover:text-white" />
         </button>
       )}
 
       <Input
-        placeholder="Filter..."
+        placeholder={t("Search") + "..."}
         onKeyDown={onKeyDown}
         onChange={event => setValue(event.target.value)}
         value={value}

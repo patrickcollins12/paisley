@@ -26,9 +26,14 @@ router.post(
     const { key, value } = req.body;
 
     try {
-      const result = store.setKey(namespace, key, value);
-      res.status(201).json(result);
+      // Serialize the value to a JSON string before storing
+      const stringifiedValue = JSON.stringify(value);
+      const result = store.setKey(namespace, key, stringifiedValue);
+      // Return the original key and value (or potentially just a success message)
+      res.status(201).json({ key, value }); 
     } catch (err) {
+      // Include more specific error info if possible
+      console.error(`Error setting key '${key}' in namespace '${namespace}':`, err);
       res.status(400).json({ error: err.message });
     }
   }
@@ -48,13 +53,26 @@ router.get('/api/store/:namespace', (req, res) => {
 
 
 // Get a key
-router.delete('/api/store/:namespace/:key', (req, res) => {
+router.get('/api/store/:namespace/:key', (req, res) => {
   const { namespace, key } = req.params;
 
   try {
-    const result = store.getKey(namespace, key);
-    res.json(result);
+    const resultString = store.getKey(namespace, key); // Result is the JSON string
+    if (resultString === undefined) {
+       return res.status(404).json({ error: `Key '${key}' not found in namespace '${namespace}'` });
+    }
+    // Parse the JSON string back into an object/array
+    const parsedValue = JSON.parse(resultString);
+    // Send the parsed object/array
+    res.setHeader('Content-Type', 'application/json');
+    res.json(parsedValue); 
   } catch (err) {
+     // Handle potential JSON parsing errors as well
+     if (err instanceof SyntaxError) {
+        console.error(`Error parsing JSON for key '${key}' in namespace '${namespace}':`, err);
+        return res.status(500).json({ error: `Failed to parse stored data for key '${key}'. Data might be corrupted.` });
+     }
+    console.error(`Error getting key '${key}' in namespace '${namespace}':`, err);
     res.status(400).json({ error: err.message });
   }
 });

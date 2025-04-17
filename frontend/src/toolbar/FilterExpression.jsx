@@ -310,28 +310,35 @@ export const allFilterOperators = {
   }
 };
 
-export function getOperatorById(id) {
-  const mergedLookup = {
-    ...stringOperators,
-    ...lookupOperators,
-    ...lookupTagOperators,
-    ...dateOperators,
-    ...numberOperators,
-    ...allFilterOperators
-  }
-
-  if (!(id in mergedLookup)) return null;
-
-  return mergedLookup[id];
+// Collect all operator definitions into a single map for easy lookup
+const allOperators = {
+  ...stringOperators,
+  ...lookupOperators,
+  ...lookupTagOperators,
+  ...dateOperators,
+  ...numberOperators,
+  ...allFilterOperators
 }
 
 /**
- * Creates a filter expression.
- * @param field
- * @param operatorDefinition
- * @param value
- * @param meta
- * @returns {FilterExpression} filterExpression
+ * Returns an operator definition matching the given ID.
+ * @param {string} id 
+ * @returns {OperatorDefinition | undefined}
+ */
+export function getOperatorById(id) {
+  const operator = allOperators[id];
+  if (!operator) {
+    console.warn(`[FilterExpression] Operator not found for id: '${id}'. Available operators:`, Object.keys(allOperators));
+  }
+  return operator;
+}
+
+/**
+ * Creates a new filter expression object from a field name, operator definition and filter value.
+ * @param {string} field Field ID that the filter expression applies to (e.g. 'account').
+ * @param {OperatorDefinition} operatorDefinition Filter operator to apply to the field.
+ * @param value Value to filter for using the operator.
+ * @returns {FilterExpression}
  */
 export function filterExpression(field, operatorDefinition, value) {
   return {

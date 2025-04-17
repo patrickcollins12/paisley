@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DateTime } from "luxon";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,60 +14,160 @@ import {
 } from "@/toolbar/FilterExpression.jsx"
 import { useSearch } from "@/components/search/SearchContext.jsx"
 
+// Helper function to parse active date filters from context
+const parseActiveDateFilters = (activeFilters, operators) => {
+  let fromFilter = activeFilters.find(f => f.operatorDefinition.id === operators.date_after.id);
+  let toFilter = activeFilters.find(f => f.operatorDefinition.id === operators.date_before.id);
+  let operatorId = defaultOperator(operators);
+  let value = { from: null, to: null };
+  let selectedPeriodLabel = '';
+  let isNamedRange = false;
 
+  // Check for named range (will have both from and to filters with special prefix)
+  if (fromFilter?.value?.startsWith(namedDateRangePrefix) && toFilter?.value?.startsWith(namedDateRangePrefix)) {
+      const fromRangeName = fromFilter.value.substring(namedDateRangePrefix.length);
+      const toRangeName = toFilter.value.substring(namedDateRangePrefix.length);
+      
+      if (fromRangeName === toRangeName) {
+          const namedRange = namedDateRanges.find(r => r.id === fromRangeName);
+          if (namedRange && namedRange.getDateRange) {
+              value = namedRange.getDateRange(); // Get actual DateTime objects
+              selectedPeriodLabel = namedRange.label;
+              operatorId = operators.date_between.id; // Named ranges imply 'between'
+              isNamedRange = true;
+          } else {
+               console.warn(`DateFilter: Could not find named range definition for ID: ${fromRangeName}`);
+               // Reset filters if named range is invalid
+               fromFilter = null; 
+               toFilter = null;
+          }
+      } else {
+          console.warn(`DateFilter: Mismatched named range IDs: ${fromRangeName} vs ${toRangeName}`);
+           // Reset filters if named range is invalid
+          fromFilter = null;
+          toFilter = null;
+      }
+  }
+  
+  // If not a named range, process explicit dates
+  if (!isNamedRange) {
+      if (fromFilter?.value) {
+          try {
+              value.from = DateTime.fromISO(fromFilter.value);
+              if (!value.from.isValid) throw new Error('Invalid From Date');
+          } catch (e) {
+              console.warn(`DateFilter: Could not parse 'from' date ISO string: ${fromFilter.value}`, e);
+              value.from = null;
+              fromFilter = null; // Invalidate filter
+          }
+      }
+      if (toFilter?.value) {
+          try {
+              value.to = DateTime.fromISO(toFilter.value);
+              if (!value.to.isValid) throw new Error('Invalid To Date');
+          } catch(e) {
+              console.warn(`DateFilter: Could not parse 'to' date ISO string: ${toFilter.value}`, e);
+              value.to = null;
+              toFilter = null; // Invalidate filter
+          }
+      }
 
-// TODO: ON OPERATOR CHANGE
-// - update operator AND
-// - set date to now
+      // Determine operator based on successfully parsed filters
+      if (value.from && value.to) {
+          operatorId = operators.date_between.id;
+      } else if (value.from) {
+          operatorId = operators.date_after.id;
+      } else if (value.to) {
+          operatorId = operators.date_before.id;
+      } else {
+          // If neither date is valid, reset to default
+          operatorId = defaultOperator(operators);
+          value = { from: null, to: null }; // Ensure value is reset
+      }
+  }
+
+  return { operatorId, value, selectedPeriodLabel };
+};
 
 export default function DateFilter({operators}) {
 
   const fieldName = 'datetime_without_timezone';
   const searchContext = useSearch();
-  const activeFilters = searchContext.getFilters(fieldName);
 
-  const [value, setValue] = useState(() => {
-    if (activeFilters.length === 0) return null;
+  const [value, setValue] = useState(null); // <-- Simplified
+  const [selectedPeriod, setSelectedPeriod] = useState(''); // <-- Simplified
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [operator, setOperator] = useState(() => defaultOperator(operators)); // <-- Simplified (keeps default)
 
-    if (activeFilters.length > 1) {
-      const fromFilter = activeFilters.find(f => f.operatorDefinition.id === 'date_after');
-      const toFilter = activeFilters.find(f => f.operatorDefinition.id === 'date_before');
-      return {
-        from: DateTime.fromISO(fromFilter.operatorDefinition.getValue?.(fromFilter) ?? fromFilter.value),
-        to: DateTime.fromISO(toFilter.operatorDefinition.getValue?.(toFilter) ?? toFilter.value)
-      };
+  // Effect to hydrate state from context
+  useEffect(() => {
+    // console.log('[DateFilter Effect] Running. Context Filters:', searchContext.filters);
+    const activeFilters = searchContext.getFilters(fieldName);
+    // console.log(`[DateFilter Effect] Active filters for ${fieldName}:`, activeFilters);
+
+    if (activeFilters.length === 0) {
+      // No active filters for this field, reset state
+      // console.log('[DateFilter Effect] No active filters found. Resetting state.');
+      const defaultOp = defaultOperator(operators);
+      if (operator !== defaultOp) {
+        // console.log(`[DateFilter Effect] Resetting operator to default: ${defaultOp}`);
+        setOperator(defaultOp);
+      }
+      if (value !== null) {
+        // console.log('[DateFilter Effect] Resetting value to null.');
+        setValue(null);
+      }
+      if (selectedPeriod !== '') {
+        // console.log('[DateFilter Effect] Resetting selectedPeriod to empty.');
+        setSelectedPeriod('');
+      }
+      return;
     }
 
-    const dateValue = DateTime.fromISO(activeFilters[0].value);
-    return {
-      from: activeFilters[0].operatorDefinition.id === 'date_after' ? dateValue : null,
-      to: activeFilters[0].operatorDefinition.id === 'date_before' ? dateValue : null
-    };
-  });
-  const [selectedPeriod, setSelectedPeriod] = useState(() => {
-    if (activeFilters.length === 0) return '';
+    // Parse the active filters using the reusable helper function
+    // console.log('[DateFilter Effect] Parsing active filters...');
+    const { 
+        operatorId: newOperatorId, 
+        value: newValue, 
+        selectedPeriodLabel: newSelectedPeriod 
+    } = parseActiveDateFilters(activeFilters, operators);
+    // console.log('[DateFilter Effect] Parsed state:', { newOperatorId, newValue, newSelectedPeriod });
 
-    const expression = activeFilters[0];
-    const namedRangeIndex = expression.value.toString().indexOf(namedDateRangePrefix);
-    if (namedRangeIndex === -1) return '';
+    // Original update logic (restored)
+    // Update state only if values have actually changed to avoid infinite loops
+    let stateChanged = false;
+    if (newOperatorId !== operator) {
+      // console.log(`[DateFilter Effect] Operator changed: ${operator} -> ${newOperatorId}`);
+      setOperator(newOperatorId);
+      stateChanged = true;
+    }
+    
+    // Compare ISO strings for dates to avoid issues with object identity / milliseconds
+    const oldFromISO = value?.from?.toISO();
+    const newFromISO = newValue?.from?.toISO();
+    const oldToISO = value?.to?.toISO();
+    const newToISO = newValue?.to?.toISO();
 
-    const namedRangeName = expression.value.toString().substring(namedRangeIndex + namedDateRangePrefix.length);
-    const namedRange = namedDateRanges.find(x => x.id === namedRangeName);
-    if (!namedRange) return '';
+    if (newFromISO !== oldFromISO || newToISO !== oldToISO) { 
+      // console.log(`[DateFilter Effect] Value changed: FROM ${oldFromISO} -> ${newFromISO}, TO ${oldToISO} -> ${newToISO}`);
+      // Note: Setting the same Luxon object reference is fine if it hasn't changed
+      setValue(newValue); 
+      stateChanged = true;
+    }
+    
+    if (newSelectedPeriod !== selectedPeriod) {
+      // console.log(`[DateFilter Effect] SelectedPeriod changed: ${selectedPeriod} -> ${newSelectedPeriod}`);
+      setSelectedPeriod(newSelectedPeriod);
+      stateChanged = true;
+    }
 
-    return namedRange.label;
-  });
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [operator, setOperator] = useState(() => {
-    // if there are no active filters or too many then return the default operator
-    if (activeFilters.length === 0 || activeFilters.length > 2) return defaultOperator(operators);
+    // if (!stateChanged) {
+        // console.log('[DateFilter Effect] No state changes detected.');
+    // }
+    
 
-    // if there is one then set the operator to that
-    if (activeFilters.length === 1) return activeFilters[0].operatorDefinition.id;
+  }, [searchContext.filters, operators, fieldName]); // <-- This dependency should now work correctly
 
-    // if there is two then set the operator to between
-    return operators.date_between.id;
-  });
   const operatorDef = operators[operator];
 
   const handleClear = (event) => {

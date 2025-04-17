@@ -18,11 +18,12 @@ One day:
 [ ] pull paisley scraper/collector out into a separate project. separate git repo?
 [ ] alter rules engine to allow s// of description, or do we just do this in the parser
 [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
-[ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 [ ] Add kv logging for events. Events could include playwright runs, failures, logins.
 [ ] Sync url with filters
 
 done
+[x] load/save filters
+[x] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 [x] enable column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 [x] integrate john's changes
 [x] i've broken swyftx and coinbase

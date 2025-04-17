@@ -12,6 +12,7 @@ function LookupFilter({label, field, Icon, options, operators, coloredPills}) {
   const searchContext = useSearch();
   const activeFilters = searchContext.getFilters(field);
   const isFilterActive = activeFilters.length > 0;
+  // Initialize state based on context during initial render
   const [selectedOptions, setSelectedOptions] = useState(activeFilters.length > 0 ? activeFilters[0].value : []);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [operator, setOperator] = useState(activeFilters.length > 0 ? activeFilters[0].operatorDefinition.id : defaultOperator(operators));
@@ -25,16 +26,19 @@ function LookupFilter({label, field, Icon, options, operators, coloredPills}) {
 
     setPopoverOpen(false);
     searchContext.updateFilters(filterExpression(field, operatorDef, selectedOptions));
-  }, [selectedOptions]);
+  }, [selectedOptions, operator, field, operatorDef, searchContext]); // Added dependencies for exhaustive-deps
 
   useEffect(() => {
     // handle operator definitions that don't have a "value" per se
     // e.g. blank / empty
-    if ('operatorOnly' in operatorDef) {
-      // setIsFilterActive(true);
-      setPopoverOpen(false);
-
-      searchContext.updateFilters(filterExpression(field, operatorDef, []));
+    const currentOperatorDef = operators[operator]; // Get current def based on state
+    if (currentOperatorDef && 'operatorOnly' in currentOperatorDef) {
+        setPopoverOpen(false);
+        // Check if filter already exists to avoid loops
+        const existingFilter = searchContext.getFilters(field).find(f => f.operatorDefinition.id === operator);
+        if (!existingFilter) {
+           searchContext.updateFilters(filterExpression(field, currentOperatorDef, []));
+        }
     }
 
     // handle switching from multi to single select when multiple options are still selected
@@ -42,23 +46,32 @@ function LookupFilter({label, field, Icon, options, operators, coloredPills}) {
     if (operator === 'lookup_is' && selectedOptions.length > 1) {
       setSelectedOptions([]);
     }
-  }, [operator]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [operator, field, searchContext]); // Removed operators, selectedOptions to avoid potential loops
 
   // When using react-select we need to listen to and capture the Escape.
   useEffect(() => {
-    const handleEscape = (event) => event.key === 'Escape' && setPopoverOpen(false);
+    const handleEscape = (event) => {
+        if (event.key === 'Escape') {
+            setPopoverOpen(false);
+        }
+    };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [popoverOpen]);
+  }, []); // Removed popoverOpen dependency - listener should always be active
 
   const saveSelection = () => {
     setPopoverOpen(false);
-    searchContext.updateFilters(filterExpression(field, operatorDef, selectedOptions));
+    const currentOperatorDef = operators[operator]; // Get current def
+    if (currentOperatorDef) {
+        searchContext.updateFilters(filterExpression(field, currentOperatorDef, selectedOptions));
+    } else {
+        console.error(`[LookupFilter ${field}] Cannot save selection, operator definition not found for operator: ${operator}`);
+    }
   }
 
   const clearSelection = (event) => {
     event.stopPropagation();
-
     setOperator(defaultOperator(operators));
     setSelectedOptions([]);
     setPopoverOpen(false);
@@ -66,6 +79,11 @@ function LookupFilter({label, field, Icon, options, operators, coloredPills}) {
   };
 
   function renderButtonLabel(label) {
+    const currentOperatorDef = operators[operator]; // Use current operator state
+    if (!currentOperatorDef) {
+        // Handle case where operator definition might not be found initially
+        return <span>{label}</span>;
+    }
     return (
       <>
         <span>
@@ -74,10 +92,10 @@ function LookupFilter({label, field, Icon, options, operators, coloredPills}) {
         <span className="inline-flex gap-1 w-auto text-nowrap">
           <span className="opacity-40">{label}</span>
 
-          {'short' in operatorDef ?
-            <span>{operatorDef.short}</span>
+          {'short' in currentOperatorDef && currentOperatorDef.short ?
+            <span>{currentOperatorDef.short}</span>
             :
-            <span>{operatorDef.label}</span>
+            <span>{currentOperatorDef.label}</span>
           }
 
           {['lookup_is', 'lookup_any_of', 'lookup_not_any_of'].includes(operator) && selectedOptions.length > 0 &&
@@ -128,18 +146,19 @@ function LookupFilter({label, field, Icon, options, operators, coloredPills}) {
             )}
           </div>
 
-          {!('operatorOnly' in operatorDef) && options &&
+          {!(operators[operator] && 'operatorOnly' in operators[operator]) && selectOptions &&
             <ReactSelect
               onChange={selected => setSelectedOptions(Array.isArray(selected) ? [...selected] : [selected])}
               optionsAsArray={selectOptions}
               valueAsArray={selectedOptions}
-              isMulti={operator !== 'is'}
+              isMulti={operator !== 'lookup_is'} // Corrected comparison: lookup_is is single
               isClearable={false}
-              closeMenuOnSelect={false}
+              closeMenuOnSelect={operator === 'lookup_is'} // Close only for single select mode
               coloredPills={coloredPills}
               autoFocus
-              components={{DropdownIndicator: () => null, IndicatorSeparator: () => null}}
-              defaultMenuIsOpen
+              menuIsOpen={popoverOpen} // Control menu visibility via popover state
+              // defaultMenuIsOpen // Avoid using this if controlling via state
+              components={{ DropdownIndicator: () => null, IndicatorSeparator: () => null }}
             />
           }
         </div>
@@ -148,4 +167,4 @@ function LookupFilter({label, field, Icon, options, operators, coloredPills}) {
   )
 }
 
-export default LookupFilter;
+export default LookupFilter; 

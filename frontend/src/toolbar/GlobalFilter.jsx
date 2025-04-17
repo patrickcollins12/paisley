@@ -30,14 +30,14 @@ export default function GlobalFilter({ dataTable }) {
         <button
           className="absolute top-1/2 transform -translate-y-1/2 right-2"
           onClick={clearInput} // Clear input on click
-          aria-label="Clear input"
+          aria-label={t("Clear input")}
         >
           <X size={16} className="text-slate-400 hover:text-black dark:hover:text-white" />
         </button>
       )}
 
       <Input
-        placeholder={t("Filter") + "..."}
+        placeholder={t("Search") + "..."}
         onChange={handleChange}
         onKeyDown={handleKeyDown} // Listen for Escape key
         value={value}
