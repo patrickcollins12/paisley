@@ -13,7 +13,7 @@ import AccountDetailsTable from './AccountDetailsTable.jsx'
 import TransactionCard from "@/transactions/TransactionCard.jsx"
 import { ScrollableSidebar } from "@/components/ScrollableSidebar.jsx"
 import { BackNav } from "@/components/BackNav.jsx"
-import AccountIcon from './AccountIcon';
+import AccountIcon from '../icons/AccountIcon.jsx';
 
 //data loaders
 import useAccountData from "@/accounts/AccountApiHooks.js";

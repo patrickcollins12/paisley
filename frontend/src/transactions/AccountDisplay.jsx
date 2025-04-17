@@ -2,6 +2,7 @@ import React from 'react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import useAccountData from "@/accounts/AccountApiHooks.js"
 import { Skeleton } from "@/components/ui/skeleton.jsx"
+import AccountIcon from '@/icons/AccountIcon.jsx';
 
 export function AccountDisplay({account, display}) {
   const {data, error, isLoading} = useAccountData(account);
@@ -9,7 +10,16 @@ export function AccountDisplay({account, display}) {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <a className='text-xs font-normal hover:cursor-pointer'>{display}</a>
+        <a className='flex items-center space-x-1.5 text-xs font-normal hover:cursor-pointer'>
+          <AccountIcon
+            institution={data?.institution || display}
+            type={data?.type}
+            className="flex-shrink-0 w-4 h-4 p-0 m-0 border-none"
+            logoClassName="w-4 h-4"
+            iconSize={16}
+          />
+          <span>{display}</span>
+        </a>
       </HoverCardTrigger>
       <HoverCardContent align="start">
         {isLoading &&
@@ -20,16 +30,19 @@ export function AccountDisplay({account, display}) {
           </div>
         }
         {data &&
-          <div>
-            <h4>{data.institution}</h4>
-            <p>{data.name}</p>
-            <p>Account holder(s): {data.holders}</p>
-            <p>Currency: {data.currency}</p>
-            <p>Type: {data.type}</p>
-            <p>Timezone: {data.timezone}</p>
+          <div className="flex items-center space-x-3">
+            <AccountIcon institution={data.institution} type={data.type} className="flex-shrink-0" />
+            <div className="text-sm">
+              <h4 className="font-semibold">{data.institution}</h4>
+              <p className="text-muted-foreground">{data.name}</p>
+              <p className="text-muted-foreground text-xs">Type: {data.type}</p>
+              <p className="text-muted-foreground text-xs">Holder(s): {data.holders}</p>
+              <p className="text-muted-foreground text-xs">Currency: {data.currency}</p>
+              <p className="text-muted-foreground text-xs">Timezone: {data.timezone}</p>
+            </div>
           </div>
         }
-        {!data &&
+        {!data && !isLoading &&
           <p>No details found :(</p>
         }
       </HoverCardContent>

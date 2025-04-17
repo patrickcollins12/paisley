@@ -4,7 +4,7 @@ import CreatableSelect from 'react-select/creatable';
 import { getSelectClassNames, manualValueContainerFix, DropdownIndicator } from "@/components/ReactSelectStyles"
 
 // Import the central definition
-import { accountTypes } from '../accounts/accountTypes.js';
+import { accountTypes } from '../icons/accountTypes.js';
 
 const AccountTypeSelector = ({ form, name, label, description, ...props }) => {
   const { t } = useTranslation();

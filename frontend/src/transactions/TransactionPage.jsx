@@ -8,7 +8,7 @@ import { useSearch } from "@/components/search/SearchContext.jsx";
 import { getRouteApi } from "@tanstack/react-router";
 import { useUpdateEffect } from "react-use"
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog.jsx";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.jsx";
 import QuickRuleModal from "@/rules/QuickRuleModal.jsx";
 import { TooltipProvider } from "@/components/ui/tooltip.jsx";
 
@@ -51,6 +51,9 @@ export default function TransactionPage() {
   // column visibility state - meaning what columns are shown and hidden
   const [columnVisibilityState, setColumnVisibilityState] = useState(defaultColumnVisibility);
   
+  // *** Add state for column sizing ***
+  const [columnSizing, setColumnSizing] = useState({});
+
   // Quick Rule modal state
   const [isQuickRuleModalOpen, setIsQuickRuleModalOpen] = useState(false);
   const [quickRuleInitialString, setQuickRuleInitialString] = useState('');
@@ -121,11 +124,16 @@ export default function TransactionPage() {
     data: data?.results ?? [],
     resultsSummary: data?.resultSummary ?? {},
     columns: columns,
+
+    enableColumnResizing: true, // Essential for minSize/size/maxSize to be fully effective
+    columnResizeMode: 'onChange', // Recommended mode
+
     getCoreRowModel: getCoreRowModel(),
     state: {
       sorting: sortState,
       columnVisibility: columnVisibilityState,
-      pagination: pageState
+      pagination: pageState,
+      columnSizing: columnSizing, // Pass state to table
     },
     manualSorting: true,
     manualPagination: true,
@@ -133,7 +141,8 @@ export default function TransactionPage() {
     rowCount: data?.resultSummary.count,
     onColumnVisibilityChange: setColumnVisibilityState,
     onSortingChange: setSortState,
-    onPaginationChange: setPageState
+    onPaginationChange: setPageState,
+    onColumnSizingChange: setColumnSizing, // Add handler to update state
   });
 return (
   <TooltipProvider delayDuration={100}>

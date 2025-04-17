@@ -21,7 +21,7 @@ import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
 import AccountSparkLine from "@/accounts/AccountSparkLine.jsx";
 import { useTranslation } from 'react-i18next';
 
-import AccountIcon from './AccountIcon';
+import AccountIcon from '../icons/AccountIcon.jsx';
 
 const AccountsPage = () => {
   const navigate = useNavigate({ from: "/accounts" });

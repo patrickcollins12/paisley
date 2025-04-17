@@ -4,6 +4,7 @@ import { EditableDescriptionCell } from '@/transactions/EditableDescriptionCell.
 import HeaderCell from "@/components/data-table/HeaderCell.jsx"
 import { Currency } from "@/components/CurrencyDisplay.jsx"
 import { TransactionTagsDisplay } from "@/transactions/TransactionTagsDisplay.jsx"
+import AccountIcon from '@/icons/AccountIcon.jsx';
 import TagsCellContent from './TagsCellContent.jsx';
 
 export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick) {
@@ -16,6 +17,7 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
         let id = row.getValue("id");
         return id.substr(0, 4) + ".." + id.substr(id.length - 4, 4)
       },
+      size: 70,
       meta: {
         displayName: t("ID")
       }
@@ -25,6 +27,7 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
       accessorKey: 'datetime',
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <DateTimeDisplay account={row.getValue("account_number")} datetime={row.getValue("datetime")} />,
+      size: 150,
       meta: {
         displayName: t("Date")
       }
@@ -34,6 +37,7 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
       accessorKey: 'account_number',
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_number")} />,
+      size: 120,
       meta: {
         displayName: t("Account Number")
       }
@@ -43,16 +47,15 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
       accessorKey: 'account_shortname',
       header: props => <HeaderCell {...props} />,
       cell: ({ row }) => <AccountDisplay account={row.getValue("account_number")} display={row.getValue("account_shortname")} />,
-      meta: {
-        displayName: t("Account")
-      }
+      size: 200,
+      enableResizing: true,
+      meta: { displayName: t("Account") }
     },
 
     {
       accessorKey: 'account_currency',
-      meta: {
-        displayName: t("Account Currency")
-      }
+      size: 80,
+      meta: { displayName: t("Account Currency") }
 
     },
 
@@ -68,7 +71,8 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
     {
       accessorKey: 'description',
       header: props => <HeaderCell {...props} />,
-      width: 300,
+      size: 300,
+      enableResizing: true,
       cell: ({ row, column: { id }, table }) => (
         <EditableDescriptionCell key={row.original.id} row={row} columnId={id} table={table} />
       ),
@@ -83,6 +87,7 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
       header: props => <HeaderCell align='right' {...props} />,
       footer: ({ table }) => <Currency>{table.options.resultsSummary?.debit_total}</Currency>,
       cell: ({ row }) => <Currency currency={row.getValue("account_currency")} className="text-right whitespace-nowrap">{row.getValue("debit")}</Currency>,
+      size: 100,
       meta: {
         displayName: t("Debit")
       }
@@ -93,6 +98,7 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
       header: props => <HeaderCell align='right' {...props} />,
       footer: ({ table }) => <Currency className="text-right whitespace-nowrap">{table.options.resultsSummary?.credit_total}</Currency>,
       cell: ({ row }) => <Currency currency={row.getValue("account_currency")} className="text-right whitespace-nowrap">{row.getValue("credit")}</Currency>,
+      size: 100,
       meta: {
         displayName: t("Credit")
       }
@@ -110,6 +116,7 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
           </Currency>
         )
       },
+      size: 100,
       meta: {
         displayName: t("Amount")
       }
@@ -117,11 +124,11 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
 
     {
       accessorKey: 'balance',
-      // header: () => <div className="text-right">Balance</div>,
       header: props => <HeaderCell align='right' {...props} />,
       cell: ({ row }) => <Currency currency={row.getValue("account_currency")} className="text-right whitespace-nowrap">
         {row.getValue("balance")}
       </Currency>,
+      size: 120,
       meta: {
         displayName: t("Balance")
       }
@@ -131,33 +138,21 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
       accessorKey: 'tags',
       header: props => <HeaderCell align='left' {...props} />,
       enableResizing: true,
-      // Render the imported component
-      cell: props => <TagsCellContent 
-                      row={props.row} 
-                      onTransactionUpdate={onTransactionUpdate} 
-                      onQuickRuleClick={onQuickRuleClick} 
+      cell: props => <TagsCellContent
+                      row={props.row}
+                      onTransactionUpdate={onTransactionUpdate}
+                      onQuickRuleClick={onQuickRuleClick}
                     />,
+      size: 250,
       meta: {
         displayName: t("Tags")
       }
     },
 
-    // placeholder
-    // isClearable={true}
-    // maxMenuHeight={200}
-    // // autoFocus={true}
-    // openMenuOnFocus={true} 
-    // isDisabled="true"
-    // autoFocus={true}
-    // openMenuOnFocus={true}
-    // placeholder={inputPlaceholder || "Add a tag..."}
-    // maxMenuHeight={200}
-
     {
       accessorKey: 'party',
       header: props => <HeaderCell align='left' {...props} />,
       enableResizing: true,
-      width: 300,
       cell: props => <TransactionTagsDisplay
         type="parties"
         updateHandler={onTransactionUpdate}
@@ -173,6 +168,7 @@ export function createColumnDefinitions(onTransactionUpdate, t, onQuickRuleClick
         maxMenuHeight={200}
         openMenuOnFocus={true}
       />,
+      size: 250,
       meta: {
         displayName: t("Party")
       }

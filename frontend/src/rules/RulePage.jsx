@@ -51,6 +51,10 @@ export default function RulePage() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+
+    enableColumnResizing: true, // Essential for minSize/size/maxSize to be fully effective
+    columnResizeMode: 'onChange', // Recommended mode
+
     state: {
       globalFilter: globalFilterState,
       sorting: sortState,

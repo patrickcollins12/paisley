@@ -1,33 +1,33 @@
 {
     "Chase": {
-        "location": "/logos/Chase.svg",
+        "location": "/icons/Chase.svg",
         "background": ""
     },
     "Bankwest": {
-        "location": "/logos/Bankwest.png",
+        "location": "/icons/Bankwest.png",
         "background": ""
     },
     "Westpac": {
-        "location": "/logos/Westpac.svg"
+        "location": "/icons/Westpac.svg"
     },
     "Commonwealth Bank Australia": {
-        "location": "/logos/Commonwealth Bank Australia.svg",
+        "location": "/icons/Commonwealth Bank Australia.svg",
         "background": "bg-white"
     },
     "Swyftx": {
-        "location": "/logos/Swyftx.png",
+        "location": "/icons/Swyftx.png",
         "background": "bg-white"
     },
     "Coinbase": {
-        "location": "/logos/Coinbase.svg",
+        "location": "/icons/Coinbase.svg",
         "background": ""
     },
     "Commsec": {
-        "location": "/logos/Commsec.svg",
+        "location": "/icons/Commsec.svg",
         "background": "bg-white"
     },
     "Rest Super": {
-        "location": "/logos/Rest Super.svg",
+        "location": "/icons/Rest Super.svg",
         "background": ""
     }
 }

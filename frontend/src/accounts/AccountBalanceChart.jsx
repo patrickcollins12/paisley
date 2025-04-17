@@ -88,7 +88,7 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                         // if all is selected, the startDate will be null, so turn on the dataZoomer
                         show: startDate ? false : true,
                         realtime: true,
-                        start: 25,
+                        start: 0,
                         end: 100,
                         xAxisIndex: [0, 1]
                     },
