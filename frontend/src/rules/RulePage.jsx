@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-table"
 import { useFetchRules, useUpdateRules } from "@/rules/RuleApiHooks.jsx"
 import { useMemo, useState } from "react"
+import { useLocalStorage } from 'react-use';
 import GlobalFilter from "@/toolbar/GlobalFilter.jsx"
 import ColumnSelector from "@/toolbar/ColumnSelector.jsx"
 import { PlusIcon } from "lucide-react"
@@ -41,9 +42,15 @@ export default function RulePage() {
   const [columnVisibilityState, setColumnVisibilityState] = useState({ id: false, comment: false });
   const [globalFilterState, setGlobalFilterState] = useState();
   const [sortState, setSortState] = useState([]);
+  const [columnSizing, setColumnSizing] = useLocalStorage('rule-column-sizing', {});
   const { data } = useFetchRules();
   const { update, remove } = useUpdateRules();
   const columns = useMemo(() => createColumnDefinitions(update, remove), []);
+
+  function handleResetLayout() {
+    setColumnSizing({});
+  }
+
   const table = useReactTable({
     data: data ?? [],
     columns: columns,
@@ -60,11 +67,13 @@ export default function RulePage() {
       sorting: sortState,
       columnVisibility: columnVisibilityState,
       pagination: pageState,
+      columnSizing: columnSizing,
     },
     onSortingChange: setSortState,
     onGlobalFilterChange: setGlobalFilterState,
     onColumnVisibilityChange: setColumnVisibilityState,
     onPaginationChange: setPageState,
+    onColumnSizingChange: setColumnSizing,
     getColumnCanGlobalFilter: (options) => {
       return options.id in filterFuncs;
     },
@@ -76,7 +85,6 @@ export default function RulePage() {
   return (
     <>
       <div className="flex flex-row mb-4">
-
         <div className="flex flex-row basis-1/2 space-x-2">
           <Button variant='outline' size='sm' className='h-8' asChild>
             <Link to="/rules/new">
@@ -84,14 +92,15 @@ export default function RulePage() {
               Create Rule
             </Link>
           </Button>
-
           <GlobalFilter dataTable={table} />
         </div>
-
         <div className='flex flex-row-reverse basis-1/2 space-x-2 space-x-reverse'>
-          <ColumnSelector dataTable={table} />
+          <ColumnSelector 
+            dataTable={table} 
+            currentColumnSizing={columnSizing} 
+            onResetLayout={handleResetLayout} 
+          />
         </div>
-
       </div>
 
       <DataTable
@@ -104,6 +113,5 @@ export default function RulePage() {
         pageState={pageState}
       />
     </>
-
   )
 }

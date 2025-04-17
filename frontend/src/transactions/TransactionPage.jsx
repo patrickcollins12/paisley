@@ -6,7 +6,7 @@ import Toolbar from "@/toolbar/Toolbar.jsx";
 import { useFetchTransactions, useUpdateTransaction } from "@/transactions/TransactionApiHooks.jsx";
 import { useSearch } from "@/components/search/SearchContext.jsx";
 import { getRouteApi } from "@tanstack/react-router";
-import { useUpdateEffect } from "react-use"
+import { useUpdateEffect, useLocalStorage } from "react-use"
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog.jsx";
 import QuickRuleModal from "@/rules/QuickRuleModal.jsx";
@@ -50,13 +50,18 @@ export default function TransactionPage() {
 
   // column visibility state - meaning what columns are shown and hidden
   const [columnVisibilityState, setColumnVisibilityState] = useState(defaultColumnVisibility);
-  
-  // *** Add state for column sizing ***
-  const [columnSizing, setColumnSizing] = useState({});
+
+  // *** Use localStorage for column sizing state ***
+  const [columnSizing, setColumnSizing] = useLocalStorage('transaction-column-sizing', {});
 
   // Quick Rule modal state
   const [isQuickRuleModalOpen, setIsQuickRuleModalOpen] = useState(false);
   const [quickRuleInitialString, setQuickRuleInitialString] = useState('');
+
+  // Function to reset column sizes
+  function handleResetLayout() {
+    setColumnSizing({}); // Set state back to empty, useLocalStorage handles clearing storage
+  }
 
   // pagination state - composed of the number of items per page (pageSize) and current page number (pageIndex)
   const [pageState, setPageState] = useState({
@@ -108,7 +113,7 @@ export default function TransactionPage() {
       // console.log('update transaction result', result);
     });
   }
-  
+
   // Handler for the Quick Rule button
   function handleQuickRuleClick(description) {
     // Format the description as a rule string
@@ -125,8 +130,8 @@ export default function TransactionPage() {
     resultsSummary: data?.resultSummary ?? {},
     columns: columns,
 
-    enableColumnResizing: true, // Essential for minSize/size/maxSize to be fully effective
-    columnResizeMode: 'onChange', // Recommended mode
+    enableColumnResizing: true, // Ensure this is set
+    columnResizeMode: 'onChange', // Ensure this is set
 
     getCoreRowModel: getCoreRowModel(),
     state: {
@@ -144,38 +149,40 @@ export default function TransactionPage() {
     onPaginationChange: setPageState,
     onColumnSizingChange: setColumnSizing, // Add handler to update state
   });
-return (
-  <TooltipProvider delayDuration={100}>
-    <Toolbar
-      dataTable={table}
-    />
 
-    <DataTable
-      paginated
-      data={data}
-      table={table}
-      columnVisibilityState={columnVisibilityState}
-    />
-    
-    {/* Quick Rule Modal */}
-    <Dialog open={isQuickRuleModalOpen} onOpenChange={setIsQuickRuleModalOpen}>
-      <DialogContent className="max-w-3xl sm:top-0 sm:translate-y-12">
-        <DialogHeader>
-          <DialogTitle>New Quick Rule</DialogTitle>
-        </DialogHeader>
-        {isQuickRuleModalOpen && (
-          <QuickRuleModal
-            key={quickRuleInitialString}
-            initialRuleString={quickRuleInitialString}
-            onSaveComplete={() => {
-              // Refresh the transaction list after saving the rule
-              mutate();
-              setIsQuickRuleModalOpen(false);
-            }}
-          />
-        )}
-      </DialogContent>
-    </Dialog>
-  </TooltipProvider>
-)
+  return (
+    <TooltipProvider delayDuration={100}>
+      <Toolbar
+        dataTable={table}
+        onResetLayout={handleResetLayout}
+        currentColumnSizing={columnSizing}
+      />
+
+      <DataTable
+        paginated
+        data={data}
+        table={table}
+      />
+
+      {/* Quick Rule Modal */}
+      <Dialog open={isQuickRuleModalOpen} onOpenChange={setIsQuickRuleModalOpen}>
+        <DialogContent className="max-w-3xl sm:top-0 sm:translate-y-12">
+          <DialogHeader>
+            <DialogTitle>New Quick Rule</DialogTitle>
+          </DialogHeader>
+          {isQuickRuleModalOpen && (
+            <QuickRuleModal
+              key={quickRuleInitialString}
+              initialRuleString={quickRuleInitialString}
+              onSaveComplete={() => {
+                // Refresh the transaction list after saving the rule
+                mutate();
+                setIsQuickRuleModalOpen(false);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </TooltipProvider>
+  )
 }

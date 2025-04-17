@@ -2,15 +2,19 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuItem
 } from "@/components/ui/dropdown-menu.jsx"
 import { Button } from "@/components/ui/button.jsx"
 import { ChevronDown } from "lucide-react"
 import { formatCamelCase } from "@/lib/utils";
 import { useTranslation } from 'react-i18next';
 
-function ColumnSelector({ dataTable }) {
+function ColumnSelector({ dataTable, currentColumnSizing, onResetLayout }) {
   const { t, i18n } = useTranslation();
+
+  const showReset = onResetLayout && Object.keys(currentColumnSizing ?? {}).length > 0;
 
   return (
     <DropdownMenu>
@@ -23,19 +27,25 @@ function ColumnSelector({ dataTable }) {
         {dataTable
           .getAllColumns()
           .filter((column) => column.getCanHide())
-          .map((column) => {
-            return (
-              <DropdownMenuCheckboxItem
-                key={column.id}
-                checked={column.getIsVisible()}
-                onCheckedChange={() => {
-                  column.toggleVisibility();
-                }}
-              >
-                {formatCamelCase(column.columnDef?.meta?.displayName|| column.id) }
-              </DropdownMenuCheckboxItem>
-            )
-          })}
+          .map((column) => (
+            <DropdownMenuCheckboxItem
+              key={column.id}
+              checked={column.getIsVisible()}
+              onCheckedChange={() => {
+                column.toggleVisibility();
+              }}
+            >
+              {formatCamelCase(column.columnDef?.meta?.displayName|| column.id) }
+            </DropdownMenuCheckboxItem>
+          ))}
+        {showReset && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={onResetLayout}> 
+              {t("Reset Column Sizes")}
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   )

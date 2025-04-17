@@ -15,11 +15,11 @@ import LookupFilter from "@/toolbar/LookupFilter.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import AmountFilter from "@/toolbar/AmountFilter.jsx"
-import { Landmark, Tag, UserCheck } from "lucide-react"
+import { Landmark, Tag, UserCheck, RotateCcw } from "lucide-react"
 import { useSearch } from "@/components/search/SearchContext.jsx"
 import { Button } from "@/components/ui/button.jsx"
 
-function Toolbar({ dataTable }) {
+function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
 
   const searchContext = useSearch();
 
@@ -82,7 +82,11 @@ function Toolbar({ dataTable }) {
 
       {dataTable && (
         <div className='flex flex-row-reverse basis-1/2 space-x-2 space-x-reverse'>
-          <ColumnSelector dataTable={dataTable} />
+          <ColumnSelector 
+            dataTable={dataTable} 
+            currentColumnSizing={currentColumnSizing} 
+            onResetLayout={onResetLayout} 
+          />
         </div>
       )}
     </div>

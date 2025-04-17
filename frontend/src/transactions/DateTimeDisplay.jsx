@@ -12,8 +12,9 @@ export function DateTimeDisplay({ datetime, options = { delta: false, absolute: 
     <HoverCardContent align="start">
       <div>
         <p>{datetime}</p>
+        --
         <p>{formatDate(datetime, options)}</p>
-        <p>{t("TZ of browser")}: {tz}</p>
+        {/* <p>{t("TZ of browser")}: {tz}</p> */}
       </div>
     </HoverCardContent>
   );

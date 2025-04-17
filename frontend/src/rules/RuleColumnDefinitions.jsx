@@ -8,6 +8,7 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
     {
       accessorKey: 'id',
       header: props => <HeaderCell {...props} />,
+      size: 60,
       meta: {
         displayName: 'Rule ID'
       }
@@ -15,7 +16,8 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
     {
       accessorKey: 'rule',
       header: props => <HeaderCell {...props} />,
-      width: 400,
+      size: 500,
+      enableResizing: true,
       cell: ({ row }) => <InlineEditCell
         key={row.original.id}
         id={row.original.id}
@@ -26,23 +28,12 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
         displayName: 'Rule'
       }
     },
-    // {
-    //   accessorKey: 'group',
-    //   header: props => <HeaderCell {...props} />,
-    //   cell: ({ row }) => <InlineEditCell
-    //     key={row.original.id}
-    //     id={row.original.id}
-    //     name="group"
-    //     value={row.original.group}
-    //     onUpdate={updaterFunc} />,
-    //   meta: {
-    //     displayName: 'Group'
-    //   }
-    // },
     {
       accessorKey: 'tag',
       header: props => <HeaderCell {...props} />,
       cell: props => <RulesTagsDisplay resource="tags" id={props.row.original.id} onUpdate={updaterFunc} values={props.row.original.tag} isMulti={true}/>,
+      size: 400,
+      enableResizing: true,
       meta: {
         displayName: 'Tags'
       }
@@ -51,6 +42,8 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
       accessorKey: 'party',
       header: props => <HeaderCell {...props} />,
       cell: props => <RulesTagsDisplay resource="parties" id={props.row.original.id} onUpdate={updaterFunc} values={props.row.original.party} isMulti={false} />,
+      size: 200,
+      enableResizing: true,
       meta: {
         displayName: 'Party'
       }
@@ -58,6 +51,7 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
     {
       accessorKey: 'tx_count',
       header: props => <HeaderCell {...props} />,
+      size: 80,
       meta: {
         displayName: 'Matches'
       }
@@ -65,6 +59,8 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
     {
       accessorKey: 'comment',
       header: props => <HeaderCell {...props} />,
+      size: 300,
+      enableResizing: true,
       cell: ({ row }) => <InlineEditCell
         key={row.original.id}
         id={row.original.id}
@@ -77,6 +73,7 @@ export function createColumnDefinitions(updaterFunc, removeFunc) {
     },
     {
       id: 'actions',
+      size: 80,
       cell: ({ row }) => <RuleActionCell id={row.original.id} onDelete={removeFunc} />
     }
   ];
