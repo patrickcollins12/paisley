@@ -26,9 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown } from "lucide-react"
-import { Eraser } from "lucide-react"
-import { Trash2 } from "lucide-react"
+import { ChevronDown, Eraser, Trash2, Save } from "lucide-react"
 
 function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
 
@@ -103,20 +101,27 @@ function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={() => searchContext.save?.()}> 
-                Save Current Filters...
+              <DropdownMenuItem
+                onSelect={() => searchContext.save?.()}
+                
+              >
+                <Save className="mr-2 h-4 w-4" />
+                <span>Save the Current Filters...</span>
+                
               </DropdownMenuItem>
+
               {searchContext.savedSearches.length > 0 && (
                 <>
                   <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Load from these filters</DropdownMenuLabel>
                   {searchContext.savedSearches.map((name) => (
-                    <DropdownMenuItem 
-                      key={name} 
+                    <DropdownMenuItem
+                      key={name}
                       onSelect={() => searchContext.loadSearch(name)}
                       className="group flex justify-between items-center pr-2"
                     >
                       <span>{name}</span>
-                      <Trash2 
+                      <Trash2
                         className="h-4 w-4 text-gray-400 ml-4 hover:text-red-500 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-150"
                         onClick={(e) => {
                           e.stopPropagation();
@@ -146,14 +151,14 @@ function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
 
       <div className='flex justify-end flex-shrink-0'>
         {dataTable && (
-          <ColumnSelector 
-            dataTable={dataTable} 
-            currentColumnSizing={currentColumnSizing} 
-            onResetLayout={onResetLayout} 
+          <ColumnSelector
+            dataTable={dataTable}
+            currentColumnSizing={currentColumnSizing}
+            onResetLayout={onResetLayout}
           />
         )}
       </div>
-      
+
     </div>
   )
 }
