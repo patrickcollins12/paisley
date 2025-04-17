@@ -176,7 +176,6 @@ export function SearchContextProvider({ children }) {
   }
 
   const loadSearch = async (name) => {
-    console.log(`[SearchContext] loadSearch called for name: "${name}"`);
     let result;
     try {
       result = await getSearchAPI(name); // Use hook function
@@ -196,38 +195,18 @@ export function SearchContextProvider({ children }) {
     // --- Hydration Step ---
     try {
       const loadedFilters = result.data.value; 
-      // console.log(`[SearchContext] Raw filters from API for "${name}":`, loadedFilters);
       
-      /* // --- DEBUGGING HYDRATION --- 
-      const hydratedFilters = [];
-      console.log(`[SearchContext] Starting manual hydration loop for ${loadedFilters.length} filters...`);
-      for (const rawFilter of loadedFilters) {
-        console.log(`[SearchContext] Hydrating raw filter:`, rawFilter);
-        const hydrated = hydrateOperatorDefinition(rawFilter);
-        console.log(`[SearchContext] Result of hydrating filter for field '${rawFilter.field}':`, hydrated);
-        if (hydrated !== null) {
-          hydratedFilters.push(hydrated);
-        } else {
-          console.warn(`[SearchContext] Filter for field '${rawFilter.field}' was null after hydration.`);
-        }
-      }
-      console.log(`[SearchContext] Manual hydration loop finished. Final hydratedFilters array:`, hydratedFilters);
-      // --- END DEBUGGING --- */
 
       // Rehydrate operator definitions (Restored original line)
       const hydratedFilters = loadedFilters.map(hydrateOperatorDefinition).filter(x => x !== null);
-      // console.log(`[SearchContext] Hydrated filters for "${name}":`, hydratedFilters); 
 
       // Optional: Warn if some filters couldn't be hydrated, but don't treat as a fatal error
       if (hydratedFilters.length !== loadedFilters.length) {
         console.warn(`Search "${name}" loaded, but some filters could not be hydrated due to missing operator definitions.`); // Restored original warning message
-        // You could add a non-destructive toast here if desired:
         // toast({ description: `Search "${name}" loaded with some missing filter types.`, variant: "default" });
       }
 
-      // console.log(`[SearchContext] Calling setFilters for "${name}" with ${hydratedFilters.length} filters...`);
       setFilters(hydratedFilters); // Update the main filter state
-      // console.log(`[SearchContext] setFilters called for "${name}".`);
       // toast({ description: `Search "${name}" loaded successfully.` });
 
     } catch (hydrationError) {
