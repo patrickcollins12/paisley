@@ -106,7 +106,7 @@ router.get('/api/tags', async (req, res) => {
     });
 
     const result = Array.from(allTags).sort();
-    res.json({ success: true, tags: result });
+    res.json(result);
   } catch (err) {
     logger.error(`error: ${err.message}`);
     res.status(400).json({ success: false, error: err.message });

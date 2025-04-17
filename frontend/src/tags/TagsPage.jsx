@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function TagsPage() {
   const { t } = useTranslation();
-  const { data: allTags, error, isLoading } = useFetchTags();
+  const { data: allTags, error, isLoading } = useFetchTags("tags");
   const { rename } = useRenameTag();
   const [tagList, setTagList] = useState([]);
   const [editIndex, setEditIndex] = useState(null);

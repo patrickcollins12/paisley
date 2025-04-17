@@ -10,15 +10,32 @@ async function fetcher(url) {
 }
 
 // Fetch all tags
-export function useFetchTags() {
-  const { data, error, isLoading, mutate } = useSWR("tags", fetcher);
+export function useFetchTagsNew(types) {
+  const { data, error, isLoading, mutate } = useSWR(types, fetcher);
 
   return {
-    data: data?.tags,
+    data,
     error,
     isLoading,
     mutate
   };
+}
+
+export function useFetchTags(tagResource) {
+  
+  if (! ['tags','parties'].includes(tagResource) ) {
+    throw new Error(`Invalid resource in useFetchTags: ${tagResource}.`)
+  }
+
+  const { data, error, isLoading, mutate } = useSWR(tagResource, fetcher);
+
+  
+  return {
+    data,
+    error,
+    isLoading,
+    mutate
+  }
 }
 
 // Rename tag
