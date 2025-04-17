@@ -15,9 +15,8 @@ import LookupFilter from "@/toolbar/LookupFilter.jsx"
 import useAccountData from "@/accounts/AccountApiHooks.js"
 import { useFetchTags } from "@/tags/TagApiHooks.js"
 import AmountFilter from "@/toolbar/AmountFilter.jsx"
-import { Landmark, Tag, UserCheck, RotateCcw } from "lucide-react"
+import { Landmark, Tag, UserCheck } from "lucide-react"
 import { useSearch } from "@/components/search/SearchContext.jsx"
-import { Button } from "@/components/ui/button.jsx"
 
 function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
 
@@ -45,8 +44,7 @@ function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
           Icon={Landmark}
           options={() => {
             if (!accounts.data) return [];
-            return Object.keys(accounts.data).map(key => accounts.data[key].shortname)
-
+            return Object.keys(accounts.data).map(key => accounts.data[key].shortname).sort();
           }}
           coloredPills={false}
           operators={lookupOperators}
@@ -68,15 +66,6 @@ function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
           coloredPills={true}
           operators={lookupOperators}
         />
-
-        {/* <Button
-          onClick={() => searchContext.clear()}
-          variant='ghost'
-          className="h-8 p-3 text-left font-normal">Clear</Button>
-        <Button
-          onClick={() => searchContext.save()}
-          variant='ghost'
-          className="h-8 p-3 text-left font-normal">Save</Button> */}
 
       </div>
 

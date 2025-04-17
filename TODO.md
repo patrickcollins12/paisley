@@ -20,10 +20,10 @@ One day:
 [ ] Finish migrating to config.json5 (Allows us to specify an alternate csv_parser location and use python to load the config file)
 [ ] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 [ ] Add kv logging for events. Events could include playwright runs, failures, logins.
-[ ] enable column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 [ ] Sync url with filters
 
 done
+[x] enable column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state
 [x] integrate john's changes
 [x] i've broken swyftx and coinbase
 [x] migrate back to beelink
