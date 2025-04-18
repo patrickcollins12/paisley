@@ -23,16 +23,41 @@ export function ThemeProvider({
     root.classList.remove("light", "dark");
 
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-      root.classList.add(systemTheme);
-      return;
+      // Function to apply the system theme class
+      const applySystemTheme = (matches) => {
+        const systemTheme = matches ? "dark" : "light";
+        root.classList.add(systemTheme);
+      }
+
+      // Initial check
+      applySystemTheme(mediaQuery.matches);
+
+      // Listener for changes
+      const handleChange = (e) => {
+        // Only apply if the component's theme is still 'system'
+        // This check might be implicitly handled by the effect cleanup,
+        // but adding it explicitly ensures correctness if the theme changes
+        // while the listener is technically still attached before cleanup.
+        if (theme === "system") { 
+           root.classList.remove("light", "dark"); // Remove old class before adding new
+           applySystemTheme(e.matches);
+        }
+      };
+
+      mediaQuery.addEventListener("change", handleChange);
+
+      // Cleanup function to remove listener when theme changes or component unmounts
+      return () => {
+        mediaQuery.removeEventListener("change", handleChange);
+      };
+
+    } else {
+      // Apply the explicitly set theme (light or dark)
+      root.classList.add(theme);
     }
-
-    root.classList.add(theme);
+  // Rerun effect if the theme state changes
   }, [theme]);
 
   const value = {
@@ -61,17 +86,25 @@ export const useTheme = () => {
 
 export const useResolvedTheme = () => {
   const { theme } = useTheme();
-  const [resolvedTheme, setResolvedTheme] = useState("light"); // Default to light
+  const [resolvedTheme, setResolvedTheme] = useState(() => {
+    if (theme !== 'system') {
+      return theme;
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? 'dark' : 'light';
+  });
 
   useEffect(() => {
-    if (theme === "system") {
-      const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const resolvedTheme = systemPrefersDark ? "dark" : "light";
-      setResolvedTheme(resolvedTheme);
+    if (theme === 'system') {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = (e) => setResolvedTheme(e.matches ? 'dark' : 'light');
+      mediaQuery.addEventListener('change', handleChange);
+      // Initial check in case the preference changed between initial state and effect run
+      setResolvedTheme(mediaQuery.matches ? 'dark' : 'light'); 
+      return () => mediaQuery.removeEventListener('change', handleChange);
     } else {
       setResolvedTheme(theme);
     }
-  }, [theme]); // Re-run when theme changes
+  }, [theme]);
 
   return resolvedTheme;
 };
