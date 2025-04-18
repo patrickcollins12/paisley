@@ -43,6 +43,7 @@ class ExpressServer {
     configureMiddleware() {
         this.app.use(cors());
         this.app.use(express.json());
+        this.app.set('query parser', 'extended');
         this.app.use(JWTAuthenticator.authenticateToken(this.globalDisableAuth));
 
         // for security reasons lets disable some unnecessary headers
