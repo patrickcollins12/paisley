@@ -165,7 +165,7 @@ const AccountsPage = () => {
               {/* Expand/Collapse Icon */}
               {isParent && hasChildren && (
                 <button
-                  className="focus:outline-none"
+                  className="focus:outline-hidden"
                   onClick={(event) => {
                     event.stopPropagation(); // Prevents the row click from triggering
                     toggleExpand(account.accountid);

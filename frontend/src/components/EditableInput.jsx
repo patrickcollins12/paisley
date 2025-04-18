@@ -31,8 +31,8 @@ export function EditableInput({ value, className, onFocus, ...props }) {
 
   var c = className || "";
   c += " p-1 w-full rounded-md transition-all grow bg-transparent hover:bg-background";
-  c += " hover:ring-1 hover:ring-gray-300 hover:dark:ring-gray-700 ";
-  c += " focus:outline-none focus:ring-2 focus:ring-gray-700 focus:dark:ring-gray-300";
+  c += " hover:ring-1 hover:ring-gray-300 dark:hover:ring-gray-700 ";
+  c += " focus:outline-hidden focus:ring-2 focus:ring-gray-700 dark:focus:ring-gray-300";
   c += " overflow-hidden resize-none"; // remove scrolling and scrollbars in the textarea
 
   return (

@@ -5,13 +5,14 @@ import { configDefaults } from 'vitest/config'
 // import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import { resolve } from "path"
 import { visualizer } from 'rollup-plugin-visualizer';
+import tailwindcss from '@tailwindcss/postcss';
+import autoprefixer from 'autoprefixer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     TanStackRouterVite({ autoCodeSplitting: true }),
     react(),
-
     // Uncomment the following line to enable the build visualizer plugin
     // visualizer({
     //   filename: './dist/stats.html', // output location
@@ -21,6 +22,16 @@ export default defineConfig({
     // }),
     
   ],
+
+  // Add CSS configuration for PostCSS
+  css: {
+    postcss: {
+      plugins: [
+        tailwindcss,
+        autoprefixer,
+      ],
+    },
+  },
 
   // vitest config
   test: {

@@ -14,7 +14,7 @@ export function AccountDisplay({account, display}) {
           <AccountIcon
             institution={data?.institution || display}
             type={data?.type}
-            className="flex-shrink-0 w-4 h-4 p-0 m-0 border-none"
+            className="shrink-0 w-4 h-4 p-0 m-0 mr-2 border-none"
             logoClassName="w-4 h-4"
             iconSize={16}
           />
@@ -31,7 +31,7 @@ export function AccountDisplay({account, display}) {
         }
         {data &&
           <div className="flex items-center space-x-3">
-            <AccountIcon institution={data.institution} type={data.type} className="flex-shrink-0" />
+            <AccountIcon institution={data.institution} type={data.type} className="shrink-0" />
             <div className="text-sm">
               <h4 className="font-semibold">{data.institution}</h4>
               <p className="text-muted-foreground">{data.name}</p>

@@ -52,7 +52,7 @@ function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
   return (
     <div className="flex flex-row items-start mb-4 space-x-4">
 
-      <div className="flex flex-row flex-wrap gap-x-2 gap-y-2 items-center flex-grow">
+      <div className="flex flex-row flex-wrap gap-x-2 gap-y-2 items-center grow">
         <AllFilter key={getAllFilterKey()} operators={allFilterOperators} />
 
         <DescriptionFilter key={getLookupFilterKey('description')} operators={stringOperators} />
@@ -149,7 +149,7 @@ function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
 
       </div>
 
-      <div className='flex justify-end flex-shrink-0'>
+      <div className='flex justify-end shrink-0'>
         {dataTable && (
           <ColumnSelector
             dataTable={dataTable}

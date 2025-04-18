@@ -12,7 +12,7 @@ export default function TagsCellContent({ row, onTransactionUpdate, onQuickRuleC
 
   return (
     <div 
-      className="flex-grow relative" 
+      className="grow relative" 
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >

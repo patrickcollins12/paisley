@@ -67,7 +67,7 @@ export default function Pagination({ dataTable }) {
         <Button disabled={!dataTable.getCanPreviousPage()} onClick={() => handlePageChange(-1)} variant='ghost' className='size-8 p-2'>
           <ChevronLeft size={16} />
         </Button>
-        <Button disabled={!dataTable.getCanNextPage()} onClick={() => handlePageChange(1)} variant='ghost' className='size-8 p-2 !ml-0'>
+        <Button disabled={!dataTable.getCanNextPage()} onClick={() => handlePageChange(1)} variant='ghost' className='size-8 p-2 ml-0!'>
           <ChevronRight size={16} />
         </Button>
       </div>
