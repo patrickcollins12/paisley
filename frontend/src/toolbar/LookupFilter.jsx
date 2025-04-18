@@ -138,7 +138,7 @@ function LookupFilter({label, field, Icon, options, operators, coloredPills}) {
             {/* Display the Clear | Filter buttons */}
             {['lookup_any_of', 'lookup_not_any_of'].includes(operator) && (
               <>
-                <Button size="sm" className="ml-auto justify-end" variant="secondary"
+                <Button size="sm" className="ml-auto justify-end" variant="ghost"
                         onClick={clearSelection}>Clear</Button>
                 <Button size="sm" className="justify-end" disabled={selectedOptions.length === 0}
                         onClick={saveSelection}>Filter</Button>
