@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { v5 as uuidv5 } from 'uuid';
 import { useLocalStorage } from "react-use"
 import { filterExpression, getOperatorById } from "@/toolbar/FilterExpression.jsx"
 import { useSavedSearches } from "./SavedSearchesHook.js"

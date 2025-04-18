@@ -14,12 +14,12 @@ export default defineConfig({
     TanStackRouterVite({ autoCodeSplitting: true }),
     react(),
     // Uncomment the following line to enable the build visualizer plugin
-    // visualizer({
-    //   filename: './dist/stats.html', // output location
-    //   open: true,                    // auto-open after build
-    //   gzipSize: true,
-    //   brotliSize: true
-    // }),
+    visualizer({
+      filename: './dist/stats.html', // output location
+      open: true,                    // auto-open after build
+      gzipSize: true,
+      brotliSize: true
+    }),
     
   ],
 

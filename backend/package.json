@@ -40,7 +40,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.5",
+    "@types/node": "^22.14.1",
     "jest": "^29.7.0",
     "nodemon": "^3.1.1"
   }
