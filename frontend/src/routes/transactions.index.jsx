@@ -28,7 +28,7 @@ const schema = Joi.object({
 
 export const Route = createAuthenticatedFileRoute('/transactions/', {
   component: () => (
-    <SearchContextProvider>
+    <SearchContextProvider scope="transactions">
       <TransactionPage />
     </SearchContextProvider>
   ),

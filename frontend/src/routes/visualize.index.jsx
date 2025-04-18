@@ -4,7 +4,7 @@ import { SearchContextProvider } from '@/components/search/SearchContext.jsx'
 
 export const Route = createFileRoute('/visualize/')({
   component: () => (
-    <SearchContextProvider>
+    <SearchContextProvider scope="visualize">
       <VisualizePage />
     </SearchContextProvider>
   ),

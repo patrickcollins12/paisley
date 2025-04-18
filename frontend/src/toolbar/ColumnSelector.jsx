@@ -7,7 +7,7 @@ import {
   DropdownMenuItem
 } from "@/components/ui/dropdown-menu.jsx"
 import { Button } from "@/components/ui/button.jsx"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown, RotateCcw } from "lucide-react"
 import { formatCamelCase } from "@/lib/utils";
 import { useTranslation } from 'react-i18next';
 
@@ -38,14 +38,14 @@ function ColumnSelector({ dataTable, currentColumnSizing, onResetLayout }) {
               {formatCamelCase(column.columnDef?.meta?.displayName|| column.id) }
             </DropdownMenuCheckboxItem>
           ))}
-        {showReset && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onResetLayout}> 
-              {t("Reset Column Sizes")}
-            </DropdownMenuItem>
-          </>
-        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem 
+          onSelect={onResetLayout} 
+          disabled={!showReset}
+        > 
+          <RotateCcw className="mr-2 h-4 w-4" /> 
+          {t("Reset Column Sizes")}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

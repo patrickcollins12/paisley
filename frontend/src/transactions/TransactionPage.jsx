@@ -96,7 +96,7 @@ export default function TransactionPage() {
       ...prevState,
       pageIndex: 0,
     }));
-  }, [searchContext.calculateSearchId()]);
+  }, [searchContext.filters]);
 
   // finally we fetch the data using the search (filters) state, sorting and pagination state
   const { data, mutate } = useFetchTransactions({
