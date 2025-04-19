@@ -118,13 +118,13 @@ const AccountDetailsTable = ({ data }) => {
                                 onSelect={() => setBalanceDialogOpen(true)}
                             >
                                 <CirclePlus className="mr-2 h-4 w-4" />
-                                <span>Record a balance</span>
+                                <span>Record a balance...</span>
                             </DropdownMenuItem>
 
                             <DropdownMenuItem asChild>
                                 <Link to={`/account_edit/${data.accountid}`}>
                                     <Pencil className="mr-2 h-4 w-4" />
-                                    <span>Edit Account Details</span>
+                                    <span>Edit Account Details...</span>
                                 </Link>
                             </DropdownMenuItem>
 

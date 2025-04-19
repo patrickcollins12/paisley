@@ -141,7 +141,7 @@ export function AccountEditForm() {
         description: isEdit ? "Account updated successfully" : "Account created successfully",
         duration: 2000,
       })
-      await navigate({ to: "/accounts" })
+      await navigate({ to: `/account/${accountId}` })
     }
   }
 
