@@ -4,9 +4,36 @@ import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx";
 import { useSearch } from "@/components/search/SearchContext.jsx";
 import { useResolvedTheme } from "@/components/theme-provider";
 import { DateTime } from "luxon";
-import ReactECharts from "echarts-for-react";
-import { graphic, format } from 'echarts';
-const { LinearGradient } = graphic;
+
+
+// import ReactECharts from "echarts-for-react";
+// import { graphic, format } from 'echarts';
+
+// import the core library.
+import ReactEChartsCore from 'echarts-for-react/lib/core';
+
+// Import the echarts core module, which provides the necessary interfaces for using echarts.
+import * as echarts from 'echarts/core';
+
+import {
+  TreeChart,
+} from 'echarts/charts';
+
+import {
+  TooltipComponent,
+  DatasetComponent,
+} from 'echarts/components';
+
+import {
+  CanvasRenderer,
+  // SVGRenderer,
+} from 'echarts/renderers';
+
+// const { LinearGradient } = graphic;
+echarts.use(
+  [TooltipComponent, TreeChart, DatasetComponent, CanvasRenderer]
+);
+
 // import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 
@@ -64,7 +91,6 @@ export default function VisualizePage() {
               .slice(1)
               .map((item) => item.name);
 
-
             // Get the top level amount and percentage
             let percentage = ""
             try {
@@ -72,7 +98,6 @@ export default function VisualizePage() {
               percentage = ((info.value / topLevelAmount) * 100).toFixed(1);
               percentage = `${percentage}%`
             } catch (e) { }
-
 
             let txnStr = "";
             if (info.data?.description) {
@@ -86,13 +111,13 @@ export default function VisualizePage() {
             }
 
             const treePathStr = treePath.join(" > ");
-
+            // <div class="tooltip-title">${format.encodeHTML(treePathStr)}</div>
             return `
                       <div>
-                        <div class="tooltip-title">${format.encodeHTML(treePathStr)}</div>
+                        <div class="tooltip-title">${treePathStr}</div>
                         ${txnStr}
                         <div>Amount: ${formatCurrency(info.value, { currency: info.data.account_currency })}</div>
-                        <div>Percentage: ${ percentage }</div>
+                        <div>Percentage: ${percentage}</div>
                       </div>
                     `;
           },
@@ -229,7 +254,8 @@ export default function VisualizePage() {
       >
 
         {!isLoading && !error && data && option && (
-          <ReactECharts
+          <ReactEChartsCore
+            echarts={echarts}
             option={option}
             style={{ width: "100%", height: "100%" }}
             lazyUpdate={true}

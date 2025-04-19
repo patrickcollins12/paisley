@@ -1,8 +1,26 @@
 import React, { useState, useEffect } from "react";
-import ReactECharts from "echarts-for-react";
+// import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from 'echarts-for-react/lib/core';
+import * as echarts from 'echarts/core';
 
-import { graphic } from 'echarts';
-const { LinearGradient } = graphic;
+import { LineChart } from 'echarts/charts';
+import {
+    TooltipComponent,
+    DataZoomComponent,
+    GridComponent,
+    LegendComponent // Added in case legend options are used
+} from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
+
+// Register necessary components
+echarts.use([
+    TooltipComponent,
+    DataZoomComponent,
+    GridComponent,
+    LegendComponent,
+    LineChart,
+    CanvasRenderer
+]);
 
 import { useResolvedTheme } from "@/components/theme-provider";
 import useAccountHistoryData from "@/accounts/AccountHistoryApiHooks.js";
@@ -26,7 +44,7 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
             interpolate: false
         });
 
-    
+
     useEffect(() => {
 
         if (data && !isLoading) {
@@ -52,8 +70,8 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                             const val = seriesItem.data[1]
                             const shortname = accountData?.shortname || accountid
                             const currency = accountData?.currency || ""
-                            const amount = formatCurrency(val, {currency: currency})
-                            
+                            const amount = formatCurrency(val, { currency: currency })
+
                             retStr += (index === 0) ? `${formatDate(date)}<br/>` : ""
                             retStr += (multiple) ?
                                 `${marker}<b>${shortname}</b>: ${amount}<br/>`
@@ -189,7 +207,7 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
                 },
                 areaStyle: {
                     opacity: 0.9,
-                    color: new LinearGradient(0, 0, 0, 1, [
+                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
                         { offset: 0, color: color }, // Solid color at the top
                         { offset: 1, color: color.replace("rgb", "rgba").replace(")", ", 0)") } // Faded color at the bottom
                     ])
@@ -205,7 +223,8 @@ const AccountBalanceChart = ({ accountid, category, startDate }) => {
     return (
         <>
             {option && (
-                <ReactECharts
+                <ReactEChartsCore
+                    echarts={echarts} // Pass echarts instance
                     option={option}
                     style={{ width: "100%", height: "100%" }}
                     lazyUpdate={true}

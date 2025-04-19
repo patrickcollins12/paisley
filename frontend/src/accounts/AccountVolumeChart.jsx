@@ -1,8 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { getRouteApi } from "@tanstack/react-router"
-import ReactECharts from "echarts-for-react";
+import ReactEChartsCore from 'echarts-for-react/lib/core';
+import * as echarts from 'echarts/core';
+
+
+import { BarChart } from 'echarts/charts';
+import {
+    TooltipComponent,
+    DataZoomComponent,
+    GridComponent
+} from 'echarts/components';
+
+import {
+    CanvasRenderer
+} from 'echarts/renderers';
+
 import { useResolvedTheme } from "@/components/theme-provider";
 import useAccountTransactionVolume from "@/accounts/AccountTransactionVolumeApiHooks.js";
+
+// Register necessary components
+echarts.use([
+    TooltipComponent,
+    DataZoomComponent,
+    GridComponent,
+    BarChart,
+    CanvasRenderer
+]);
 
 const AccountVolumeChart = ({ accountId, startDate }) => {
     const theme = useResolvedTheme();
@@ -92,7 +115,8 @@ const AccountVolumeChart = ({ accountId, startDate }) => {
         <>{!error && data && data.length > 0 && option && (
             <>
                 <div style={{ height: `30px` }}>
-                    <ReactECharts
+                    <ReactEChartsCore
+                        echarts={echarts} // Pass echarts instance
                         option={option}
                         style={{ width: "100%", height: "100%" }}
                         lazyUpdate={true}
