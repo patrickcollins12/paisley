@@ -16,7 +16,8 @@ import ReactEChartsCore from 'echarts-for-react/lib/core';
 import * as echarts from 'echarts/core';
 
 import {
-  TreeChart,
+  // TreeChart,
+  TreemapChart
 } from 'echarts/charts';
 
 import {
@@ -31,7 +32,7 @@ import {
 
 // const { LinearGradient } = graphic;
 echarts.use(
-  [TooltipComponent, TreeChart, DatasetComponent, CanvasRenderer]
+  [TooltipComponent, TreemapChart, DatasetComponent, CanvasRenderer]
 );
 
 // import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";

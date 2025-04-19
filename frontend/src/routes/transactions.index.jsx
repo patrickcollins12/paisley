@@ -1,30 +1,23 @@
 import { createFileRoute, redirect } from '@tanstack/react-router'
-import Joi from 'joi'
+import { z } from "zod";
 
 import { pageSizeOptions } from '@/components/data-table/Pagination.jsx'
 import TransactionPage from '@/transactions/TransactionPage.jsx'
 import { createAuthenticatedFileRoute } from '@/auth/RouteHelpers.jsx'
 import { SearchContextProvider } from '@/components/search/SearchContext.jsx'
 
-/*
- Setup JOI based schema for validating search parameters
- Page must be a positive number.
- Page size must be a positive number based on the size options in our pagination.
- Filter must be a string (probably need some more validation)
- Order By must be a string that matches the pattern <column name>,<sort order>
- JOI: https://joi.dev/
-*/
-const schema = Joi.object({
-  page: Joi.number().greater(0).default(1),
-  page_size: Joi.number()
-    .valid(...pageSizeOptions.map((x) => x.key))
-    .default(100),
-  description: Joi.string().optional(),
-  order_by: Joi.string()
-    .optional()
-    .pattern(/^[a-z]*,(asc|desc)$/),
-  search_id: Joi.string().optional(),
-})
+const validPageSizes = pageSizeOptions.map(option => option.key);
+
+const transactionSearchSchema = z.object({
+    page: z.coerce.number().int().positive({ message: "Page must be greater than 0" }).default(1),
+    page_size: z.coerce.number().refine(
+        (value) => validPageSizes.includes(value),
+        { message: `Page size must be one of: ${validPageSizes.join(', ')}` }
+    ).default(100),
+    description: z.string().optional(),
+    order_by: z.string().regex(/^[a-z_]+,(asc|desc)$/, { message: "Order by must be in format 'column,(asc|desc)'" }).optional(),
+    search_id: z.string().optional(),
+});
 
 export const Route = createAuthenticatedFileRoute('/transactions/', {
   component: () => (
@@ -32,16 +25,5 @@ export const Route = createAuthenticatedFileRoute('/transactions/', {
       <TransactionPage />
     </SearchContextProvider>
   ),
-  validateSearch: (search) => {
-    const { error, value: validatedSearch } = schema.validate(search)
-    if (error) {
-      console.error('Error validating search params', error)
-      return {
-        page: 1,
-        page_size: pageSizeOptions[0].key,
-      }
-    }
-
-    return validatedSearch
-  },
+  validateSearch: (search) => transactionSearchSchema.parse(search),
 })
