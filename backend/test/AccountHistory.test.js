@@ -1,4 +1,3 @@
-const BankDatabase = require('../src/BankDatabase');
 const AccountHistory = require('../src/AccountHistory');
 const database_setup = require('./BankDatabaseDummy.js');
 

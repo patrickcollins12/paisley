@@ -1,15 +1,14 @@
 # TODO
-
 p1
 
 p2
 [ ] document how to create scrapers
+
 [ ] on record_balance on frontend, if liability account, make the amount negative.
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
 [ ] account delete - cascade
-[ ] visualize page - set default filters.
 [ ] install - add more demo income.
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)
 [ ] build a default currency chooser, default is currently based on locale and accounts currencies.
@@ -22,6 +21,8 @@ One day:
 [ ] Sync url with filters
 
 done
+[x] Delete account and optionally delete 431 transactions. Are you sure?
+[x] visualize page - set default filters.
 [x] load/save filters
 [x] Change all uses of useAccountData to use an array not an indexed object, to maintain the sort state
 [x] enable column resizing and save column state https://tanstack.com/table/v8/docs/api/features/column-sizing#state

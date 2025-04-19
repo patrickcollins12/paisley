@@ -1,45 +1,52 @@
 const express = require('express');
-const { body, validationResult } = require('express-validator');
+const { body, query, validationResult, matchedData } = require('express-validator');
 // Removed: const BankDatabase = require('../BankDatabase');
 // Import accountKeys if needed for validation setup
-const { getAllAggregatedSorted, getOneAggregated, accountExists, createAccount, updateAccount, deleteAccount, accountKeys } = require('../AccountService'); 
+// const { getAllAggregatedSorted, getOneAggregated, accountExists, createAccount, updateAccount, deleteAccount, accountKeys } = require('../AccountService'); 
+const AccountService = require('../AccountService');
 const logger = require('../Logger.js');
 
 const router = express.Router();
 // Removed: const dbInstance = new BankDatabase();
 
+// Instantiate the service once for this router
+const accountService = new AccountService();
+
 // Define validation rules using imported accountKeys
-const validationRules = accountKeys.map(key => body(key).optional().trim());
+// Keep static access for keys: 
+// const validationRules = AccountService.accountKeys.map(key => body(key).optional().trim()); 
+// OR if accountKeys might change per instance (unlikely but possible)
+const validationRules = accountService.constructor.accountKeys.map(key => body(key).optional().trim());
 
 // --- Route Handlers --- 
 
 router.get('/api/accounts', async (req, res) => {
     try {
-        // Removed: const db = new BankDatabase();
-        const accounts = await getAllAggregatedSorted(); // Call service without DB instance
+        // Call instance method
+        const accounts = await accountService.getAllAggregatedSorted();
         res.json({ success: true, account: accounts });
     } catch (error) {
         logger.error(`Error in GET /api/accounts handler: ${error.message}`, error);
         // Use a more generic error message unless specific handling is needed
-        res.status(500).json({ success: false, message: "Error fetching accounts" }); 
+        res.status(500).json({ success: false, message: "Error fetching accounts" });
     }
 });
 
 router.get('/api/accounts/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        // Call the new service function that handles finding the account in the aggregated list
-        const account = await getOneAggregated(id); 
+        // Call instance method
+        const account = await accountService.getOneAggregated(id);
 
         if (!account) {
             // Service function returns null if not found
             return res.status(404).json({ success: false, message: "Account not found" });
         }
         // Return the found account object
-        res.json({ success: true, account }); 
+        res.json({ success: true, account });
     } catch (error) {
-         logger.error(`Error in GET /api/accounts/:id handler: ${error.message}`, error);
-         res.status(500).json({ success: false, message: "Error fetching account" });
+        logger.error(`Error in GET /api/accounts/:id handler: ${error.message}`, error);
+        res.status(500).json({ success: false, message: "Error fetching account" });
     }
 });
 
@@ -53,19 +60,20 @@ router.post('/api/accounts', validationRules, async (req, res) => {
         return res.status(400).json({ success: false, message: "Account ID is required for creation." });
     }
 
-    // if account exists, return 400
-    if (await accountExists(req.body.accountid)) {
+    // if account exists, use instance method
+    if (await accountService.accountExists(req.body.accountid)) {
         return res.status(400).json({ success: false, message: "Account ID already exists." });
     }
 
     try {
-        const result = await createAccount(req.body);
+        // Call instance method
+        const result = await accountService.createAccount(req.body);
         if (result.success) {
             // Use 201 for created, include accountid
-            res.status(201).json(result); 
+            res.status(201).json(result);
         } else {
             // Service handles UNIQUE constraint, return 400 for that or other specific validation failures
-            res.status(400).json(result); 
+            res.status(400).json(result);
         }
     } catch (error) {
         // Catch errors re-thrown by the service (unexpected DB errors)
@@ -82,13 +90,14 @@ router.patch('/api/accounts/:id', validationRules, async (req, res) => {
 
     try {
         const { id } = req.params;
-        const result = await updateAccount(id, req.body);
+        // Call instance method
+        const result = await accountService.updateAccount(id, req.body);
         if (result.success) {
             res.json(result);
         } else {
             // Service returns success: false if not found or no fields
             const statusCode = result.message.includes("not found") ? 404 : 400;
-            res.status(statusCode).json(result); 
+            res.status(statusCode).json(result);
         }
     } catch (error) {
         // Catch errors re-thrown by the service
@@ -97,16 +106,40 @@ router.patch('/api/accounts/:id', validationRules, async (req, res) => {
     }
 });
 
-router.delete('/api/accounts/:id', async (req, res) => {
+
+
+// Define validation rules specifically for the DELETE route
+const deleteTransactionsAndHistoryRules = [
+    query('deleteTransactionsAndHistory')
+        .exists().withMessage('deleteTransactionsAndHistory query parameter is required.')
+        .isBoolean().withMessage('deleteTransactionsAndHistory must be a boolean (true or false).')
+        .toBoolean() // Convert validated string ('true', 'false') to boolean
+];
+
+router.delete('/api/accounts/:id', deleteTransactionsAndHistoryRules, async (req, res) => {
+    // --- Standard validation error check ---
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ success: false, errors: errors.array() });
+    }
+    // --- End validation error check ---
+
     try {
         const { id } = req.params;
-        const result = await deleteAccount(id);
+
+        // Use matchedData to get the validated & sanitized boolean value
+        const validatedQueryData = matchedData(req, { locations: ['query'] });
+        const deleteTransactionsAndHistory = validatedQueryData.deleteTransactionsAndHistory;
+
+        // Call instance method with the flag
+        const result = await accountService.deleteAccount(id, deleteTransactionsAndHistory);
 
         if (!result.success) {
             // Service handles not found case
-            return res.status(404).json(result); 
+            return res.status(404).json(result);
         }
         res.json(result); // Contains { success: true, message: "..." }
+
     } catch (error) {
         // Catch errors re-thrown by the service
         logger.error(`Error in DELETE /api/accounts/:id handler: ${error.message}`, error);
@@ -386,6 +419,12 @@ module.exports = router;
  *           type: string
  *           format: uuid
  *         description: The ID of the account to delete.
+ *       - in: query
+ *         name: deleteTransactionsAndHistory
+ *         required: true
+ *         schema:
+ *           type: boolean
+ *         description: Set to true to also delete associated transactions and history.
  *     responses:
  *       200:
  *         description: Account deleted successfully

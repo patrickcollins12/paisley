@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Pencil, ChevronRight, CirclePlus, RefreshCw, MoreHorizontal } from "lucide-react";
+import { Pencil, ChevronRight, CirclePlus, RefreshCw, MoreHorizontal, Trash2 } from "lucide-react";
 import { formatCamelCase } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
 import httpClient from "@/lib/httpClient.js";
 import useAccountHistoryData from "./AccountHistoryApiHooks";
-
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -21,17 +19,18 @@ import {
     DialogTrigger,
     DialogContent,
 } from "@/components/ui/dialog"
+
 import { AccountAddBalanceDialog } from "../account_add_balance/AccountAddBalanceDialog" // adjust path as needed
+import { AccountDeleteDialogContent } from "./AccountDeleteDialogContent";
 
 const AccountDetailsTable = ({ data }) => {
     const { toast } = useToast();
     const [showMetadata, setShowMetadata] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-    const [balanceDialogOpen, setBalanceDialogOpen] = useState(false)
-
-    // Fetch history using the hook (use the imported name)
-    const { data: historyData, error: historyError, mutate: mutateHistory } = useAccountHistoryData({ accountid: data?.accountid });
+    const { mutate: mutateHistory } = useAccountHistoryData({ accountid: data?.accountid });
 
     // Parse `metadata` if it exists, is not empty, and represents a non-empty object or array
     let parsedMetadata = null;
@@ -40,15 +39,13 @@ const AccountDetailsTable = ({ data }) => {
             const tempParsed = JSON.parse(data.metadata);
 
             // Check if it's an object with keys OR an array with length
-            if (tempParsed && typeof tempParsed === 'object' && 
-                ( (Array.isArray(tempParsed) && tempParsed.length > 0) || 
-                  (!Array.isArray(tempParsed) && Object.keys(tempParsed).length > 0) )) 
-            {
+            if (tempParsed && typeof tempParsed === 'object' &&
+                ((Array.isArray(tempParsed) && tempParsed.length > 0) ||
+                    (!Array.isArray(tempParsed) && Object.keys(tempParsed).length > 0))) {
                 parsedMetadata = tempParsed;
             }
         } catch (error) {
             console.error("Failed to parse metadata:", error);
-            // parsedMetadata remains null
         }
     }
 
@@ -81,7 +78,7 @@ const AccountDetailsTable = ({ data }) => {
                 description: response.data.message || "Account history refresh initiated.",
             });
             // Revalidate the history data after successful initiation
-            mutateHistory(); 
+            mutateHistory();
         } catch (error) {
             console.error("Failed to refresh account history:", error);
             toast({
@@ -94,65 +91,72 @@ const AccountDetailsTable = ({ data }) => {
         }
     };
 
+    const handleDeleteSuccess = () => {
+        setDeleteDialogOpen(false);
+    };
+
+    const handleDeleteCancel = () => {
+        setDeleteDialogOpen(false);
+    };
+
     return (
         <Card className="text-sm">
             <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Details</CardTitle>
 
-                {/* Ellipsis Dropdown Menu */} 
+                {/* Ellipsis Dropdown Menu */}
                 {data.accountid && (
-                    <Dialog open={balanceDialogOpen} onOpenChange={setBalanceDialogOpen}> {/* Dialog needs to wrap Dropdown for trigger */} 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {/* Add Balance Item (Triggers Dialog) */} 
-                                <DialogTrigger asChild>
-                                    <DropdownMenuItem onSelect={(event) => event.preventDefault()} >
-                                        <CirclePlus className="mr-2 h-4 w-4" />
-                                        <span>Record a balance</span>
-                                    </DropdownMenuItem>
-                                </DialogTrigger>
-                                
-                                {/* Edit Item (Links) */} 
-                                <DropdownMenuItem asChild>
-                                    <Link to={`/account_edit/${data.accountid}`}>
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        <span>Edit Account Details</span>
-                                    </Link>
-                                </DropdownMenuItem>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                                onSelect={() => setBalanceDialogOpen(true)}
+                            >
+                                <CirclePlus className="mr-2 h-4 w-4" />
+                                <span>Record a balance</span>
+                            </DropdownMenuItem>
 
-                                {/* Refresh History Item */} 
-                                <DropdownMenuItem 
-                                    onClick={handleRefreshHistory} 
-                                    disabled={isRefreshing}
-                                >
-                                    {isRefreshing ? (
-                                         <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                                     ) : (
-                                         <RefreshCw className="mr-2 h-4 w-4" />
-                                     )}
-                                    <span>Recalculate Balance History</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        {/* Dialog Content remains outside Dropdown but linked by state */} 
-                        {balanceDialogOpen && (
-                             <DialogContent>
-                                 <AccountAddBalanceDialog
-                                     key="balance-form"
-                                     accountid={data.accountid}
-                                     onSuccess={() => setBalanceDialogOpen(false)}
-                                 />
-                             </DialogContent>
-                         )}
-                     </Dialog>
-                 )}
-             </CardHeader>
+                            <DropdownMenuItem asChild>
+                                <Link to={`/account_edit/${data.accountid}`}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    <span>Edit Account Details</span>
+                                </Link>
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                                onClick={handleRefreshHistory}
+                                disabled={isRefreshing}
+                            >
+                                {isRefreshing ? (
+                                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                                ) : (
+                                    <RefreshCw className="mr-2 h-4 w-4" />
+                                )}
+                                <span>Recalculate Balance History</span>
+                            </DropdownMenuItem>
+
+                            {/* Delete Account Item (Triggers Dialog via state) */}
+                            <DropdownMenuItem 
+                                className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                                // Use onSelect to set state, Dialog component is rendered elsewhere
+                                onSelect={(event) => { 
+                                    event.preventDefault(); // Prevent closing menu 
+                                    setDeleteDialogOpen(true); 
+                                }}
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Delete Account...</span>
+                            </DropdownMenuItem>
+
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
+            </CardHeader>
 
             <CardContent>
                 <table className="table-fixed">
@@ -210,6 +214,32 @@ const AccountDetailsTable = ({ data }) => {
                     </div>
                 )}
             </CardContent>
+
+            <Dialog open={balanceDialogOpen} onOpenChange={setBalanceDialogOpen}>
+                {balanceDialogOpen && (
+                    <DialogContent>
+                        <AccountAddBalanceDialog
+                            key="balance-form"
+                            accountid={data?.accountid}
+                            onSuccess={() => setBalanceDialogOpen(false)}
+                        />
+                    </DialogContent>
+                )}
+            </Dialog>
+
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                {deleteDialogOpen && (
+                    <DialogContent>
+                        <AccountDeleteDialogContent
+                            accountid={data?.accountid}
+                            name={data?.name}
+                            onSuccess={handleDeleteSuccess}
+                            onCancel={handleDeleteCancel}
+                        />
+                    </DialogContent>
+                )}
+            </Dialog>
+
         </Card >
     );
 };

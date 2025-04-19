@@ -63,13 +63,19 @@ async function create(postData) {
   }
 }
 
-async function remove(id) {
-  const url = `accounts/${id}`;
-  const response = await httpClient.delete(url);
-
-  // this is a bit shit because the query key has to be updated in multiple places
-  await mutate(['/accounts']);
-  return response;
+async function remove(id, deleteTransactionsAndHistory) {
+  // Construct URL with query parameter
+  const url = `accounts/${id}?deleteTransactionsAndHistory=${deleteTransactionsAndHistory}`;
+  try {
+    const response = await httpClient.delete(url);
+    // Existing mutate call - might need adjustment depending on desired UX
+    // It invalidates the main list, which is good if navigating back
+    // await mutate(['/accounts']);
+    return { data: response.data, error: null }; // Return success
+  } catch (err) {
+    const errorMsg = err.response?.data?.message || err.message;
+    return { data: null, error: errorMsg }; // Return error
+  }
 }
 
 export function useUpdateAccounts() {
