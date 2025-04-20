@@ -1,27 +1,27 @@
 {
-    "name": "paisley",
-    "version": "1.0.0",
-    "private": true,
-    "workspaces": [
-        "frontend",
-        "backend",
-        "docs"
-    ],
-    "scripts": {
-        "start:frontend": "npm run strt --prefix frontend",
-        "start:backend": "npm run strt --prefix backend",
-        "start": "npm-run-all --parallel start:frontend start:backend",
-        "dev:frontend": "npm run dv --prefix frontend",
-        "dev:backend": "npm run dv --prefix backend",
-        "demo:backend": "npm run demo --prefix backend",
-        "dev": "npm-run-all --parallel dev:frontend dev:backend",
-        "demo": "npm-run-all --parallel start:frontend demo:backend",
-        "build": "npm run build --prefix docs"
-    },
-    "devDependencies": {
-        "nodemon": "^3.1.1",
-        "npm-run-all": "^4.1.5"
-    },
-    "dependencies": {
-    }
+  "name": "paisley",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "docs"
+  ],
+  "scripts": {
+    "start:frontend": "npm run strt --prefix frontend",
+    "start:backend": "npm run strt --prefix backend",
+    "start": "npm-run-all --parallel start:frontend start:backend",
+    "dev:frontend": "npm run dv --prefix frontend",
+    "dev:backend": "npm run dv --prefix backend",
+    "demo:backend": "npm run demo --prefix backend",
+    "dev": "npm-run-all --parallel dev:frontend dev:backend",
+    "demo": "npm-run-all --parallel start:frontend demo:backend",
+    "build": "npm run build --prefix docs",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "nodemon": "^3.1.1",
+    "npm-run-all": "^4.1.5"
+  }
 }

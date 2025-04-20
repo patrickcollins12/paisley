@@ -1,0 +1,10 @@
+---
+description: 
+globs: backend/*
+alwaysApply: false
+---
+# Express server
+
+- The schema can be found here in [schema.sql](mdc:backend/demo/schema.sql) 
+- When working on express routes, always be sure to check incoming parameters with express-validator and 
+
