@@ -1,1 +1,1 @@
-npm test
+./backend/bin/dump-schema.sh
