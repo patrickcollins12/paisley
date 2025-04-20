@@ -2,9 +2,10 @@
 p1
 
 p2
+[ ] add currency summing on accounts page
 [ ] document how to create scrapers
-
 [ ] on record_balance on frontend, if liability account, make the amount negative.
+
 
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
@@ -102,7 +103,7 @@ Define hooks on import and classify
        Add tags/party from CSV import
        Add an additional classifier that is sole or additional.
        Scheduled enricher
-     
+
 DB Migrator, prism? knexjs? https://knexjs.org/guide/migrations.html#migration-api
 
 Docs

@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.." || exit 1
 DEMO_DB="./demo/demo_transactions.db"
 SCHEMA_OUT="./demo/schema.sql"
 
-if ! command -v sqli3 >/dev/null 2>&1; then
+if ! command -v sqlite3 >/dev/null 2>&1; then
   echo "[warn] sqlite3 not found, skipping schema dump" >&2
   exit 0
 fi
