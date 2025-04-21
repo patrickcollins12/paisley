@@ -6,10 +6,8 @@ p2
 [ ] document how to create scrapers
 [ ] on record_balance on frontend, if liability account, make the amount negative.
 
-
 p3
 [ ] accounts table - add currency.js route conversion to accounts page
-[ ] account delete - cascade
 [ ] install - add more demo income.
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)
 [ ] build a default currency chooser, default is currently based on locale and accounts currencies.
@@ -22,6 +20,7 @@ One day:
 [ ] Sync url with filters
 
 done
+[x] account delete - cascade
 [x] Delete account and optionally delete 431 transactions. Are you sure?
 [x] visualize page - set default filters.
 [x] load/save filters

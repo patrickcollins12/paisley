@@ -82,6 +82,7 @@ export default function VisualizePage() {
 
   useEffect(() => {
     if (data && data.results) {
+
       const tree = turnTransactionQueryIntoTreemapStucture(data.results);
 
       setOption({
@@ -212,7 +213,14 @@ export default function VisualizePage() {
                   gapWidth: 0,
                   borderColorSaturation: 0.4,
                 },
+                upperLabel: {
+                  show: true,
+                  formatter: formatUpperLabel,
+                },
+
               },
+
+              // Level 4: Household > Bank Interest > Savings
               {
                 colorSaturation: [0.8, 0.6],
                 itemStyle: {
@@ -258,8 +266,8 @@ export default function VisualizePage() {
           <ReactEChartsCore
             echarts={echarts}
             option={option}
-            style={{ width: "100%", height: "100%" }}
             lazyUpdate={true}
+            style={{ width: "100%", height: "100%" }}
             theme={{ theme }}
           />
         )}
@@ -270,11 +278,7 @@ export default function VisualizePage() {
 
   // ✅ Verified unchanged data transformation logic
   function turnTransactionQueryIntoTreemapStucture(rows) {
-    const tree = [];
-    for (let row of rows) {
-      processRow(row, tree);
-    }
-    return tree;
+    return rows.reduce((tree, row) => { processRow(row, tree); return tree; }, []);
   }
 
   function processRow(row, tree) {
@@ -294,9 +298,7 @@ export default function VisualizePage() {
       account_currency: row.account_currency,
       account_number: row.account_number,
       datetime: DateTime.fromISO(row.datetime),
-      date: DateTime.fromISO(row.datetime_without_timezone).toFormat(
-        "yyyy-MM-dd"
-      ),
+      date: DateTime.fromISO(row.datetime_without_timezone).toFormat("yyyy-MM-dd"),
     };
 
     node.tagsString = row.tags?.join(", ");
@@ -308,6 +310,7 @@ export default function VisualizePage() {
     const tag = row.tags[0];
     const segments = tag.split(/\s*>\s*/);
 
+    // prepend Income/Expense to the tag
     if (node.amount > 0) {
       segments.unshift("Income");
     } else {
