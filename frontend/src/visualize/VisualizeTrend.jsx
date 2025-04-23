@@ -30,6 +30,8 @@ export default function VisualizeTrend() {
     orderBy: null,
   });
 
+  const activeSeriesIndexRef = useRef(null);
+
   // Dynamically update chart size
   const updateSize = () => {
     if (chartRef.current) {
@@ -45,11 +47,54 @@ export default function VisualizeTrend() {
 
   useEffect(() => {
     updateSize(); // Initial sizing on mount
-
     window.addEventListener("resize", updateSize); // Resize listener
     return () => window.removeEventListener("resize", updateSize); // Cleanup
   }, []);
 
+  // Update the the ref to current series index on mouseover a series
+  const onChartReady = (chart) => {
+    window.chartInstance = chart;
+
+    chart.on('mouseover', (params) => {
+      activeSeriesIndexRef.current = params?.seriesIndex;
+    });
+  };
+
+  // when hovering over the graph a white tooltip pops up, this is how it is formatted
+  function tooltipFormatter(infoArr) {
+    // Get date from first item
+    const date = infoArr[0]?.axisValue || '';
+
+    // Build tooltip content
+    let content = `<div style="margin-bottom:5px;font-weight:bold">${date}</div>`;
+
+    // Get active series index from ref
+    const currentActiveSeriesIndex = activeSeriesIndexRef.current;
+
+    // Add each non-zero data item
+    content += infoArr
+      .filter(info => info.value !== 0)
+      .sort((a, b) => b.value - a.value) // Sort by value descending
+      .map(info => {
+        // Check if this is the active series
+        const isActive = info.seriesIndex === currentActiveSeriesIndex;
+
+        const content = `
+          <div style="display:flex;justify-content:space-between;margin:3px 0">
+            <span>${info.marker} ${info.seriesName}</span>
+            <span style="margin-left:15px;">${formatCurrency(info.value)}</span>
+          </div>
+          `;
+
+        return isActive ? `<strong>${content}</strong>` : content;
+      })
+      .join('');
+
+    return content;
+  }
+
+
+  // setup the chart options
   useEffect(() => {
     if (data && data.results) {
       const chartData = turnTransactionQueryIntoLineChartStructure(data.results, "month", 2);
@@ -64,32 +109,10 @@ export default function VisualizeTrend() {
             }
           },
           confine: true,
-
-          formatter: function (infoArr) {
-            // Get date from first item
-            const date = infoArr[0]?.axisValue || '';
-
-            // Build tooltip content
-            let content = `<div style="margin-bottom:5px;font-weight:bold">${date}</div>`;
-
-            // Add each non-zero data item
-            content += infoArr
-              .filter(info => info.value !== 0)
-              .sort((a, b) => b.value - a.value) // Sort by value descending
-              .map(info => {
-                return `
-                <div style="display:flex;justify-content:space-between;margin:3px 0">
-                  <span>${info.marker} ${info.seriesName}</span>
-                  <span style="margin-left:15px;font-weight:bold">${formatCurrency(info.value)}</span>
-                </div>
-                `;
-              })
-              .join('');
-
-            return content;
-          },
+          formatter: tooltipFormatter
         },
 
+        // todo
         valueFormatter: (value) => '$' + value.toFixed(2),
 
         xAxis: [
@@ -111,14 +134,15 @@ export default function VisualizeTrend() {
           type: 'line',
           // stack: 'Total',
           areaStyle: {},
+          triggerLineEvent: true,
           emphasis: { focus: 'series' },
           data: s.data
         })),
 
-
       });
     }
   }, [data]);
+
 
   return (
     <>
@@ -129,7 +153,6 @@ export default function VisualizeTrend() {
       {!isLoading && !error && (!data || !data.results) && (
         <div>No data available</div>
       )}
-
 
       <div
         ref={chartRef}
@@ -145,6 +168,8 @@ export default function VisualizeTrend() {
             lazyUpdate={true}
             style={{ width: "100%", height: "100%" }}
             theme={{ theme }}
+            onChartReady={onChartReady}
+
           />
         )}
       </div>
