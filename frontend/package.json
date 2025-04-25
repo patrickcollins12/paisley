@@ -25,7 +25,7 @@
     "@radix-ui/react-switch": "^1.0.3",
     "@radix-ui/react-toast": "^1.1.5",
     "@radix-ui/react-tooltip": "^1.0.7",
-    "@tanstack/react-router": "^1.104.1",
+    "@tanstack/react-router": "^1.114.34",
     "@tanstack/react-table": "^8.16.0",
     "axios": "^1.8.2",
     "class-variance-authority": "^0.7.1",
