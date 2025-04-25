@@ -39,7 +39,7 @@
     "i18next-browser-languagedetector": "^8.0.4",
     "jwt-decode": "^4.0.0",
     "locale-currency": "^0.0.4",
-    "lucide-react": "^0.491.0",
+    "lucide-react": "^0.487.0",
     "luxon": "^3.4.4",
     "prop-types": "^15.8.1",
     "react": "^19.0.0-rc.0",
