@@ -1,5 +1,5 @@
 // react, routing, icons, shadn
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { getRouteApi, Link } from "@tanstack/react-router"
 import { Card, CardContent, CardDescription, CardHeader, CardFooter, CardTitle, } from "@/components/ui/card"
 import { DateTimeDisplay } from '@/transactions/DateTimeDisplay.jsx';
@@ -20,7 +20,7 @@ import useAccountData from "@/accounts/AccountApiHooks.js";
 import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx"
 
 // utils
-// import { formatDate } from "@/lib/localisation_utils.js";
+import { formatDate } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 import { useTranslation } from 'react-i18next';
 
@@ -40,8 +40,20 @@ const AccountPage = () => {
     // dynamic graph start dates from the badge clicker called ChartTimeSelection
     const [startDate, setStartDate] = useState(null);
 
+    // State for dynamically displayed balance from chart hover
+    const [displayBalance, setDisplayBalance] = useState(null);
+    const [displayDate, setDisplayDate] = useState(null); // Optional: date for the hovered balance
+
     // Filter the array to find the actual account with the matching accountId
     const account = data || null;
+
+    // Update displayBalance when the main account data loads or changes
+    useEffect(() => {
+        if (account) {
+            setDisplayBalance(account.balance);
+            setDisplayDate(null); // Reset date when account data loads
+        }
+    }, [account]); // Dependency on the loaded account data
 
     // Find child accounts using the children property from the found account object
     const childAccounts = account?.children || [];
@@ -63,6 +75,20 @@ const AccountPage = () => {
             }
             : null // Pass null initially to avoid making a request
     );
+
+    // Handlers for chart hover events
+    const handleChartHover = (hoveredBalance, hoveredDate) => {
+        setDisplayBalance(hoveredBalance);
+        setDisplayDate(hoveredDate);
+    };
+
+    const handleChartMouseOut = () => {
+        // Reset to the actual current balance when mouse leaves the chart
+        if (account) {
+            setDisplayBalance(account.balance);
+            setDisplayDate(null);
+        }
+    };
 
     return (
         <>
@@ -114,17 +140,28 @@ const AccountPage = () => {
                                         <div>
                                             {account &&
                                                 <>
+                                                    {/* Balance Display: Shows hovered balance or current balance */}
                                                     <span className="text-4xl font-extrabold">
-                                                        {account && formatCurrency(account.balance, { currency: account.currency, })}
+                                                        {formatCurrency(displayBalance ?? account.balance, { currency: account.currency })}
                                                     </span>
                                                     <span className="text-xl font-extrabold opacity-20">{account && account.currency}</span>
+
+                                                    {/* Optional: Display date of hovered balance */}
+                                                    {/* {displayDate && (
+                                                        <span className="block text-xs text-muted-foreground ml-1 mt-1">
+                                                            as of {formatDate(displayDate)}
+                                                        </span>
+                                                    )} */}
 
                                                     <div className="w-full min-w-[100px] min-h-[200px] h-[25vh] max-h-[600px]" >
                                                         <AccountBalanceChart
                                                             key={account.accountid}  // Force re-render by changing the key whenever accountId changes
                                                             accountid={account.accountid}
                                                             category={account.category}
-                                                            startDate={startDate} />
+                                                            startDate={startDate}
+                                                            onHoverBalanceChange={handleChartHover}
+                                                            onMouseOut={handleChartMouseOut}
+                                                        />
                                                     </div>
 
                                                 </>

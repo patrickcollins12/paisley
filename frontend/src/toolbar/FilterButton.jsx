@@ -1,6 +1,6 @@
 import React, { forwardRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent, TooltipArrow } from "@/components/ui/tooltip";
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { ChevronDown, X } from "lucide-react";
 
 const FilterButton = forwardRef(({ isFilterActive, label, onClear, activeRenderer }, ref) => {
@@ -23,7 +23,6 @@ const FilterButton = forwardRef(({ isFilterActive, label, onClear, activeRendere
                                 </TooltipTrigger>
                                 <TooltipContent className="border-0 bg-slate-700 text-white font-normal p-4" side="bottom">
                                     <p>Remove this filter</p>
-                                    <TooltipArrow className="fill-slate-700"></TooltipArrow>
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
