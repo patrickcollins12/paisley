@@ -29,12 +29,10 @@ import useAccountData from "@/accounts/AccountApiHooks.js";
 import { formatDate } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 
-
 const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceChange, onMouseOut }) => {
     const resolvedTheme = useResolvedTheme();
-    const [option, setOption] = useState({});                   // echarts options
+    const [option, setOption] = useState({}); // echarts options
     const chartRef = useRef(null);
-
     const { data: accountData, error: accountError, isLoading: accountIsLoading } = useAccountData(accountid);
 
     // // Fetch data using the custom hook
@@ -46,9 +44,26 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
         });
 
 
+
+    // Simple Hash Function to convert a string into a number
+    function hashString(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = (hash << 5) - hash + char;
+            hash = hash & hash; // Convert to 32bit integer
+        }
+        return Math.abs(hash); // Ensure it's always positive
+    }
+
+    let chartInstanceKey = 0
     useEffect(() => {
 
         if (data && !isLoading) {
+
+            chartInstanceKey = hashString(JSON.stringify(data))
+            // console.log('cik:', chartInstanceKey)
+            // = data?.results?.length ?? 0
 
             const { series, legend } = generateEChartSeries(data);
 
@@ -210,6 +225,11 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
             // We need the data point associated with it.
             // ECharts often provides the relevant data points in params.dataIndex or implicitly via series data
             // Let's try accessing it via the first series' data point corresponding to the tooltip
+
+            // TODO: it doesn't fire in here after navigating to the same page
+            console.log("show tip")
+
+
             if (onHoverBalanceChange &&
                 params.dataIndex !== undefined &&
                 option?.series?.[0]?.data?.[params.dataIndex]
@@ -217,7 +237,8 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
                 const dateIndex = params.dataIndex
                 const hoveredDate = data[0].series[dateIndex][0][0]
                 const vals = data.map(acct => acct.series[dateIndex][1])
-                const hoveredValue = vals.reduce((sum, a) => sum + (a || 0.0) );
+                const hoveredValue = vals.reduce((sum, a) => sum + (a || 0.0));
+
                 onHoverBalanceChange(hoveredValue, hoveredDate);
 
                 // const hoveredDate = dataPoint[0];
@@ -313,8 +334,10 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
                     ref={chartRef}
                     echarts={echarts}
                     option={option}
+                    key={chartInstanceKey}
+                    lazyUpdate={false}
+                    notMerge={true}
                     style={{ width: "100%", height: "100%" }}
-                    lazyUpdate={true}
                     theme={{ resolvedTheme }}
                 />
             )}

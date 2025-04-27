@@ -55,12 +55,12 @@ CREATE TABLE IF NOT EXISTS "account_history" (
     "data" JSON,
     FOREIGN KEY("accountid") REFERENCES "account"("accountid") ON DELETE CASCADE
 );
-CREATE INDEX idx_account_parentid ON account(parentid);
-CREATE INDEX idx_account_history_accountid ON account_history(accountid);
-CREATE INDEX idx_account_history_time      ON account_history(datetime DESC);
 CREATE TABLE store (
         namespace TEXT NOT NULL,
         key TEXT NOT NULL,
         value TEXT NOT NULL,
         PRIMARY KEY (namespace, key)
       );
+CREATE INDEX idx_account_parentid ON account(parentid);
+CREATE INDEX idx_account_history_accountid ON account_history(accountid);
+CREATE INDEX idx_account_history_time      ON account_history(datetime DESC);
