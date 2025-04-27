@@ -1,12 +1,12 @@
 # TODO
 p1
-[x] account balance chart summing on coinbase is broken. 
-[ ] AccountBalanceCharts.jsx locks up on the tooltip hover
+[ ] AccountBalanceCharts.jsx locks up on the tooltip hover, undo the hashed key?
 [ ] Tooltip for txns on account volume and trend
 [ ] backend: encrypt passwords. 
 [ ] format the tooltip to include time
 [ ] finish the left menu
 [x] <TooltipArrow className="fill-slate-700"></TooltipArrow> was at line 26 of FilterButton.jsx. is the fill-slate an issue?upgrade the radix component
+[x] account balance chart summing on coinbase is broken. 
 
 
 p2
