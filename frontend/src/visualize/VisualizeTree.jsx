@@ -4,6 +4,9 @@ import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx";
 import { useSearch } from "@/components/search/SearchContext.jsx";
 import { useResolvedTheme } from "@/components/theme-provider";
 import { DateTime } from "luxon";
+import { VisualizeTreeToolbar } from "./VisualizeTreeToolbar.jsx";
+import { defaultVisualizeTreeOptions } from './VisualizeTreeToolbar.jsx';
+import { turnTransactionQueryIntoTreemapStucture } from "./treeChartUtils.js";
 
 
 // import ReactECharts from "echarts-for-react";
@@ -38,13 +41,16 @@ echarts.use(
 // import { formatCurrency, formatDate } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
 
-export default function VisualizePage() {
+export default function VisualizeTree() {
   const searchContext = useSearch();
   const [option, setOption] = useState(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const chartRef = useRef(null);
   const theme = useResolvedTheme();
+  const [treeOptions, setTreeOptions] = useState(defaultVisualizeTreeOptions);
 
+  // Extract only the options we need for the chart to prevent unnecessary rerenders
+  const { incomeEnabled, expenseEnabled, headingLevel } = treeOptions;
 
   const { data, isLoading, error } = useFetchTransactions({
     pageIndex: 0,
@@ -83,7 +89,7 @@ export default function VisualizePage() {
   useEffect(() => {
     if (data && data.results) {
 
-      const tree = turnTransactionQueryIntoTreemapStucture(data.results);
+      const tree = turnTransactionQueryIntoTreemapStucture(data.results, incomeEnabled, expenseEnabled);
 
       setOption({
 
@@ -131,7 +137,7 @@ export default function VisualizePage() {
         // },
         series: [
           {
-            name: "Income and Expenses",
+            name: "Tree",
             type: "treemap",
             left: 0,
             top: 0,
@@ -173,7 +179,7 @@ export default function VisualizePage() {
                   borderColorSaturation: 0.2,
                 },
                 upperLabel: {
-                  show: true,
+                  show: headingLevel>=1, 
                   formatter: formatUpperLabel,
                 },
 
@@ -191,7 +197,7 @@ export default function VisualizePage() {
                 ],
               },
 
-              // Level 2: Salary, Household
+              // Level 2: Expense > Salary
               {
                 colorSaturation: [0.6, 0.4],
                 itemStyle: {
@@ -200,12 +206,12 @@ export default function VisualizePage() {
                   borderColorSaturation: 0.3,
                 },
                 upperLabel: {
-                  show: true,
+                  show: headingLevel>=2,
                   formatter: formatUpperLabel,
                 },
               },
 
-              // Level 3: Household > Bank Interest
+              // Level 3: Expense > Household > Bank Interest
               {
                 colorSaturation: [0.7, 0.5],
                 itemStyle: {
@@ -214,13 +220,13 @@ export default function VisualizePage() {
                   borderColorSaturation: 0.4,
                 },
                 upperLabel: {
-                  show: true,
+                  show: headingLevel>=3,
                   formatter: formatUpperLabel,
                 },
 
               },
 
-              // Level 4: Household > Bank Interest > Savings
+              // Level 4: Expense > Household > Bank Interest > Savings
               {
                 colorSaturation: [0.8, 0.6],
                 itemStyle: {
@@ -228,6 +234,11 @@ export default function VisualizePage() {
                   gapWidth: 0,
                   borderColorSaturation: 0.6,
                 },
+                upperLabel: {
+                  show: headingLevel>=4,
+                  formatter: formatUpperLabel,
+                },
+
               },
               {
                 colorSaturation: [0.9, 0.7],
@@ -236,6 +247,10 @@ export default function VisualizePage() {
                   gapWidth: 0,
                   borderColorSaturation: 0.7,
                 },
+                upperLabel: {
+                  show: headingLevel>=5,
+                  formatter: formatUpperLabel,
+                },
               },
             ],
             data: tree,
@@ -243,11 +258,18 @@ export default function VisualizePage() {
         ],
       });
     }
-  }, [data]);
+  }, [data, incomeEnabled, expenseEnabled, headingLevel]);
 
   return (
     <>
       <Toolbar />
+
+      <div className="flex justify-center py-2">
+        <VisualizeTreeToolbar
+          options={treeOptions}
+          setOptions={setTreeOptions}
+        />
+      </div>
 
       {isLoading && <div>Loading transactions...</div>}
       {error && <div>Error loading transactions: {error.message}</div>}
@@ -275,67 +297,4 @@ export default function VisualizePage() {
 
     </>
   );
-
-  // ✅ Verified unchanged data transformation logic
-  function turnTransactionQueryIntoTreemapStucture(rows) {
-    return rows.reduce((tree, row) => { processRow(row, tree); return tree; }, []);
-  }
-
-  function processRow(row, tree) {
-    row.tags = row.tags?.map((tag) => tag.replace(/\s*>\s*/g, " > ")) || [];
-    if (row.tags.length === 0) row.tags.push("Uncategorized");
-
-    row.party = row.party?.map((tag) => tag.replace(/\s*>\s*/g, " > ")) || [];
-    if (row.party.length === 0) row.party.push("Uncategorized");
-
-    const node = {
-      credit: parseFloat(row.credit) || 0,
-      debit: parseFloat(row.debit) || 0,
-      amount: parseFloat(row.amount) || 0,
-      value: Math.abs(parseFloat(row.amount)) || 0.0,
-      description: row.description,
-      account_shortname: row.account_shortname,
-      account_currency: row.account_currency,
-      account_number: row.account_number,
-      datetime: DateTime.fromISO(row.datetime),
-      date: DateTime.fromISO(row.datetime_without_timezone).toFormat("yyyy-MM-dd"),
-    };
-
-    node.tagsString = row.tags?.join(", ");
-    node.partyString = row.party?.join(", ");
-
-    node.path = `${node.description}`;
-    node.name = (node.partyString !== "Uncategorized") ? node.partyString : node.description;
-
-    const tag = row.tags[0];
-    const segments = tag.split(/\s*>\s*/);
-
-    // prepend Income/Expense to the tag
-    if (node.amount > 0) {
-      segments.unshift("Income");
-    } else {
-      segments.unshift("Expense");
-    }
-
-    autovivifyTree(tree, segments, node);
-  }
-
-  function autovivifyTree(root, pathSegments, newNode) {
-    let currentLevel = root;
-
-    for (let i = 0; i < pathSegments.length; i++) {
-      const segment = pathSegments[i];
-      const fullPath = pathSegments.slice(0, i + 1).join(" / ");
-
-      let node = currentLevel.find((node) => node.path === fullPath);
-      if (!node) {
-        node = { path: fullPath, name: segment, children: [] };
-        currentLevel.push(node);
-      }
-
-      currentLevel = node.children;
-    }
-
-    currentLevel.push(newNode);
-  }
 }

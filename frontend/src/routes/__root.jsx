@@ -72,7 +72,7 @@ function Root() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem asChild>
-                      <Link to="/visualize" className="cursor-pointer w-full">
+                      <Link to="/visualizetree" className="cursor-pointer w-full">
                         {t('Tree view')}
                       </Link>
                     </DropdownMenuItem>

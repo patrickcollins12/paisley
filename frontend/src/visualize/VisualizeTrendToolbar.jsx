@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Layers, BarChart3, LineChart as LineChartIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { Layers, BarChart3, LineChart as LineChartIcon, ChartColumn } from "lucide-react";
 
 export function VisualizeTrendToolbar({ options, setOptions }) {
     // Destructure all options from the options object
@@ -120,7 +120,8 @@ export function VisualizeTrendToolbar({ options, setOptions }) {
                     className="rounded-none rounded-l-md border-r-0"
                     onClick={() => updateOption('incomeEnabled', !incomeEnabled)}
                 >
-                    <TrendingUp className="h-4 w-4" />
+                    {/* <TrendingUp className="h-4 w-4" /> */}
+                    <ChartColumn className="h-4 w-4 -scale-y-100"/>
                     <span className="text-xs">Income</span>
                 </Button>
                 <Button
@@ -129,7 +130,8 @@ export function VisualizeTrendToolbar({ options, setOptions }) {
                     className="rounded-none rounded-r-md"
                     onClick={() => updateOption('expenseEnabled', !expenseEnabled)}
                 >
-                    <TrendingDown className="h-4 w-4" />
+                    <ChartColumn className="h-4 w-4"/>
+                    {/* <TrendingDown className="h-4 w-4" /> */}
                     <span className="text-xs">Expense</span>
                 </Button>
             </div>

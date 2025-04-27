@@ -1,11 +1,14 @@
 # TODO
 
 P1
-[ ] AccountBalanceCharts.jsx locks up on the tooltip hover, undo the hashed key?
-[ ] Tooltip for txns on account volume and trend
+[ ] Apply the new Tooltip with txns onto account treemap
+[ ] VisualizeTrend - save the secondary toolbar results
+[ ] VisualizeTree - create the secondary toolbar (which should save)
+[ ] AccountBalanceCharts.jsx still locks up on the tooltip hover, undo the hashed key?
+[ ] Format the chart balance tooltip to include time
 [ ] Backend: encrypt passwords
-[ ] Format the tooltip to include time
 [ ] Finish the left menu
+[x] Tooltip for txns on account trend
 [x] <TooltipArrow> was at line 26 of FilterButton.jsx. is the fill-slate an issue?upgrade the radix component.
 [x] Account balance chart summing on coinbase is broken
 

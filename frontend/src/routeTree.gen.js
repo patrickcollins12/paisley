@@ -13,7 +13,7 @@
 import { Route as rootRoute } from './routes/__root.jsx'
 import { Route as IndexImport } from './routes/index.jsx'
 import { Route as VisualizetrendIndexImport } from './routes/visualizetrend.index.jsx'
-import { Route as VisualizeIndexImport } from './routes/visualize.index.jsx'
+import { Route as VisualizetreeIndexImport } from './routes/visualizetree.index.jsx'
 import { Route as TransactionsIndexImport } from './routes/transactions.index.jsx'
 import { Route as TagsIndexImport } from './routes/tags.index.jsx'
 import { Route as SettingsIndexImport } from './routes/settings.index.jsx'
@@ -38,9 +38,9 @@ const VisualizetrendIndexRoute = VisualizetrendIndexImport.update({
   getParentRoute: () => rootRoute,
 })
 
-const VisualizeIndexRoute = VisualizeIndexImport.update({
-  id: '/visualize/',
-  path: '/visualize/',
+const VisualizetreeIndexRoute = VisualizetreeIndexImport.update({
+  id: '/visualizetree/',
+  path: '/visualizetree/',
   getParentRoute: () => rootRoute,
 })
 
@@ -111,7 +111,7 @@ const rootRouteChildren = {
   SettingsIndexRoute: SettingsIndexRoute,
   TagsIndexRoute: TagsIndexRoute,
   TransactionsIndexRoute: TransactionsIndexRoute,
-  VisualizeIndexRoute: VisualizeIndexRoute,
+  VisualizetreeIndexRoute: VisualizetreeIndexRoute,
   VisualizetrendIndexRoute: VisualizetrendIndexRoute,
 }
 
@@ -133,7 +133,7 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)
         "/settings/",
         "/tags/",
         "/transactions/",
-        "/visualize/",
+        "/visualizetree/",
         "/visualizetrend/"
       ]
     },
@@ -167,8 +167,8 @@ export const routeTree = rootRoute._addFileChildren(rootRouteChildren)
     "/transactions/": {
       "filePath": "transactions.index.jsx"
     },
-    "/visualize/": {
-      "filePath": "visualize.index.jsx"
+    "/visualizetree/": {
+      "filePath": "visualizetree.index.jsx"
     },
     "/visualizetrend/": {
       "filePath": "visualizetrend.index.jsx"

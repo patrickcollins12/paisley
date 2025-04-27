@@ -113,7 +113,7 @@ function Toolbar({ dataTable, onResetLayout, currentColumnSizing }) {
               {searchContext.savedSearches.length > 0 && (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Load from these filters</DropdownMenuLabel>
+                  {/* <DropdownMenuLabel>Load from these filters</DropdownMenuLabel> */}
                   {searchContext.savedSearches.map((name) => (
                     <DropdownMenuItem
                       key={name}
