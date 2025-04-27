@@ -17,11 +17,11 @@ const FilterButton = forwardRef(({ isFilterActive, label, onClear, activeRendere
                         <TooltipProvider defaultOpen delayDuration={1200}>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <span onClick={onClear} className="p-2 text-slate-500 dark:text-slate-400 hover:text-black dark:hover:text-white">
+                                    <span onClick={onClear} className="p-2">
                                         <X size={16} />
                                     </span>
                                 </TooltipTrigger>
-                                <TooltipContent className="border-0 bg-slate-700 text-white font-normal p-4" side="bottom">
+                                <TooltipContent className="border-0 font-normal" side="bottom">
                                     <p>Remove this filter</p>
                                 </TooltipContent>
                             </Tooltip>
