@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from 'react-dom';
 import Toolbar from "@/toolbar/Toolbar.jsx";
 import { useFetchTransactions } from "@/transactions/TransactionApiHooks.jsx";
 import { useSearch } from "@/components/search/SearchContext.jsx";
@@ -12,6 +13,8 @@ import { TooltipComponent, DatasetComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 
 import { VisualizeTrendToolbar } from "./VisualizeTrendToolbar.jsx";
+import { TrendTooltipContent } from "./TrendTooltipContent.jsx";
+import { useTrendTooltip } from "./useTrendTooltip.js"; // Import the custom hook
 
 echarts.use([TooltipComponent, LineChart, DatasetComponent, CanvasRenderer]);
 
@@ -32,9 +35,14 @@ export default function VisualizeTrend() {
     expenseEnabled: true
   });
 
-  const chartRef = useRef(null);
+  const containerRef = useRef(null); // Ref for the sizing container div
+  const chartRef = useRef(null); // Ref for the ECharts component instance
   const theme = useResolvedTheme();
-  const activeSeriesIndexRef = useRef(null);
+
+  // Pass the grouped data map (dateGroups) to the tooltip hook
+  // We need to store dateGroups in state so the hook can access it
+  const [dateGroupsForTooltip, setDateGroupsForTooltip] = useState(null);
+  const tooltip = useTrendTooltip(chartRef, dateGroupsForTooltip);
 
   const { data, isLoading, error } = useFetchTransactions({
     pageIndex: 0,
@@ -46,64 +54,29 @@ export default function VisualizeTrend() {
   // Create a key that changes when either data or filters change
   const chartInstanceKey = `${data?.results?.length ?? 0}-${JSON.stringify(searchContext.getFilters())}`;
 
-  // Dynamically update chart size
+  // Dynamically update chart size based on the container div
   const updateSize = () => {
-    if (chartRef.current) {
-      const rect = chartRef.current.getBoundingClientRect();
-      const h = window.innerHeight - rect.top - 10
-      const w = window.innerWidth - rect.left - 10
-      // console.log("updateSize", h, w)
-
+    if (containerRef.current) { // Use containerRef here
+      const rect = containerRef.current.getBoundingClientRect(); // Get container's position
+      const h = window.innerHeight - rect.top - 10;
+      const w = window.innerWidth - rect.left - 10;
       setDimensions({ height: h, width: w });
     }
   };
 
   useEffect(() => {
-    updateSize(); // Initial sizing on mount
-    window.addEventListener("resize", updateSize); // Resize listener
-    return () => window.removeEventListener("resize", updateSize); // Cleanup
-  }, []);
-
-  // Update the ref to current series index on mouseover a series
-  const onChartReady = (chart) => {
-    window.chartInstance = chart;
-    chart.on('mouseover', (params) => {
-      activeSeriesIndexRef.current = params?.seriesIndex;
-    });
-  };
-
-  // when hovering over the graph a white tooltip pops up, this is how it is formatted
-  function tooltipFormatter(infoArr) {
-    // Get date from first item
-    const date = infoArr[0]?.axisValue || '';
-
-    // Build tooltip content
-    let content = `<div style="margin-bottom:5px;font-weight:bold">${date}</div>`;
-
-    // Get active series index from ref
-    const currentActiveSeriesIndex = activeSeriesIndexRef.current;
-
-    // Add each non-zero data item
-    content += infoArr
-      .filter(info => info.value !== 0)
-      .sort((a, b) => b.value - a.value) // Sort by value descending
-      .map(info => {
-        // Check if this is the active series
-        const isActive = info.seriesIndex === currentActiveSeriesIndex;
-
-        const content = `
-          <div style="display:flex;justify-content:space-between;margin:3px 0">
-            <span>${info.marker} ${info.seriesName}</span>
-            <span style="margin-left:15px;">${formatCurrency(info.value)}</span>
-          </div>
-          `;
-
-        return isActive ? `<strong>${content}</strong>` : "";
-      })
-      .join('');
-
-    return content;
-  }
+    // Need to wait for containerRef to be populated
+    if (containerRef.current) { // Check containerRef here
+        updateSize(); // Initial sizing on mount
+        window.addEventListener("resize", updateSize);
+        return () => window.removeEventListener("resize", updateSize);
+    } else {
+        // If container not ready, retry slightly later (less common now)
+        const timeoutId = setTimeout(updateSize, 100);
+        return () => clearTimeout(timeoutId);
+    }
+    // Depend on the ref itself - effect reruns when ref is attached
+  }, [containerRef.current]);
 
   // Extract only the options we need for the chart to prevent unnecessary rerenders
   const { timeGrouping, chartType, isStacked, tagLevel, incomeEnabled, expenseEnabled } = chartOptions;
@@ -136,50 +109,39 @@ export default function VisualizeTrend() {
   // setup the chart options
   useEffect(() => {
     if (data?.results) {
-      // Use the actual grouping (auto resolved to a real value if needed)
       const effectiveGrouping = timeGrouping === 'auto' ? calculatedGrouping : timeGrouping;
-      
-      // Only proceed if we have a valid grouping (not auto and not null)
       if (effectiveGrouping && effectiveGrouping !== 'auto') {
-        const chartData = turnTransactionQueryIntoLineChartStructure(
-          data.results, 
-          effectiveGrouping, // Use the resolved grouping
+        // Get chart data and the grouped transaction data
+        const { displayDates, dateGroups, series } = turnTransactionQueryIntoLineChartStructure(
+          data.results,
+          effectiveGrouping,
           parseInt(tagLevel, 10),
           incomeEnabled,
           expenseEnabled
         );
-        
+
+        // Store the dateGroups map in state for the tooltip hook to use
+        setDateGroupsForTooltip(dateGroups);
+
         setOption({
           tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-              type: 'cross',
-              label: {
-                backgroundColor: '#6a7985'
-              }
-            },
-            confine: true,
-            formatter: tooltipFormatter
+            trigger: 'item',
+            showContent: false,
           },
-
-          // todo
           valueFormatter: (value) => '$' + value.toFixed(2),
-
           xAxis: [
             {
               type: 'category',
               boundaryGap: false,
-              data: chartData.dates
+              data: displayDates // Use the display dates for the axis
             }
           ],
-
           yAxis: [
             {
               type: 'value'
             }
           ],
-
-          series: chartData.series.map(s => ({
+          series: series.map(s => ({ // Use the processed series data
             name: s.name,
             type: chartType,
             stack: isStacked ? 'Total' : undefined,
@@ -188,7 +150,6 @@ export default function VisualizeTrend() {
             emphasis: { focus: 'series' },
             data: s.data
           })),
-
         });
       }
     }
@@ -211,58 +172,81 @@ export default function VisualizeTrend() {
         <div>No data available</div>
       )}
 
+
       <div
-        ref={chartRef}
+        ref={containerRef} // Attach containerRef here
         style={{ width: `${dimensions.width}px`, height: `${dimensions.height}px` }}
         className="overflow-auto"
       >
         {!isLoading && !error && data && option && (
           <ReactEChartsCore
             echarts={echarts}
-            ref={chartRef}
+            ref={chartRef} // Keep chartRef here for the hook
             option={option}
             lazyUpdate={false}
             notMerge={true}
             style={{ width: "100%", height: "100%" }}
             theme={{ theme }}
-            onChartReady={onChartReady}
             key={chartInstanceKey}
           />
         )}
       </div>
+
+      {/* Portal for Custom React Tooltip - Use values from hook */}
+      {tooltip.isTooltipVisible && tooltip.tooltipInfo && createPortal(
+        <div
+          ref={tooltip.tooltipRef} // Use ref from hook
+          style={{ position: 'absolute', left: `${tooltip.finalTooltipPosition.x}px`, top: `${tooltip.finalTooltipPosition.y}px`, pointerEvents: 'none', zIndex: 9999 }}
+        >
+          <TrendTooltipContent
+            displayDate={tooltip.tooltipInfo.displayDate}
+            seriesName={tooltip.tooltipInfo.seriesName}
+            seriesValue={tooltip.tooltipInfo.seriesValue}
+            transactions={tooltip.tooltipInfo.transactions}
+          />
+        </div>,
+        document.body
+      )}
     </>
   );
+
+  // Restore data processing functions with original comments
 
   // call as follows:
   // const series = turnTransactionQueryIntoLineChartStructure(data.results, "day");
   function turnTransactionQueryIntoLineChartStructure(data, groupBy = "day", tagLevel = 2, incomeEnabled = true, expenseEnabled = true) {
-    // Create data structures to hold our grouped data
-    const dateGroups = new Map(); // Map of date -> tag -> sum
-    const allTags = new Set(); // To track all unique tags at the specified level
-
-    // Use the provided groupBy directly (auto grouping is handled outside this function now)
+    // Map: dateGroupKey -> Map<tag, { sum: number, transactions: Array<{ dt: DateTime, amount: number, description: string }> }>
+    const dateGroups = new Map();
+    const allTags = new Set();
     const effectiveGroupBy = groupBy;
 
-    // Process each transaction row
     data.forEach(row => {
-      // Process the transaction using a helper function
       processRow(row, dateGroups, allTags, effectiveGroupBy, tagLevel, incomeEnabled, expenseEnabled);
     });
 
-    // Extract sorted unique dates for the x-axis
-    const dates = Array.from(dateGroups.keys()).sort();
+    // Generate display dates
+    const displayDates = [];
+    const sortedGroupKeys = Array.from(dateGroups.keys()).sort();
 
-    // Create series structure required for charts
+    // Just populate displayDates
+    sortedGroupKeys.forEach(groupKey => {
+        displayDates.push(groupKey);
+    });
+
+
+    // Create series data using displayDates order
     const series = Array.from(allTags).map(tag => ({
       name: tag,
-      data: dates.map(date => {
-        const tagData = dateGroups.get(date);
-        return tagData && tagData.has(tag) ? tagData.get(tag) : 0;
+      data: displayDates.map(displayDate => {
+        const groupData = dateGroups.get(displayDate);
+        const tagData = groupData?.get(tag);
+        return tagData ? tagData.sum : 0; // Use the aggregated sum
       })
     }));
 
-    // Return structure that matches how it's used in the component
-    return { dates, series };
+    // Return display dates, the grouped data map, and series data
+    // Note: dateGroups now contains the transaction details needed for the tooltip
+    return { displayDates, dateGroups, series };
   }
 
   function processRow(row, dateGroups, allTags, timeGrouping, tagLevel, incomeEnabled, expenseEnabled) {
@@ -276,7 +260,7 @@ export default function VisualizeTrend() {
 
     // Process the tag to the specified level
     const amount = parseFloat(row.amount) || 0;
-    
+
     // Skip this transaction if it's income and income is disabled, or if it's an expense and expenses are disabled
     const isIncome = amount > 0;
     if ((isIncome && !incomeEnabled) || (!isIncome && !expenseEnabled)) {
@@ -286,7 +270,6 @@ export default function VisualizeTrend() {
     // Handle the case where timeGrouping is still 'auto' or invalid
     let safeTimeGrouping = timeGrouping;
     if (timeGrouping === 'auto' || !['day', 'week', 'month', 'quarter'].includes(timeGrouping)) {
-      console.warn(`Invalid time grouping: ${timeGrouping}, falling back to day`);
       safeTimeGrouping = 'day';
     }
 
@@ -304,12 +287,13 @@ export default function VisualizeTrend() {
       const quarter = Math.ceil(date.month / 3);
       datetime = `${date.year}-Q${quarter}`;
     } else {
+      // Fix the error message termination
       throw new Error(`Invalid time grouping: ${safeTimeGrouping}`);
     }
 
     // Determine tag and category based on amount sign
-    let tag = row.tags[0] || "Uncategorized"
-    let segments = tag.split(/\s*>\s*/)
+    let tag = row.tags[0] || "Uncategorized";
+    let segments = tag.split(/\s*>\s*/);
 
     // Prepend Income/Expense prefix based on amount
     if (amount > 0) {
@@ -329,20 +313,31 @@ export default function VisualizeTrend() {
     // Get the current tag map for this date
     const tagMap = dateGroups.get(datetime);
 
-    // Determine how to handle the amount based on income/expense settings
-    let valueToAdd;
-
-    // If only income is enabled, don't negate the amount so income shows as positive
-    if (incomeEnabled && !expenseEnabled && isIncome) {
-      valueToAdd = amount;
-    } else {
-      // In all other cases, negate the amount as before
-      valueToAdd = -amount;
+    // Ensure the entry for the tag exists with the new structure
+    if (!tagMap.has(tagToUse)) {
+        // Initialize with sum and an empty transactions array
+        tagMap.set(tagToUse, { sum: 0, transactions: [] });
     }
 
-    // Add the amount to the current value for this tag (or initialize it)
-    const currentValue = tagMap.has(tagToUse) ? tagMap.get(tagToUse) : 0;
-    tagMap.set(tagToUse, currentValue + valueToAdd);
+    // Get the data object for this tag
+    const tagData = tagMap.get(tagToUse);
+
+    // Calculate value to add based on income/expense filtering
+    let valueToAdd;
+    if (incomeEnabled && !expenseEnabled && isIncome) valueToAdd = amount;
+    else valueToAdd = -amount; // Typically show expenses as positive bars/lines
+
+    tagData.sum += valueToAdd;
+
+    // Store transaction details instead of just the date
+    const dt = DateTime.fromISO(row.datetime);
+    if (dt.isValid) {
+        tagData.transactions.push({
+            dt: dt, // Keep the DateTime object
+            amount: parseFloat(row.amount) || 0, // Store the original amount
+            description: row.description || '' // Store the description
+        });
+    }
 
     // Add the tag to our set of all tags
     allTags.add(tagToUse);
@@ -354,22 +349,22 @@ export default function VisualizeTrend() {
     if (!data || data.length === 0) {
       return "day"; // Default to day if no data
     }
-    
+
     // Find min and max dates by sorting the data
     const sortedDates = data
       .map(row => DateTime.fromISO(row.datetime))
       .filter(date => date.isValid)
       .sort((a, b) => a.valueOf() - b.valueOf());
-        
+
     if (sortedDates.length === 0) {
       return "day"; // Default to day if no valid dates
     }
-    
+
     const minDate = sortedDates[0];
     const maxDate = sortedDates[sortedDates.length - 1];
-    
+
     const diffInDays = maxDate.diff(minDate, "days").days;
-    
+
     if (diffInDays > 365 * 1.5) {
       return "quarter";
     } else if (diffInDays > 9 * 30) {

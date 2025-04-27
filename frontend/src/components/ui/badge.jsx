@@ -7,6 +7,8 @@ const colorsx = ["red", "orange", "amber", "yellow", "lime", "green", "emerald",
   "teal", "cyan", "sky", "blue", "indigo", "violet",
   "purple", "fuchsia", "pink", "rose"];
 
+// REGENERATE THE COLORS
+// ---------------------
 // const inputString = `
 // bg-\${color}-400/30
 // text-\${color}-600
@@ -26,11 +28,9 @@ const colorsx = ["red", "orange", "amber", "yellow", "lime", "green", "emerald",
 //     arr.push(string.replace(/\${color}/g, color));
 //   });
 // });
-
 // for (let i of arr) {
 //   console.log(`"${i}",`);
 // }
-
 
 // Generated tailwind colors from the above. 
 // Needed for dynamic colors use below
