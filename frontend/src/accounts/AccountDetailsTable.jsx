@@ -142,7 +142,7 @@ const AccountDetailsTable = ({ data }) => {
 
                             {/* Delete Account Item (Triggers Dialog via state) */}
                             <DropdownMenuItem 
-                                className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                                className="text-red-600 focus:text-red-500 focus:bg-red-700/20"
                                 // Use onSelect to set state, Dialog component is rendered elsewhere
                                 onSelect={(event) => { 
                                     event.preventDefault(); // Prevent closing menu 

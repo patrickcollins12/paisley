@@ -1,7 +1,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { ChartColumn } from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 export const defaultVisualizeTreeOptions = {
     headingLevel: 3,
@@ -31,7 +31,7 @@ export function VisualizeTreeToolbar({ options, setOptions }) {
                     value={headingLevel.toString()}
                     onValueChange={(value) => updateOption('headingLevel', parseInt(value))}
                 >
-                    <SelectTrigger className="h-9 dark:bg-input/30">
+                    <SelectTrigger className="h-9 font-semibold dark:bg-input/30">
                         <SelectValue placeholder="Select a tag level" />
                     </SelectTrigger>
                     <SelectContent>
@@ -52,8 +52,8 @@ export function VisualizeTreeToolbar({ options, setOptions }) {
                     className="rounded-none rounded-l-md border-r-0"
                     onClick={() => updateOption('incomeEnabled', !incomeEnabled)}
                 >
-                    {/* <TrendingUp className="h-4 w-4" /> */}
-                    <ChartColumn className="h-4 w-4 -scale-y-100"/>
+                    <TrendingUp className="h-4 w-4" />
+
                     <span className="text-xs">Income</span>
                 </Button>
                 <Button
@@ -62,7 +62,8 @@ export function VisualizeTreeToolbar({ options, setOptions }) {
                     className="rounded-none rounded-r-md"
                     onClick={() => updateOption('expenseEnabled', !expenseEnabled)}
                 >
-                    <ChartColumn className="h-4 w-4"/>
+                    <TrendingDown className="h-4 w-4" />
+
                     {/* <TrendingDown className="h-4 w-4" /> */}
                     <span className="text-xs">Expense</span>
                 </Button>
