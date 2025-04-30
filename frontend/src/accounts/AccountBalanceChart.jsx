@@ -28,11 +28,13 @@ import useAccountData from "@/accounts/AccountApiHooks.js";
 
 import { formatDate } from "@/lib/localisation_utils.js";
 import { formatCurrency } from "@/components/CurrencyDisplay.jsx";
+import { formatChartDate } from "@/lib/localisation_utils.js";
 
 const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceChange, onMouseOut }) => {
     const resolvedTheme = useResolvedTheme();
     const [option, setOption] = useState({}); // echarts options
     const chartRef = useRef(null);
+    const originalIsoDatesRef = useRef([]); // Ref to store original ISO date strings
     const { data: accountData, error: accountError, isLoading: accountIsLoading } = useAccountData(accountid);
 
     // // Fetch data using the custom hook
@@ -60,6 +62,15 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
     useEffect(() => {
 
         if (data && !isLoading) {
+
+            // Store original ISO dates from the first series for tooltip lookup
+            if (data.length > 0 && data[0].series) {
+                 // Assuming structure: data[0].series = [[isoString, value], ...]
+                 // The original ISO string is point[0]
+                 originalIsoDatesRef.current = data[0].series.map(point => point[0]);
+            } else {
+                originalIsoDatesRef.current = [];
+            }
 
             chartInstanceKey = hashString(JSON.stringify(data))
             // console.log('cik:', chartInstanceKey)
@@ -104,36 +115,31 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
                         const x = point[0]
                         return [x - w / 2, '0%'];
                     },
+
                     formatter: function (params) {
-                        const date = params[0]?.axisValue || '';
-                        // turn epoch date into a human readable date using luxon
-                        // format as dd/Mon/yyyy
-                        const humanReadableDate = DateTime.fromMillis(date).toFormat("dd MMM yyyy")
-                        return `${humanReadableDate}`
+                        // Use lookup based on dataIndex
+                        if (!params || params.length === 0 || params[0].dataIndex === undefined || !originalIsoDatesRef.current) {
+                            return ""; // No data point or lookup data
+                        }
+
+                        const dataIndex = params[0].dataIndex;
+                        
+                        const originalIsoDate = originalIsoDatesRef.current[dataIndex]; // Lookup ISO string
+
+                        if (!originalIsoDate) {
+                            // Fallback if lookup fails (shouldn't happen if ref is populated correctly)
+                            const fallbackTimestamp = params[0]?.axisValue;
+                            return fallbackTimestamp ? formatChartDate(DateTime.fromMillis(fallbackTimestamp)) : "";
+                        }
+
+                        const humanReadableDate = formatChartDate(originalIsoDate); // Pass ISO string directly
+                        // console.log('dataIndex:', dataIndex)
+                        // console.log('params:', params)
+                        // console.log('originalIsoDate:', originalIsoDate)
+                        // console.log('humanReadableDate:', humanReadableDate)
+                        // console.log('--------------------------------')
+                        return `${humanReadableDate}`; // Display the formatted date
                     },
-
-                    // This is the old formatter that had each series on the tooltip
-                    // formatter: function (params) {
-                    //     let retStr = ""
-                    //     let multiple = (params.length > 1) ? true : false
-                    //     params.reverse().forEach((seriesItem, index) => {
-                    //         const date = seriesItem.data[0]
-                    //         const accountid = seriesItem.seriesName
-                    //         const marker = seriesItem.marker
-                    //         const val = seriesItem.data[1]
-                    //         const shortname = accountData?.shortname || accountid
-                    //         const currency = accountData?.currency || ""
-                    //         const amount = formatCurrency(val, { currency: currency })
-
-                    //         retStr += (index === 0) ? `${formatDate(date)}<br/>` : ""
-                    //         retStr += (multiple) ?
-                    //             `${marker}<b>${shortname}</b>: ${amount}<br/>`
-                    //             :
-                    //             `${marker} ${amount}<br/>`
-                    //     })
-                    //     // return retStr
-                    //     return ""
-                    // },
 
 
                 },
@@ -224,11 +230,6 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
             // params contains info about the tooltip trigger
             // We need the data point associated with it.
             // ECharts often provides the relevant data points in params.dataIndex or implicitly via series data
-            // Let's try accessing it via the first series' data point corresponding to the tooltip
-
-            // TODO: it doesn't fire in here after navigating to the same page
-            console.log("show tip")
-
 
             if (onHoverBalanceChange &&
                 params.dataIndex !== undefined &&
@@ -263,8 +264,16 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
 
         // Cleanup function
         return () => {
-            chartInstance.off('showTip', handleShowTip);
-            chartInstance.off('hideTip', handleHideTip);
+            // *** ADD CHECK: Ensure instance exists and is not disposed before calling off ***
+            try {
+                if (chartInstance && !chartInstance.isDisposed()) {
+                    chartInstance.off('showTip', handleShowTip);
+                    chartInstance.off('hideTip', handleHideTip);
+                }
+            } catch (e) {
+                 // Log error if checking isDisposed or calling off fails unexpectedly
+                 console.warn("[AccountBalanceChart] Error detaching event listeners:", e);
+            }
         };
 
     }, [option, onHoverBalanceChange, onMouseOut]);
@@ -290,8 +299,16 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
         });
 
         const series = data.map((account, index) => {
-
             const color = colorPalette[index % colorPalette.length]; // Cycle through colors
+
+            // echarts stores the data as a unix timestamp in milliseconds.
+            // we have store the data separately for lookup
+            const plottingData = account.series.map(point => {
+                const isoString = point[0];
+                const value = point[1];
+                const timestampMillis = DateTime.fromISO(isoString).toMillis();
+                return [timestampMillis, value]; // Pass numeric timestamp to ECharts
+            });
 
             return {
                 name: `${account.accountid}`,
@@ -319,7 +336,7 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
                         { offset: 1, color: color.replace("rgb", "rgba").replace(")", ", 0)") } // Faded color at the bottom
                     ])
                 },
-                data: account.series
+                data: plottingData // Use simple [timestamp, value] data for plotting
             };
         });
 

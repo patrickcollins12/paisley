@@ -69,3 +69,45 @@ export function formatDate(dateTimeStr, options = { delta: false, absolute: true
         return absolute;
     }
 }
+
+/**
+ * Formats a DateTime object or ISO string for display on charts.
+ * Shows date as "dd MMM yyyy". Appends the timezone offset (e.g., GMT-7, UTC)
+ * if and only if the input date's effective timezone offset differs
+ * from the browser's local timezone offset at that specific instant.
+ * @param {import("luxon").DateTime | string} dtOrIsoString - The Luxon DateTime object or an ISO 8601 string.
+ * @returns {string} Formatted date string.
+ */
+export function formatChartDate(dtOrIsoString) {
+    let dt;
+    if (typeof dtOrIsoString === 'string') {
+        // Use setZone: true to preserve IANA zone if possible,
+        // use fixed offset if present, or default to local if no info.
+        dt = DateTime.fromISO(dtOrIsoString, { setZone: true });
+    } else {
+        dt = dtOrIsoString; // Assume it's already a DateTime object
+    }
+
+    if (!dt || !dt.isValid) return ""; // Basic validation
+
+    // Format the date part first
+    let dateDisplay = dt.toFormat("dd MMM yyyy HH:mm");
+
+    // Get the browser's local zone object
+    const localZone = DateTime.local().zone;
+    // Get the zone object from the parsed/input DateTime
+    const inputZone = dt.zone;
+
+    // Calculate the offset in minutes for both zones AT THE SPECIFIC INSTANT of the date (dt.ts)
+    // This correctly handles DST transitions for IANA zones.
+    const inputOffsetMinutes = inputZone.offset(dt.ts);
+    const localOffsetMinutesAtInstant = localZone.offset(dt.ts);
+
+    // Append timezone offset string only if the effective offsets are different
+    if (inputOffsetMinutes !== localOffsetMinutesAtInstant) {
+        // ZZZZ format gives GMT+/-HH:mm or UTC
+        dateDisplay += ` (${dt.toFormat("z")})`;
+    }
+
+    return dateDisplay;
+}

@@ -1,23 +1,24 @@
 # TODO
 
 P1
-[ ] Apply the new Tooltip with txns onto account treemap
-[ ] VisualizeTrend - save the secondary toolbar results
-[ ] VisualizeTree - create the secondary toolbar (which should save)
-[ ] AccountBalanceCharts.jsx still locks up on the tooltip hover, undo the hashed key?
-[ ] Format the chart balance tooltip to include time
-[ ] Backend: encrypt passwords
-[ ] Finish the left menu
+[ ] Bug: recreate balance isn't working on Visa Cards. Look into it.
+[ ] Backend: encrypt passwords.
+[ ] Finish the left menu.
+[x] Bug: AccountBalanceCharts.jsx still locks up on the tooltip hover, undo the hashed key?
+[x] Format the chart balance tooltip to include time (honor the TZ)
+[x] VisualizeTree - create the secondary toolbar (which should save)
 [x] Tooltip for txns on account trend
 [x] <TooltipArrow> was at line 26 of FilterButton.jsx. is the fill-slate an issue?upgrade the radix component.
 [x] Account balance chart summing on coinbase is broken
+[XX] Dropped: Apply the new Tooltip with txns onto account treemap.
 
 P2
+[ ] VisualizeTrend/Tree - save also the secondary toolbar results? P2
 [ ] add currency summing on accounts page
 [ ] document how to create scrapers
 [ ] on record_balance on frontend, if liability account, make the amount negative.
 
-p3
+P3
 [ ] accounts table - add currency.js route conversion to accounts page
 [ ] install - add more demo income.
 [ ] visualize page - add some options: group by party, first tag, all tags (double count)

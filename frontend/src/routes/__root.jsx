@@ -18,7 +18,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/AppSidebar.jsx";
 
 import { createRootRoute, Link, Outlet } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
 import { Toaster } from "@/components/ui/toaster.jsx"
 import { useAuth } from "@/auth/AuthContext.jsx"
 
@@ -123,7 +123,7 @@ function Root() {
       </SidebarProvider>
 
       <Toaster />
-      {/* <TanStackRouterDevtools /> */}
+      <TanStackRouterDevtools />
     </ThemeProvider>
   )
 }
