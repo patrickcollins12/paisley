@@ -34,6 +34,7 @@
     "minimist": "^1.2.8",
     "moo": "^0.5.2",
     "node-cron": "^3.0.3",
+    "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "tabletojson": "^4.1.5",
