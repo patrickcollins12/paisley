@@ -52,7 +52,7 @@ export default function RuleEditPage({ initialRuleString = '', isModalMode = fal
   // https://legacy.reactjs.org/docs/hooks-rules.html#only-call-hooks-from-react-functions
   const { data, mutate } = useFetchRule(id);
   const { update, create } = useUpdateRules();
-  const { data: transactionData, error: transactionFetchError } = useFetchTransactions({
+  const { data: transactionData, error: transactionFetchError, mutate: transactionMutate, isLoading: txnIsLoading } = useFetchTransactions({
     pageIndex: 0,
     pageSize: 100,
     orderBy: { field: 'datetime', dir: 'desc' },
@@ -138,7 +138,7 @@ export default function RuleEditPage({ initialRuleString = '', isModalMode = fal
       else {
         toast({ description: 'Rule created successfully', duration: 1000 });
         setError(null);
-        
+
         // If in modal mode, call the onSaveComplete callback
         if (isModalMode && onSaveComplete) {
           onSaveComplete();
@@ -161,6 +161,7 @@ export default function RuleEditPage({ initialRuleString = '', isModalMode = fal
     try {
       await update(id, data);
       await mutate();
+      await transactionMutate();
       toast({ description: 'Rule saved successfully', duration: 1000 });
       setError(null);
     } catch (error) {
@@ -278,23 +279,28 @@ export default function RuleEditPage({ initialRuleString = '', isModalMode = fal
           </form>
         </CardContent>
       </Card>
-{/* Only show matching transactions when not in modal mode */}
-{!isModalMode && (
-  <Card className="text-sm w-[450px]">
-    <CardHeader>
-      <CardTitle>Matching Transactions</CardTitle>
-      <CardDescription>
-        {transactionCount} transactions currently match this rule
-      </CardDescription>
-    </CardHeader>
+      {/* Only show matching transactions when not in modal mode */}
+      {!isModalMode && (
+        <Card className="text-sm w-[450px]">
+          <CardHeader>
+            <CardTitle>Matching Transactions</CardTitle>
+            <CardDescription>
+              {transactionCount} transactions currently match this rule
+            </CardDescription>
+          </CardHeader>
 
-    <CardContent className="">
-      <ScrollableSidebar className=" flex flex-col gap-3 ">
-        {transactionData?.results.map(transaction => <TransactionCard key={transaction.id} data={transaction} />)}
-      </ScrollableSidebar>
-    </CardContent>
-  </Card>
-)}
+          <CardContent className="">
+            <ScrollableSidebar className=" flex flex-col gap-3 ">
+              { txnIsLoading ? (
+                <div>Loading transactions...</div>
+              ) : ( <>
+                { transactionData?.results.map(transaction => <TransactionCard key={transaction.id} data={transaction} /> )}
+                </>
+              )}
+            </ScrollableSidebar>
+          </CardContent>
+        </Card>
+      )}
     </div>
   </>
   )

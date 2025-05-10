@@ -221,7 +221,10 @@ const AccountDetailsTable = ({ data }) => {
                         <AccountAddBalanceDialog
                             key="balance-form"
                             accountid={data?.accountid}
-                            onSuccess={() => setBalanceDialogOpen(false)}
+                            onSuccess={() => {
+                                setBalanceDialogOpen(false);
+                                mutateHistory(); // Revalidate account history, which should update the chart
+                            }}
                         />
                     </DialogContent>
                 )}

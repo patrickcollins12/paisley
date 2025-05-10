@@ -208,15 +208,46 @@ class BalanceHistoryRecreator {
     }
 
     /**
+     * Finds the latest anchor point (non-recreation balance) for the account.
+     * @returns {Promise<BalancePoint|null>}
+     */
+    async findLatestAnchorPoint() {
+        const query = `
+            SELECT * FROM (
+                SELECT 
+                    datetime,
+                    balance,
+                    'account_history' as source,
+                    data
+                FROM account_history
+                WHERE accountid = ? 
+                AND (json_extract(data, '$.from') IS NULL OR json_extract(data, '$.from') != 'recreation')
+                UNION ALL
+                SELECT 
+                    datetime,
+                    balance,
+                    'transaction' as source,
+                    jsondata as data
+                FROM "transaction"
+                WHERE account = ?
+                AND balance IS NOT NULL
+            ) ORDER BY datetime DESC LIMIT 1
+        `;
+        const result = this.db.db.prepare(query).get(this.accountid, this.accountid);
+        return result || null;
+    }
+
+    /**
      * Private helper to recalculate history between two anchor points.
      * @param {BalancePoint} startPoint - The starting anchor point.
      * @param {BalancePoint} endPoint - The ending anchor point.
      * @param {Function} recordBalance - Function to persist calculated points.
      * @param {boolean} isForward - Direction of calculation (true for forward, false for backward).
+     * @param {boolean} isProjection - Whether this segment is a projection to 'now' (skips some checks).
      * @returns {Promise<void>}
      * @private
      */
-    async _recalculateSegment(startPoint, endPoint, recordBalance, isForward) {
+    async _recalculateSegment(startPoint, endPoint, recordBalance, isForward, isProjection = false) {
         const startDate = isForward ? startPoint.datetime : endPoint.datetime;
         const endDate = isForward ? endPoint.datetime : startPoint.datetime;
         const startBalance = isForward ? startPoint.balance : endPoint.balance;
@@ -272,8 +303,11 @@ class BalanceHistoryRecreator {
         
         // Final balance verification (optional, could be done by caller)
         const finalExpectedBalance = isForward ? endPoint.balance : startPoint.balance;
-        if (Math.abs(runningBalance - finalExpectedBalance) > 0.001) {
+        if (!isProjection && isForward && endPoint.balance !== null && Math.abs(runningBalance - finalExpectedBalance) > 0.001) {
              logger.warn(`Segment end balance mismatch for ${this.accountid} (${startDate} -> ${endDate}). Expected ${finalExpectedBalance}, calculated ${runningBalance}.`);
+        } else if (!isProjection && !isForward && startPoint.balance !== null && Math.abs(runningBalance - finalExpectedBalance) > 0.001) {
+            // This case is for backward calculation, ensure startPoint.balance is used for expected
+            logger.warn(`Segment start balance mismatch for ${this.accountid} (${endDate} -> ${startDate}). Expected ${finalExpectedBalance}, calculated ${runningBalance}.`);
         }
     }
 
@@ -286,33 +320,96 @@ class BalanceHistoryRecreator {
     async recreateFullAccountHistory(recordBalance) {
         // 1. Find all existing anchor points
         const anchorPoints = await this.findAllAnchorPoints();
+        let lastKnownAnchorForProjection = null;
 
-        if (anchorPoints.length < 2) {
-            logger.warn(`Account ${this.accountid} has fewer than 2 anchor points (${anchorPoints.length}). Cannot perform full recreation.`);
-            // Optionally delete any existing recreation entries if desired even in this case?
-            if (anchorPoints.length > 0) {
-                await this.deleteOldRecreationEntries(anchorPoints[0].datetime, anchorPoints[0].datetime); // Delete any potential single point recreation
+        if (anchorPoints.length === 0) {
+            logger.warn(`Account ${this.accountid} has no anchor points. Cannot perform full recreation or projection.`);
+            // Even with no anchors, attempt projection which might find one if called standalone
+            // or handle it gracefully if it also finds none.
+            // Fall through to projectHistoryToNow which will handle the no-anchor case for projection.
+        } else if (anchorPoints.length === 1) {
+            const singleAnchor = anchorPoints[0];
+            logger.info(`Account ${this.accountid} has only one anchor point at ${singleAnchor.datetime}. Ensuring its recreation entries are clean before projecting to now.`);
+            await this.deleteOldRecreationEntries(singleAnchor.datetime, singleAnchor.datetime);
+            lastKnownAnchorForProjection = singleAnchor;
+        } else { // anchorPoints.length >= 2
+            const firstAnchor = anchorPoints[0];
+            const lastAnchor = anchorPoints[anchorPoints.length - 1];
+            lastKnownAnchorForProjection = lastAnchor; // Initially set to the last identified anchor
+
+            logger.info(`Deleting all old recreation entries for ${this.accountid} between ${firstAnchor.datetime} and ${lastAnchor.datetime}`);
+            await this.deleteOldRecreationEntries(firstAnchor.datetime, lastAnchor.datetime);
+
+            logger.info(`Recreating history for ${this.accountid} using ${anchorPoints.length} anchors, calculating forward.`);
+            for (let i = 0; i < anchorPoints.length - 1; i++) {
+                const startPoint = anchorPoints[i];
+                const endPoint = anchorPoints[i + 1];
+                logger.debug(`Processing segment ${i + 1}/${anchorPoints.length - 1}: ${startPoint.datetime} -> ${endPoint.datetime}`);
+                await this._recalculateSegment(startPoint, endPoint, recordBalance, true, false);
             }
+            logger.info(`Completed segment recreation for ${this.accountid}.`);
+        }
+
+        logger.info(`Proceeding to project history to now for account ${this.accountid} as part of full recreation.`);
+        // Pass the lastKnownAnchorForProjection. If null (e.g. zero initial anchors), 
+        // projectHistoryToNow will try to find the latest itself.
+        await this.projectHistoryToNow(recordBalance, lastKnownAnchorForProjection);
+
+        logger.info(`Full account history recreation (including projection to now) completed for ${this.accountid}.`);
+    }
+
+    /**
+     * Projects account history from the last known anchor point to the current time.
+     * @param {Function} recordBalance - Function to record a balance (async (accountid, datetime, balance, metadata) => Promise<void>)
+     * @param {BalancePoint|null} explicitStartAnchor - Optional. If provided, use this as the starting anchor.
+     * @returns {Promise<void>}
+     */
+    async projectHistoryToNow(recordBalance, explicitStartAnchor = null) {
+        logger.info(`Starting history projection to now for account ${this.accountid}.`);
+
+        let latestAnchor = explicitStartAnchor;
+        if (!latestAnchor) {
+            logger.debug(`No explicit start anchor provided for projection, finding latest anchor point for ${this.accountid}.`);
+            latestAnchor = await this.findLatestAnchorPoint();
+        } else {
+            logger.debug(`Using explicit start anchor for projection for ${this.accountid} at ${latestAnchor.datetime} with balance ${latestAnchor.balance}.`);
+        }
+
+        if (!latestAnchor) {
+            logger.warn(`No anchor point found (explicit or fetched) for account ${this.accountid}. Cannot project history to now.`);
+            return;
+        }
+        // If explicitStartAnchor was provided, we re-log its details for consistency in this method's logs.
+        // If it was fetched, the findLatestAnchorPoint already logged if found.
+        if (explicitStartAnchor) {
+             logger.debug(`Latest anchor (explicitly provided) for ${this.accountid} is at ${latestAnchor.datetime} with balance ${latestAnchor.balance}.`);
+        }
+
+        const nowDatetime = new Date().toISOString();
+
+        // 2. Define "now" as the end point for projection
+        const pseudoEndPoint = { 
+            datetime: nowDatetime, 
+            balance: null, // Balance is unknown for "now"
+            source: 'projection_target' 
+        };
+
+        // Do not project if "now" is not after the latest anchor
+        if (new Date(nowDatetime) <= new Date(latestAnchor.datetime)) {
+            logger.info(`Current time ${nowDatetime} is not after latest anchor ${latestAnchor.datetime}. No projection needed for ${this.accountid}.`);
             return;
         }
 
-        const firstAnchor = anchorPoints[0];
-        const lastAnchor = anchorPoints[anchorPoints.length - 1];
+        // 3. Delete any old 'recreation' entries from the last anchor time to now
+        // This prevents duplicating points if projection is run multiple times.
+        logger.info(`Deleting old recreation entries for ${this.accountid} between ${latestAnchor.datetime} and ${nowDatetime} for projection.`);
+        await this.deleteOldRecreationEntries(latestAnchor.datetime, nowDatetime);
+        
+        // 4. Recalculate (project) forward from the last anchor to "now"
+        logger.debug(`Projecting history for ${this.accountid} from ${latestAnchor.datetime} to ${nowDatetime}.`);
+        await this._recalculateSegment(latestAnchor, pseudoEndPoint, recordBalance, true, true); // isForward = true, isProjection = true
 
-        // 2. Delete *all* old recreation entries between the first and last anchor
-        logger.info(`Deleting all old recreation entries for ${this.accountid} between ${firstAnchor.datetime} and ${lastAnchor.datetime}`);
-        await this.deleteOldRecreationEntries(firstAnchor.datetime, lastAnchor.datetime);
-
-        // 3. Iterate through adjacent anchor points and recalculate forward
-        logger.info(`Recreating history for ${this.accountid} using ${anchorPoints.length} anchors, calculating forward.`);
-        for (let i = 0; i < anchorPoints.length - 1; i++) {
-            const startPoint = anchorPoints[i];
-            const endPoint = anchorPoints[i + 1];
-            logger.debug(`Processing segment ${i + 1}/${anchorPoints.length - 1}: ${startPoint.datetime} -> ${endPoint.datetime}`);
-            await this._recalculateSegment(startPoint, endPoint, recordBalance, true); // isForward = true
-        }
-
-        logger.info(`Full account history recreation completed for ${this.accountid}.`);
+        logger.info(`History projection to now completed for account ${this.accountid}.`);
     }
 
     /**

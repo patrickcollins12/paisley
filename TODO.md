@@ -1,9 +1,15 @@
 # TODO
 
 P1
-[ ] Bug: recreate balance isn't working on Visa Cards. Look into it.
+[x] Bug: recreate balance isn't working on Visa Cards. Look into it.
+[ ] Bug: search in description loses focus. DescriptionFilter.jsx [24-40]
+[ ] Bug: Transaction page is slow again. Try to not create all the react select's maybe.
+[ ] Flip all the liability amounts into positive? or maybe store them different on the backend? then only subtract them in the frontend on the accounts page. change the parsers.
 [ ] Backend: encrypt passwords.
 [ ] Finish the left menu.
+[ ] i18n on accounts menu and new toolbars
+[x] Bug: Mutate when rule is edited.
+[x] Bug: TagPanel focus issue - the ReactSelect should autofocus when the panel opens
 [x] Bug: AccountBalanceCharts.jsx still locks up on the tooltip hover, undo the hashed key?
 [x] Format the chart balance tooltip to include time (honor the TZ)
 [x] VisualizeTree - create the secondary toolbar (which should save)
@@ -17,6 +23,7 @@ P2
 [ ] add currency summing on accounts page
 [ ] document how to create scrapers
 [ ] on record_balance on frontend, if liability account, make the amount negative.
+[ ] migrate the main Accounts page to Tanstack with subgroup headings. https://chatgpt.com/share/681eb0a2-3970-800f-9a62-d2daf04ca4d6
 
 P3
 [ ] accounts table - add currency.js route conversion to accounts page

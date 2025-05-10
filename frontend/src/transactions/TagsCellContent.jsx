@@ -26,7 +26,7 @@ export default function TagsCellContent({ row, onTransactionUpdate, onQuickRuleC
         data={row.original}
         placeholder="Add tags..."
         isMulti={true}
-        autoFocus={false}
+        autoFocus={true}
         isClearable={true}
         maxMenuHeight={200}
         openMenuOnFocus={false}
@@ -40,7 +40,7 @@ export default function TagsCellContent({ row, onTransactionUpdate, onQuickRuleC
               size="icon"
               className="absolute top-1 right-1 h-6 w-6"
               onClick={(e) => {
-                e.stopPropagation(); // Probably not needed
+                e.stopPropagation();
                 onQuickRuleClick?.(description);
               }}
             >

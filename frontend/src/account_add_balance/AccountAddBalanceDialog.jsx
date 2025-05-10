@@ -1,6 +1,7 @@
 // AccountAddBalanceDialog.jsx
 import React, { useState } from "react"
-import { format } from "date-fns"
+// import { format } from "date-fns" // Removed date-fns
+import { DateTime } from "luxon" // Added luxon
 import { Calendar } from "@/components/ui/calendar"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -19,8 +20,8 @@ import {
 
 export function AccountAddBalanceDialog({ accountid, onSuccess }) {
     const [amount, setAmount] = useState("")
-    const [date, setDate] = useState(new Date())
-    const [time, setTime] = useState(format(new Date(), "HH:mm"))
+    const [date, setDate] = useState(new Date()) // Calendar uses JS Date
+    const [time, setTime] = useState(DateTime.now().toFormat("HH:mm")) // Luxon for time state
     const [recreateHistory, setRecreateHistory] = useState(true)
     const { toast } = useToast()
 
@@ -30,21 +31,24 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
 
     const handleSubmit = async () => {
         const [hours, minutes] = time.split(":").map(Number)
-        const combinedDate = new Date(date)
-        combinedDate.setHours(hours)
-        combinedDate.setMinutes(minutes)
-        combinedDate.setSeconds(0)
-        combinedDate.setMilliseconds(0)
+        // Convert JS Date from state to Luxon DateTime
+        const selectedDateTime = DateTime.fromJSDate(date)
+        const combinedDateTime = selectedDateTime.set({
+            hour: hours,
+            minute: minutes,
+            second: 0,
+            millisecond: 0
+        })
 
         console.log("Account ID:", accountid)
         console.log("Amount:", amount)
-        console.log("Balance as of:", combinedDate.toISOString())
+        console.log("Balance as of:", combinedDateTime.toISO()) // Use toISO from Luxon
         console.log("Recreate history:", recreateHistory)
 
         const cleanedAmount = sanitizeAmount(amount)
         const numericAmount = parseFloat(cleanedAmount)
 
-        const isoDatetime = combinedDate.toISOString()
+        const isoDatetime = combinedDateTime.toISO() // Use toISO from Luxon
         const { data: result, error } = await saveBalance({
             accountid,
             balance: numericAmount,
@@ -158,7 +162,8 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
                                     className="w-[200px] justify-start text-left font-normal"
                                 >
                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {date ? format(date, "PPP") : <span>Pick a date</span>}
+                                    {/* Format date using Luxon; 'date' is still a JS Date from Calendar */}
+                                    {date ? DateTime.fromJSDate(date).toFormat("MMM d, yyyy") : <span>Pick a date</span>}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0">
@@ -166,7 +171,6 @@ export function AccountAddBalanceDialog({ accountid, onSuccess }) {
                                     mode="single"
                                     selected={date}
                                     onSelect={setDate}
-                                    initialFocus
                                 />
                             </PopoverContent>
                         </Popover>
