@@ -164,7 +164,19 @@ class BalanceHistoryRecreator {
      * @returns {number} Updated running balance
      */
     processTransaction(runningBalance, transaction) {
-        return runningBalance + (transaction.credit || 0) - (transaction.debit || 0);
+        // For liabilities (like credit cards):
+        // - Credits decrease the balance (paying off debt)
+        // - Debits increase the balance (increasing debt)
+        // For assets (like checking):
+        // - Credits increase the balance
+        // - Debits decrease the balance
+        const isLiability = transaction.account_type === 'liability';
+        
+        if (isLiability) {
+            return runningBalance - (transaction.credit || 0) + (transaction.debit || 0);
+        } else {
+            return runningBalance + (transaction.credit || 0) - (transaction.debit || 0);
+        }
     }
 
     /**

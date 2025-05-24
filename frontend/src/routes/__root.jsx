@@ -39,7 +39,7 @@ function Root() {
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <SidebarProvider>
         {/* Sidebar Component - Managed by SidebarProvider */}
-        {authContext.isAuthenticated && <AppSidebar />}
+        {/* {authContext.isAuthenticated && <AppSidebar />} */}
 
         {/* Main Content Area */}
         <SidebarInset>
@@ -123,7 +123,7 @@ function Root() {
       </SidebarProvider>
 
       <Toaster />
-      <TanStackRouterDevtools />
+      {/* <TanStackRouterDevtools /> */}
     </ThemeProvider>
   )
 }

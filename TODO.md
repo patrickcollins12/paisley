@@ -1,29 +1,29 @@
 # TODO
 
 P1
-[x] Bug: recreate balance isn't working on Visa Cards. Look into it.
 [ ] Bug: search in description loses focus. DescriptionFilter.jsx [24-40]
-[ ] Bug: Transaction page is slow again. Try to not create all the react select's maybe.
 [ ] Flip all the liability amounts into positive? or maybe store them different on the backend? then only subtract them in the frontend on the accounts page. change the parsers.
 [ ] Backend: encrypt passwords.
 [ ] Finish the left menu.
 [ ] i18n on accounts menu and new toolbars
-[x] Bug: Mutate when rule is edited.
-[x] Bug: TagPanel focus issue - the ReactSelect should autofocus when the panel opens
-[x] Bug: AccountBalanceCharts.jsx still locks up on the tooltip hover, undo the hashed key?
-[x] Format the chart balance tooltip to include time (honor the TZ)
-[x] VisualizeTree - create the secondary toolbar (which should save)
-[x] Tooltip for txns on account trend
-[x] <TooltipArrow> was at line 26 of FilterButton.jsx. is the fill-slate an issue?upgrade the radix component.
-[x] Account balance chart summing on coinbase is broken
-[XX] Dropped: Apply the new Tooltip with txns onto account treemap.
+
+
+
+| Account Type     | Action               | Type   | Effect             | Outcome      | Credit Amount  | Debit Amount  | Final Amount  |
+|------------------|----------------------|--------|--------------------|--------------|----------------|---------------|---------------|
+| Checking Account | Buy groceries        | Debit  | Balance decreases  | Unfavorable  |                | 100.00        | -100.00       |
+| Checking Account | Paycheck deposit     | Credit | Balance increases  | Favorable    | 2,000.00       |               | +2,000.00     |
+| Credit Card      | Buy shoes            | Debit  | Debt increases     | Unfavorable  |                | 150.00        | -150.00       |
+| Credit Card      | Pay off balance      | Credit | Debt decreases     | Favorable    | 150.00         |               | +150.00       |
+
 
 P2
 [ ] VisualizeTrend/Tree - save also the secondary toolbar results? P2
 [ ] add currency summing on accounts page
 [ ] document how to create scrapers
 [ ] on record_balance on frontend, if liability account, make the amount negative.
-[ ] migrate the main Accounts page to Tanstack with subgroup headings. https://chatgpt.com/share/681eb0a2-3970-800f-9a62-d2daf04ca4d6
+[ ] migrate the main Accounts page to Tanstack with subgroup headings. https://chatgpt.com/share/681eb0a2-3970-800f-9a62-d2daf04ca4d6. Tanstack row grouping and sub headers
+
 
 P3
 [ ] accounts table - add currency.js route conversion to accounts page
@@ -39,6 +39,17 @@ One day:
 [ ] Sync url with filters
 
 done
+[x] Bug: Transaction page is slow again. Try to not create all the react select's maybe.
+[x] Bug: recreate balance isn't working on Visa Cards. Look into it.
+[x] Bug: Mutate when rule is edited.
+[x] Bug: TagPanel focus issue - the ReactSelect should autofocus when the panel opens
+[x] Bug: AccountBalanceCharts.jsx still locks up on the tooltip hover, undo the hashed key?
+[x] Format the chart balance tooltip to include time (honor the TZ)
+[x] VisualizeTree - create the secondary toolbar (which should save)
+[x] Tooltip for txns on account trend
+[x] <TooltipArrow> was at line 26 of FilterButton.jsx. is the fill-slate an issue?upgrade the radix component.
+[x] Account balance chart summing on coinbase is broken
+[XX] Dropped: Apply the new Tooltip with txns onto account treemap.
 [x] account delete - cascade
 [x] Delete account and optionally delete 431 transactions. Are you sure?
 [x] visualize page - set default filters.

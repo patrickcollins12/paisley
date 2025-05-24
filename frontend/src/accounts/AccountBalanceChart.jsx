@@ -173,16 +173,23 @@ const AccountBalanceChart = ({ accountid, category, startDate, onHoverBalanceCha
                         tooltip: {
                             show: true
                         },
-                        // min: "dataMin",
+
                         min: function (value) {
-                            return category === "liability" ?
-                                value.min + value.min * 0.01 :
-                                value.min - ((value.max - value.min) * 0.4)
+                            return value.min - ((value.max - value.min) * 0.4)
                         },
                         max: function (value) {
-                            return category === "liability" ?
-                                value.max - ((value.min - value.max) * 0.4) :
-                                value.max + (value.max * 0.01)
+                            return value.max + (value.max * 0.01)
+
+                        // // min: "dataMin",
+                        // min: function (value) {
+                        //     return category === "liability" ?
+                        //         value.min + value.min * 0.01 :
+                        //         value.min - ((value.max - value.min) * 0.4)
+                        // },
+                        // max: function (value) {
+                        //     return category === "liability" ?
+                        //         value.max - ((value.min - value.max) * 0.4) :
+                        //         value.max + (value.max * 0.01)
 
                         }
                     }

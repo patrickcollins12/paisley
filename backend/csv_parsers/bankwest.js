@@ -119,7 +119,7 @@ class BankwestCSVParser extends BaseCSVParser {
         processed.debit = Math.abs(l['Debit']) || 0
         processed.credit = Math.abs(l['Credit']) || 0
         processed.type = l['Transaction Type']
-        processed.balance = l['Balance']
+        processed.balance = Math.abs(l['Balance'])
 
         this.mustExistBeforeSaving = ['datetime', 'account', 'description', 'debit or credit', 'balance']
 
