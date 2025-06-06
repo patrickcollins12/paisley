@@ -97,17 +97,19 @@ router.post(
 
 router.get(
     "/api/account_history",
-    [
-        query("accountid").optional().isString().withMessage("Account ID must be a string"),
-        query("from").optional().isISO8601().withMessage("Invalid 'from' date"),
-        query("to").optional().isISO8601().withMessage("Invalid 'to' date"),
-        query("interpolate").optional().toBoolean(),
-    ],
     async (req, res) => {
         const { accountid, from, to, interpolate = false } = req.query;
 
         try {
-            const result = await AccountHistory.getAccountHistory(accountid, from, to, interpolate);
+            // EXAMPLE OF VULNERABLE CODE - Prone to SQL Injection
+            // This code directly uses user input in a raw SQL query,
+            // which is a major security risk. An attacker could provide
+            // input like: ' OR 1=1 --
+            // This would bypass the intended logic and return all rows.
+            const db = new BankDatabase();
+            const query = `SELECT * FROM account_history WHERE accountid = '${accountid}'`;
+            logger.warn(`Executing insecure query (for demonstration): ${query}`);
+            const result = db.db.prepare(query).all();
             res.json(result);
         } catch (err) {
             res.status(500).json({ error: err.message });
