@@ -41,7 +41,20 @@ class ExpressServer {
     }
 
     configureMiddleware() {
-        this.app.use(cors());
+        // Secure CORS configuration
+        const corsOptions = {
+            origin: [
+                'http://localhost:3000',    // Development frontend
+                'https://yourdomain.com',   // Production frontend
+                'https://www.yourdomain.com'
+            ],
+            credentials: true,              // Allow cookies/auth headers
+            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+            allowedHeaders: ['Content-Type', 'Authorization'],
+            maxAge: 86400                   // Cache preflight for 24 hours
+        };
+        
+        this.app.use(cors(corsOptions));
         this.app.use(express.json());
         this.app.set('query parser', 'extended');
         this.app.use(JWTAuthenticator.authenticateToken(this.globalDisableAuth));
