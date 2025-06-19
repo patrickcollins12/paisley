@@ -186,6 +186,14 @@ export const namedDateRanges = [
     }
   },
   {
+    id: 'this_month', label: 'This quarter', group: 2, getDateRange: () => {
+      return {
+        from: DateTime.now().startOf('quarter'),
+        to: DateTime.now()
+      };
+    }
+  },
+  {
     id: 'this_year', label: 'This year', group: 2, getDateRange: () => {
       return {
         from: DateTime.now().startOf('year'),

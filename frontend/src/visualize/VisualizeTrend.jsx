@@ -142,7 +142,9 @@ export default function VisualizeTrend() {
           ],
           yAxis: [
             {
-              type: 'value'
+              type: 'value',
+              scale: true,
+              splitNumber: 15,
             }
           ],
           series: series.map(s => ({ // Use the processed series data
