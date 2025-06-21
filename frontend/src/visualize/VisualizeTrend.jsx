@@ -145,6 +145,14 @@ export default function VisualizeTrend() {
               type: 'value',
               scale: true,
               splitNumber: 15,
+              splitLine: {
+                show: true,
+                lineStyle: {
+                  color: theme === 'dark' ? '#fff' : '#000',
+                  type: 'solid',
+                  opacity: 0.15
+                }
+              }
             }
           ],
           series: series.map(s => ({ // Use the processed series data
@@ -159,7 +167,7 @@ export default function VisualizeTrend() {
         });
       }
     }
-  }, [data, timeGrouping, chartType, isStacked, tagLevel, incomeEnabled, expenseEnabled, calculatedGrouping]);
+  }, [data, timeGrouping, chartType, isStacked, tagLevel, incomeEnabled, expenseEnabled, calculatedGrouping, theme]);
 
   return (
     <>
