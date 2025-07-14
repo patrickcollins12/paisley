@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+let chalk = null;
 
 /**
  * Creates a 64-character SHA256 hash key from an input object based on specified keys of interest.
@@ -25,6 +26,20 @@ exports.generateSHAFromObject = function (orig, processed, keysOfInterest) {
     }
 
     return crypto.createHash('sha256').update(s).digest('hex')
+}
+
+
+/**
+ * Dynamically imports and returns the chalk library.
+ * Subsequent calls will return the cached instance.
+ * @returns {Promise<import('chalk').Chalk>}
+ */
+exports.loadChalk = async function() {
+    if (!chalk) {
+        const c = await import('chalk');
+        chalk = c.default;
+    }
+    return chalk;
 }
 
 

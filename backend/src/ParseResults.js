@@ -1,5 +1,5 @@
 const { DateTime } = require('luxon');
-let chalk;
+const Util = require('./Util');
 const logger = require('./Logger');
 
 class ParseResults {
@@ -81,15 +81,8 @@ class ParseResults {
     
         */
 
-    async loadChalk() {
-        if (!chalk) {
-            const c = await import('chalk');
-            chalk = c.default;
-        }
-    }
-
     async print() {
-        await this.loadChalk();
+        const chalk = await Util.loadChalk();
 
         logger.info(`${chalk.magenta(this.parser)} ${chalk.blue(this.file)}`)
 
@@ -109,18 +102,19 @@ class ParseResults {
             color = chalk.yellow
         }
 
-        const percent_imported = this.lines > 0 ? Math.round((this.inserted / this.lines) * 100) : 0;
-        logger.info(color(`   ${this.inserted} of ${this.lines}, ${percent_imported}% imported (${this.skipped} skipped)`))
+        if (this.inserted > 0) {
+            const percent_imported = this.lines > 0 ? Math.round((this.inserted / this.lines) * 100) : 0;
+            logger.info(color(`   ${this.inserted} of ${this.lines}, ${percent_imported}% imported (${this.skipped} skipped)`))
 
-        if (this.dates?.in_file) {
-            const from_date = DateTime.fromJSDate(this.dates?.in_file[0]).toFormat('yyyy-MM-dd');
-            const to_date = DateTime.fromJSDate(this.dates?.in_file[1]).toFormat('yyyy-MM-dd');
+            if (this.dates?.in_file) {
+                const from_date = DateTime.fromJSDate(this.dates?.in_file[0]).toFormat('yyyy-MM-dd');
+                const to_date = DateTime.fromJSDate(this.dates?.in_file[1]).toFormat('yyyy-MM-dd');
 
-            if (! to_date.startsWith('0000')) {
-                logger.info(chalk.gray(`   ${from_date} to ${to_date}`))
+                if (!to_date.startsWith('0000')) {
+                    logger.info(chalk.gray(`   ${from_date} to ${to_date}`))
+                }
             }
         }
-
         // logger.info(JSON.stringify(this, null, "\t"))
 
 

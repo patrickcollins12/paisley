@@ -1,0 +1,58 @@
+# Paisley Project Memory
+
+## 1. Overview
+Paisley is a comprehensive personal finance management system that combines automated transaction processing with manual financial tracking capabilities. The system ingests bank transaction data from CSV files and web scrapers, processes them through customizable parsers, and provides a web interface for categorization, visualization, and analysis.
+
+## 2. Architecture
+
+### Backend Architecture
+- **Node.js/Express server** (`backend/src/ExpressServer.js`)
+- **SQLite database** with schema defined in `backend/demo/schema.sql`
+- **CSV parsing system** with base class `BaseCSVParser.js` and bank-specific parsers in `csv_parsers/`
+- **Web scraping system** using Playwright in `scrapers/` directory
+- **RESTful API** with routes in `backend/src/routes/`
+
+### Frontend Architecture  
+- **React SPA** using Vite and TanStack Router
+- **Tailwind CSS** with shadcn/ui components
+- **Component-based structure** organized by feature (accounts, transactions, rules, etc.)
+
+### Database Schema
+- **transaction table**: Core transaction data with balance tracking
+- **account table**: Bank account information with hierarchical relationships
+- **account_history table**: Periodic balance snapshots from scrapers
+- **rule table**: User-defined categorization rules
+- **transaction_enriched table**: Enhanced transaction data (tags, parties, descriptions)
+
+## 3. Key Technical Notes
+
+### CSV Processing System
+- **BaseCSVParser.js**: Abstract base class for all bank-specific parsers with shared functionality
+- **Filename date extraction**: Base method to extract dates from CSV filenames using dd_mm_yyyy format
+- **Timezone-aware processing**: Proper handling of bank-specific timezones
+- **Bank-specific rules**: Each parser can implement custom business logic
+- **Balance reconciliation**: Supports both transaction-level balances and periodic balance snapshots
+
+### Bankwest Processing Rules
+- **Closed-day processing**: Only processes transactions from previous days, never same-day transactions
+- **Filename-based date extraction**: Extracts file date from CSV filename format `bankwest_$PID_Transactions_dd_mm_yyyy.csv` for accurate same-day filtering
+- **Balance stability**: Since only closed days are processed, Balance column is stable and included in uniqueness key
+- **Timezone handling**: Uses Australia/Perth timezone for accurate day boundaries
+- **Duplicate prevention**: Balance included in uniqueness key prevents dropping legitimate duplicate transactions
+- **ID migration**: Uses `oldUniqueColumns` to automatically update existing transaction IDs when uniqueness logic changes
+
+### Authentication & Security
+- **JWT-based authentication** with refresh tokens
+- **API key system** for development access
+- **User management** with signup/login flows
+
+## 4. Known Issues
+
+### Missing Transaction Detection
+- Need for post-processing validation to detect gaps in transaction sequences
+- Balance reconciliation system to validate transaction completeness
+
+### Bank-Specific Challenges
+- Different banks have varying CSV formats and business rules
+- Some banks provide running balances, others only periodic snapshots
+- Transaction ordering and timing varies between institutions 

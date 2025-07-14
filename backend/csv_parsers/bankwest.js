@@ -8,18 +8,23 @@ class BankwestCSVParser extends BaseCSVParser {
         super(options);
 
         this.identifier = 'bankwest'
-        // this.timezone = 'Australia/Perth' // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+        this.timezone = 'Australia/Perth' // https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
         this.dateFormat = 'dd/MM/yyyy'  // uses luxon date format: https://moment.github.io/luxon/#/parsing?id=table-of-tokens
 
         // what columns from the incoming csv file define a unique record
-        this.uniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit']
+        // Include Balance since we only process closed days where balance is stable
+        this.uniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit', 'Balance']
 
         // Yes this file is in reverse order with newest transactions at the top.
         // we always want to process the oldest transactions first to maintain the
         // correct balance
         this.must_process_csv_in_reverse = true
 
-        // this.oldUniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit' ]
+        this.mustExistBeforeSaving = ['datetime', 'account', 'description', 'debit or credit', 'balance']
+
+        // Set old uniqueColumns to trigger ID migration for existing transactions
+        this.oldUniqueColumns = ['Transaction Date', 'Narration', 'Credit', 'Debit']
+        
         // this.uniqueColumns = ['datetime', 'description', 'credit', 'debit', 'balance']
         // this.oldUniqueColumns = ['datetime', 'description', 'credit', 'debit']
 
@@ -114,6 +119,25 @@ class BankwestCSVParser extends BaseCSVParser {
             // logger.info("")  
         }
 
+        /*
+         * PROBLEM: Need stable Balance column for duplicate detection, but same-day transactions 
+         * have unstable/changing balances throughout the day.
+         * 
+         * SOLUTION: Only process closed banking days (< file date). This ensures Balance represents 
+         * final settled amounts, enabling us to include Balance in uniqueness key 
+         * ['Transaction Date', 'Narration', 'Credit', 'Debit', 'Balance'] without dropping 
+         * legitimate duplicate transactions (e.g., two $1 charges to same merchant same day).
+         * 
+         * File date extracted from filename: bankwest_$PID_Transactions_dd_mm_yyyy.csv
+         */
+        const transactionDate = DateTime.fromISO(processed.datetime).setZone(this.timezone);
+        const fileDate = this.extractDateFromFileName();
+        
+        if (fileDate && transactionDate >= fileDate.startOf('day')) {
+            logger.info(`Skipping non-closed day transaction: ${narration} (${l['Transaction Date']})`);
+            return null;
+        }
+
         let bsb = l['BSB Number'].replace("-", "")
         processed.account = bsb + " " + l['Account Number']
         processed.debit = Math.abs(l['Debit']) || 0
@@ -121,15 +145,15 @@ class BankwestCSVParser extends BaseCSVParser {
         processed.type = l['Transaction Type']
         processed.balance = Math.abs(l['Balance'])
 
-        this.mustExistBeforeSaving = ['datetime', 'account', 'description', 'debit or credit', 'balance']
 
         return processed
     }
 
     transactionSaved(id) {
-        logger.info(`\nSaved txn with id: ${id}`);
-        logger.info(this.debug_str)
-        logger.info("\n")
+        // Log Bankwest-specific enhancements if they occurred
+        if (this.debug_str) {
+            logger.info(`   ${this.debug_str}`);
+        }
     }
 
 }

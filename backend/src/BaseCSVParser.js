@@ -7,7 +7,7 @@ const path = require('path');
 const ParseResults = require('./ParseResults.js');
 const config = require('./Config');
 const BankDatabase = require('./BankDatabase');
-const util = require('./Util.js');
+const Util = require('./Util.js');
 const logger = require('./Logger.js');
 
 class BaseCSVParser {
@@ -20,8 +20,7 @@ class BaseCSVParser {
         this.headers = []; // csv headers, override if needed.
         this.results = new ParseResults();
         this.db = new BankDatabase();
-
-        // }
+        
     }
 
     async parse(filePath) {
@@ -111,6 +110,14 @@ class BaseCSVParser {
             const newId = this.saveTransaction();
             this.results.insert(newId);
             this.results.setMinMaxDate("inserts", this.processedLine['datetime']);
+
+            // Log successful insertion with colored text
+            const tx = this.processedLine;
+            const amount = tx.debit ? `-$${tx.debit}` : `+$${tx.credit}`;
+            const date = tx.datetime.split('T')[0];
+            const chalk = await Util.loadChalk();
+            const insertedText = chalk.green('INSERTED');
+            logger.info(`${insertedText} ${date} ${tx.description || ''} ${amount} Bal:$${tx.balance || ''}`);
 
             // Call hasSaved if it has been defined in the subclass
             if (typeof this.transactionSaved === 'function') {
@@ -222,7 +229,7 @@ class BaseCSVParser {
         this.processedLine['jsondata'] = JSON.stringify(this.originalLine);
 
         if (!this.processedLine['id']) {
-            this.processedLine['id'] = util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns)
+            this.processedLine['id'] = Util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns)
         }
 
         this.processedLine['inserted_datetime'] = DateTime.now().toISO();
@@ -231,7 +238,7 @@ class BaseCSVParser {
 
     isAlreadyInserted() {
 
-        let sha = util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns)
+        let sha = Util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns)
         const stmt = this.db.db.prepare("select id from 'transaction' where id=?");
         const r = stmt.all(sha); // get() for a single row, all() for multiple rows
         if (r.length > 1) throw new Error('Error: Multiple records found.');
@@ -263,8 +270,8 @@ class BaseCSVParser {
     }
 
     async renameTransactionIDs() {
-        const oldId = util.generateSHAFromObject(this.originalLine, this.processedLine, this.oldUniqueColumns);
-        const newId = util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns);
+        const oldId = Util.generateSHAFromObject(this.originalLine, this.processedLine, this.oldUniqueColumns);
+        const newId = Util.generateSHAFromObject(this.originalLine, this.processedLine, this.uniqueColumns);
 
         const updateTransaction = this.db.db.prepare("UPDATE 'transaction' SET id = ? WHERE id = ?");
         const updateEnriched = this.db.db.prepare("UPDATE 'transaction_enriched' SET id = ? WHERE id = ?");
@@ -360,6 +367,27 @@ class BaseCSVParser {
     convertToLocalTime(datetime) {
         // Use the DateTime.fromFormat method to parse the input datetime according to the specified format and timezone
         return DateTime.fromFormat(datetime, this.dateFormat, { zone: this.timezone }).toISO();
+    }
+
+    extractDateFromFileName() {
+        // Extract date from filename format: bank_$PID_Transactions_dd_mm_yyyy.csv
+        // Can be overridden in subclasses for different patterns
+        if (!this.fileName) {
+            return null;
+        }
+        
+        const match = this.fileName.match(/(\d{2})_(\d{2})_(\d{4})\.csv$/);
+        if (match) {
+            const [, day, month, year] = match;
+            try {
+                return DateTime.fromFormat(`${day}/${month}/${year}`, 'dd/MM/yyyy', { zone: this.timezone });
+            } catch (error) {
+                logger.warn(`Failed to parse date from filename: ${this.fileName}`);
+                return null;
+            }
+        }
+        
+        return null; // No match found, let subclass handle if needed
     }
 
 }
