@@ -19,6 +19,8 @@ module.exports = {
 
     logger.info(`Starting renameTagInDb from "${oldName}" to "${newName}"...`);
 
+    // transaction_enriched 'tags' format = ["Holiday > Dubbo","Travel > Accommodation"]
+    // transaction 'tags' format = {"tags":["Holiday > Dubbo","Travel > Accommodation"],"rule":[176,304]}
     function renameJsonColumn(tableName, columnName, pkName = "rowid") {
       logger.info(`Checking table="${tableName}" column="${columnName}" for references to "${oldName}", using pk="${pkName}".`);
 
@@ -34,13 +36,13 @@ module.exports = {
 
       for (const row of rows) {
         let parsed;
-        let originalStructure = null;
+        let originalStructure = null; // null for simple array, object for complex structure
         try {
-          // Parse the JSON data from the row
           const extracted = JSON.parse(row.tags);
           
-          // We expect a structure with a tags array, like {"tags": ["tag1", "tag2"], "rule": [1,2]}
-          if (extracted.tags && Array.isArray(extracted.tags)) {
+          if (Array.isArray(extracted)) {
+            parsed = extracted;
+          } else if (extracted && extracted.tags && Array.isArray(extracted.tags)) {
             parsed = extracted.tags;
             originalStructure = extracted;
           } else {
@@ -81,9 +83,13 @@ module.exports = {
         if (changed) {
           logger.info(`pk=${row.pkVal} changed from ${JSON.stringify(parsed)} to ${JSON.stringify(newTagsArray)}`);
           
-          // Update the tags array in the original structure and preserve the structure
-          originalStructure.tags = newTagsArray;
-          const updatedJson = JSON.stringify(originalStructure);
+          let updatedJson;
+          if (originalStructure) {
+            originalStructure.tags = newTagsArray;
+            updatedJson = JSON.stringify(originalStructure);
+          } else {
+            updatedJson = JSON.stringify(newTagsArray);
+          }
           
           const updateStmt = db.prepare(`
             UPDATE '${tableName}'
