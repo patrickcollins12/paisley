@@ -18,6 +18,7 @@ export default function TagsPage() {
   const [tagList, setTagList] = useState([]);
   const [editIndex, setEditIndex] = useState(null);
   const [editValue, setEditValue] = useState("");
+  const [filterText, setFilterText] = useState("");
 
   useEffect(() => {
     if (allTags && Array.isArray(allTags)) {
@@ -86,20 +87,29 @@ export default function TagsPage() {
   if (isLoading) return <div>{t("Loading...")}</div>;
   if (error) return <div className="text-red-600">{t("Error fetching tags")}</div>;
 
+  const filteredTags = tagList.filter(tag => tag.toLowerCase().includes(filterText.toLowerCase()));
+
   return (
     <div className="flex flex-col items-center justify-center p-0">
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>{t("Tags")}</CardTitle>
+           <Input
+            type="text"
+            placeholder="Filter..."
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            className="mt-2"
+          />
         </CardHeader>
         <CardContent>
           <ul className="space-y-2">
-            {tagList?.map((tag, idx) => (
+            {filteredTags?.map((tag, idx) => (
               <React.Fragment key={idx}>
                 {renderTagRow(tag, idx)}
               </React.Fragment>
             ))}
-            {tagList?.length === 0 && (
+            {filteredTags?.length === 0 && (
               <li className="text-sm text-muted-foreground">
                 {t("No tags found")}
               </li>
