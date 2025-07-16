@@ -80,7 +80,7 @@ function renameTagsInJsonColumn(db, tableName, columnName, oldName, newName, pkN
   // logger.info(`Found ${rows.length} rows in ${tableName}.${columnName} to scan for "${oldName}".`);
 
   if (rows.length === 0) {
-    return;
+    return { updated: 0, unchanged: 0, error: 0 };
   }
 
   const summary = { updated: 0, unchanged: 0, error: 0 };
@@ -91,6 +91,7 @@ function renameTagsInJsonColumn(db, tableName, columnName, oldName, newName, pkN
   }
 
   logger.info(`Summary for ${tableName}.${columnName}: ${summary.updated} updated, ${summary.unchanged} unchanged, ${summary.error} errors.`);
+  return summary;
 }
 
 /**
@@ -102,14 +103,27 @@ function renameTagInDb(db, oldName, newName) {
   }
   logger.info(`Starting renameTagInDb from "${oldName}" to "${newName}"...`);
 
+  const results = {
+    transactions: 0,
+    rules: 0,
+    errors: 0
+  };
+
   // Rename in tables with 'tags' column (assumed to use rowid)
-  renameTagsInJsonColumn(db, "transaction", "tags", oldName, newName, "rowid");
-  renameTagsInJsonColumn(db, "transaction_enriched", "tags", oldName, newName, "rowid");
+  const transactionResult = renameTagsInJsonColumn(db, "transaction", "tags", oldName, newName, "rowid");
+  const transactionEnrichedResult = renameTagsInJsonColumn(db, "transaction_enriched", "tags", oldName, newName, "rowid");
+  
+  // Combine transaction and transaction_enriched results
+  results.transactions = transactionResult.updated + transactionEnrichedResult.updated;
+  results.errors += transactionResult.error + transactionEnrichedResult.error;
 
   // Rename in the 'rule' table, which uses 'id' as the PK and 'tag' as the column
-  renameTagsInJsonColumn(db, "rule", "tag", oldName, newName, "id");
+  const ruleResult = renameTagsInJsonColumn(db, "rule", "tag", oldName, newName, "id");
+  results.rules = ruleResult.updated;
+  results.errors += ruleResult.error;
 
-  logger.info(`Finished renameTagInDb`);
+  logger.info(`Finished renameTagInDb - Transactions: ${results.transactions}, Rules: ${results.rules}, Errors: ${results.errors}`);
+  return results;
 }
 
 module.exports = { renameTagInDb };

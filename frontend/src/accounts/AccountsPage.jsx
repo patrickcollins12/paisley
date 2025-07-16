@@ -55,10 +55,10 @@ const AccountsPage = () => {
     const lowerSearch = searchTerm.toLowerCase();
     return accounts.filter(
       (account) =>
-        account.shortname.toLowerCase().includes(lowerSearch) ||
-        account.institution.toLowerCase().includes(lowerSearch) ||
-        account.name.toLowerCase().includes(lowerSearch) ||
-        account.type.toLowerCase().includes(lowerSearch)
+        (account.shortname && account.shortname.toLowerCase().includes(lowerSearch)) ||
+        (account.institution && account.institution.toLowerCase().includes(lowerSearch)) ||
+        (account.name && account.name.toLowerCase().includes(lowerSearch)) ||
+        (account.type && account.type.toLowerCase().includes(lowerSearch))
     );
   }
 

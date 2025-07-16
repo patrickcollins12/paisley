@@ -9,6 +9,12 @@ async function fetcher(url) {
   return response.data;
 }
 
+async function fetcherWithParams([url, params]) {
+  // e.g., if url is 'tags', final path => '/api/tags'
+  const response = await httpClient.get(url, { params });
+  return response.data;
+}
+
 // Fetch all tags
 export function useFetchTagsNew(types) {
   const { data, error, isLoading, mutate } = useSWR(types, fetcher);
@@ -21,13 +27,17 @@ export function useFetchTagsNew(types) {
   };
 }
 
-export function useFetchTags(tagResource) {
+export function useFetchTags(tagResource, options = {}) {
   
   if (! ['tags','parties'].includes(tagResource) ) {
     throw new Error(`Invalid resource in useFetchTags: ${tagResource}.`)
   }
 
-  const { data, error, isLoading, mutate } = useSWR(tagResource, fetcher);
+  const { expandParents = true } = options;
+  const swrKey = expandParents ? tagResource : [tagResource, { expand_parents: 'false' }];
+  const swrFetcher = expandParents ? fetcher : fetcherWithParams;
+
+  const { data, error, isLoading, mutate } = useSWR(swrKey, swrFetcher);
 
   
   return {
